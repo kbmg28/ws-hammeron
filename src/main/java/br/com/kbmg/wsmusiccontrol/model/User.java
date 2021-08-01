@@ -30,6 +30,9 @@ public class User extends AbstractEntity {
 	@Column(nullable = false)
 	private String password;
 
+	@Column
+	private boolean enabled;
+
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
