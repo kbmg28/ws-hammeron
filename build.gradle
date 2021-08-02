@@ -60,3 +60,15 @@ test {
 springBoot {
 	buildInfo()
 }
+
+bootRun {
+
+	args = ["--spring.profiles.active=${project.properties['profile'] ?: 'test'}",
+			"--spring.datasource.url=${project.properties['dburl']}",
+			"--spring.datasource.username=${project.properties['dbuser']}",
+			"--spring.datasource.password=${project.properties['dbpass']}",
+			"--spring.mail.username=${project.properties['mailUser']}",
+			"--spring.mail.password=${project.properties['mailPassSocial']}"
+	]
+
+}
