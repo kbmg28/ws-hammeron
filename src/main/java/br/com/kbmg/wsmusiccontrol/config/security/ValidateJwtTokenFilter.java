@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.config.security;
 
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
-import br.com.kbmg.wsmusiccontrol.model.User;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +33,8 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
 
         if (isRequestForApi(request)) {
             try {
-                User user = this.authJwtTokenAndGetUser(authorization);
-                this.loadUserSpringSecurity(user, request);
+                UserApp userApp = this.authJwtTokenAndGetUser(authorization);
+                this.loadUserSpringSecurity(userApp, request);
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -52,11 +52,11 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
         return request.getRequestURL().indexOf("/api/") >= 0;
     }
 
-    private void loadUserSpringSecurity(User user, HttpServletRequest request) {
-        userSpringSecurityService.loadSpringSecurityInContext(userSpringSecurityService.loadUser(user), request);
+    private void loadUserSpringSecurity(UserApp userApp, HttpServletRequest request) {
+        userSpringSecurityService.loadSpringSecurityInContext(userSpringSecurityService.loadUser(userApp), request);
     }
 
-    private User authJwtTokenAndGetUser(String authorization) {
+    private UserApp authJwtTokenAndGetUser(String authorization) {
         if (Strings.isEmpty(authorization)) {
             throw new AuthorizationException("Authorization required");
         }
@@ -64,7 +64,7 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
         // TODO:
         //  implement and return user - securityService.verifyJwtToken(authorization)
 
-        return new User();
+        return new UserApp();
     }
 
 }

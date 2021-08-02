@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.config.security;
 
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
-import br.com.kbmg.wsmusiccontrol.model.User;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,16 +21,16 @@ public class UserSpringSecurityServiceImpl implements UserSpringSecurityService 
     @Override
     public UserDetails loadUserByUsername(String email) {
 
-        br.com.kbmg.wsmusiccontrol.model.User user = new User();
+        UserApp userApp = new UserApp();
 
         // TODO: implement get user by email
 
-        return loadUser(user);
+        return loadUser(userApp);
     }
 
     @Override
-    public UserDetails loadUser(br.com.kbmg.wsmusiccontrol.model.User user) {
-        return this.generateUserDetails(user.getEmail(), this.loadPermissions(user));
+    public UserDetails loadUser(UserApp userApp) {
+        return this.generateUserDetails(userApp.getEmail(), this.loadPermissions(userApp));
     }
 
     @Override
@@ -52,8 +52,8 @@ public class UserSpringSecurityServiceImpl implements UserSpringSecurityService 
         return org.springframework.security.core.userdetails.User.builder().username("test@test.com").roles(PermissionEnum.ADMIN.toString()).password("").build();
     }
 
-    private String[] loadPermissions(br.com.kbmg.wsmusiccontrol.model.User user) {
-        return user
+    private String[] loadPermissions(UserApp userApp) {
+        return userApp
                 .getUserPermissionList()
                 .stream()
                 .map(userPermission ->

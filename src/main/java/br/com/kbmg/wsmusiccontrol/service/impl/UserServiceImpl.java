@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
-import br.com.kbmg.wsmusiccontrol.model.User;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import br.com.kbmg.wsmusiccontrol.repository.UserRepository;
 import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl extends GenericServiceImpl<User, UserRepository> implements UserService {
+public class UserServiceImpl extends GenericServiceImpl<UserApp, UserRepository> implements UserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -19,7 +19,7 @@ public class UserServiceImpl extends GenericServiceImpl<User, UserRepository> im
     private VerificationTokenRepository tokenRepository;
 
     @Override
-    public User registerNewUserAccount(UserDto userDto) {
+    public UserApp registerNewUserAccount(UserDto userDto) {
 
 //        if (emailExist(userDto.getEmail())) {
 //            throw new UserAlreadyExistException(
@@ -27,12 +27,12 @@ public class UserServiceImpl extends GenericServiceImpl<User, UserRepository> im
 //                            + userDto.getEmail());
 //        }
 
-        User user = new User();
-        user.setName(userDto.getName());
-        user.setPassword(userDto.getPassword());
-        user.setEmail(userDto.getEmail());
+        UserApp userApp = new UserApp();
+        userApp.setName(userDto.getName());
+        userApp.setPassword(userDto.getPassword());
+        userApp.setEmail(userDto.getEmail());
 
-        return userRepository.save(user);
+        return userRepository.save(userApp);
     }
 
     private boolean emailExist(String email) {
@@ -40,8 +40,8 @@ public class UserServiceImpl extends GenericServiceImpl<User, UserRepository> im
     }
 
     @Override
-    public User getUser(String verificationToken) {
-        return tokenRepository.findByToken(verificationToken).getUser();
+    public UserApp getUser(String verificationToken) {
+        return tokenRepository.findByToken(verificationToken).getUserApp();
     }
 
     @Override
@@ -50,13 +50,13 @@ public class UserServiceImpl extends GenericServiceImpl<User, UserRepository> im
     }
 
     @Override
-    public void saveRegisteredUser(User user) {
-        userRepository.save(user);
+    public void saveRegisteredUser(UserApp userApp) {
+        userRepository.save(userApp);
     }
 
     @Override
-    public void createVerificationToken(User user, String token) {
-        VerificationToken myToken = new VerificationToken(token, user);
+    public void createVerificationToken(UserApp userApp, String token) {
+        VerificationToken myToken = new VerificationToken(token, userApp);
         tokenRepository.save(myToken);
     }
 }

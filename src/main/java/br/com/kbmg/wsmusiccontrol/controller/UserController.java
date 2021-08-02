@@ -2,7 +2,7 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
-import br.com.kbmg.wsmusiccontrol.model.User;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.UserService;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class UserController {
             @RequestBody @Validated UserDto userDto,
             HttpServletRequest request) {
 
-        User registered = userService.registerNewUserAccount(userDto);
+        UserApp registered = userService.registerNewUserAccount(userDto);
 
         String appUrl = request.getContextPath();
         eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered,

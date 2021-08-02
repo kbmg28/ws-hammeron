@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.event;
 
-import br.com.kbmg.wsmusiccontrol.model.User;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -28,11 +28,11 @@ public class RegistrationListener implements
     }
 
     private void confirmRegistration(OnRegistrationCompleteEvent event) {
-        User user = event.getUser();
+        UserApp userApp = event.getUserApp();
         String token = UUID.randomUUID().toString();
-        userService.createVerificationToken(user, token);
+        userService.createVerificationToken(userApp, token);
 
-        String recipientAddress = user.getEmail();
+        String recipientAddress = userApp.getEmail();
         String subject = "Registration Confirmation";
         String confirmationUrl
                 = event.getAppUrl() + "/regitrationConfirm.html?token=" + token;

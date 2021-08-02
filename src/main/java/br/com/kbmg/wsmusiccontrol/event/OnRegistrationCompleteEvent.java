@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.event;
 
-import br.com.kbmg.wsmusiccontrol.model.User;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,13 +14,13 @@ import java.util.Locale;
 public class OnRegistrationCompleteEvent extends ApplicationEvent {
     private String appUrl;
     private Locale locale;
-    private User user;
+    private UserApp userApp;
 
     public OnRegistrationCompleteEvent(
-            User user, Locale locale, String appUrl) {
-        super(user);
+            UserApp userApp, Locale locale, String appUrl) {
+        super(userApp);
 
-        this.user = user;
+        this.userApp = userApp;
         this.locale = locale;
         this.appUrl = appUrl;
     }

@@ -22,9 +22,9 @@ public class VerificationToken extends AbstractEntity {
 
     private String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
-    private User user;
+    @OneToOne(targetEntity = UserApp.class, fetch = FetchType.EAGER)
+    @JoinColumn(nullable = false, name = "user_app_id")
+    private UserApp userApp;
 
     private Date expiryDate;
 
@@ -35,9 +35,9 @@ public class VerificationToken extends AbstractEntity {
         return new Date(cal.getTime().getTime());
     }
 
-    public VerificationToken(String token, User user) {
+    public VerificationToken(String token, UserApp userApp) {
         this.token = token;
-        this.user = user;
+        this.userApp = userApp;
     }
 
     @PrePersist

@@ -19,7 +19,7 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class User extends AbstractEntity {
+public class UserApp extends AbstractEntity {
 
 	@Column(nullable = false)
 	private String name;
@@ -35,7 +35,7 @@ public class User extends AbstractEntity {
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
 	private Set<UserPermission> userPermissionList = new HashSet<>();
 
 }
