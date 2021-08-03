@@ -1,3 +1,7 @@
+import groovy.time.TimeCategory
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
 	id 'org.springframework.boot' version '2.5.3'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -57,8 +61,89 @@ dependencies {
 
 }
 
+tasks.register("unitTest", Test) {
+	useJUnitPlatform {
+		includeTags "unitTest"
+	}
+	mustRunAfter check
+}
+
+tasks.register("integrationTest", Test) {
+	useJUnitPlatform {
+		includeTags "integrationTest"
+	}
+	mustRunAfter check
+}
+
 test {
 	useJUnitPlatform()
+}
+
+tasks.withType(Test) { testTask ->
+	doFirst {
+		def profile = 'h2'
+
+		systemProperty 'spring.profiles.active', profile
+		failFast = project.hasProperty("failFast")
+	}
+
+	testLogging { logging ->
+		events TestLogEvent.FAILED, TestLogEvent.SKIPPED
+		exceptionFormat TestExceptionFormat.FULL
+		showExceptions true
+		showCauses true
+		showStackTraces false
+		showStandardStreams = false
+	}
+
+	def classNameTest = null
+	def classNameTestActual = null
+
+	afterTest { desc, result ->
+		def className = "${desc.className}"
+		def duration = TimeCategory.minus(new Date(result.endTime), new Date(result.startTime)).toString()
+		classNameTestActual = className
+
+		if (classNameTest != classNameTestActual) {
+			classNameTest = classNameTestActual
+			println('\n\n--> ' + classNameTest)
+		}
+		def methodName = "${desc.name}"
+		def resultOfTest = "${result.resultType}"
+		def timeOfExecution = "(${duration})"
+
+		def mes = String.format("\n\t |%110s | %10s | %18s |", methodName, resultOfTest, timeOfExecution)
+
+		if (resultOfTest == "SUCCESS") {
+			printf(mes)
+		} else {
+			println(mes)
+		}
+	}
+
+	afterSuite { desc, result ->
+		if (!desc.parent) { // will match the outermost suite
+			def reportFileName = "Report: file://${testTask.reports.html.entryPoint}"
+
+			def output = "Results: ${result.resultType} (${result.testCount} tests, " +
+					"${result.successfulTestCount} successes, " +
+					"${result.failedTestCount} failures, " +
+					"${result.skippedTestCount} skipped): " +
+					"${TimeCategory.minus(new Date(result.endTime), new Date(result.startTime))}"
+			def startItem = '|  ', endItem = '  |'
+
+			def outputLength = startItem.length() + output.length() + endItem.length()
+			def reportFileNameLength = startItem.length() + reportFileName.length() + endItem.length()
+
+			print('\n' + ('-' * outputLength) +
+					'\n' + startItem + output + endItem +
+					'\n' + ('-' * outputLength))
+
+			println('\n' + ('-' * reportFileNameLength) +
+					"\n" + startItem + reportFileName + endItem +
+					'\n' + ('-' * reportFileNameLength))
+		}
+	}
 }
 
 springBoot {

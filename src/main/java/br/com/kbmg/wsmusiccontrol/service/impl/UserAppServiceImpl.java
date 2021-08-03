@@ -3,7 +3,7 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.repository.UserRepository;
+import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserRepository> implements UserAppService {
+public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepository> implements UserAppService {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAppRepository userAppRepository;
 
     @Override
     public UserApp registerNewUserAccount(UserDto userDto) {
-        if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
+        if (userAppRepository.findByEmail(userDto.getEmail()).isPresent()) {
             throw new ServiceException("User already exists");
         }
 
@@ -32,23 +32,23 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserReposito
         userApp.setPassword(hashpw);
         userApp.setEnabled(false);
 
-        return userRepository.save(userApp);
+        return userAppRepository.save(userApp);
     }
 
     @Override
     public void saveUserEnabled(UserApp userApp) {
         userApp.setEnabled(true);
-        userRepository.save(userApp);
+        userAppRepository.save(userApp);
     }
 
 
     @Override
     public UserApp findByEmailValidated(String email) {
-        return userRepository.findByEmail(email).orElseThrow(() -> new ServiceException("User with this email does not exists"));
+        return userAppRepository.findByEmail(email).orElseThrow(() -> new ServiceException("User with this email does not exists"));
     }
 
     @Override
     public Optional<UserApp> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userAppRepository.findByEmail(email);
     }
 }
