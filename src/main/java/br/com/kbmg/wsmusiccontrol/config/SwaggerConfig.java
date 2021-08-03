@@ -23,6 +23,8 @@ import springfox.documentation.spring.web.plugins.Docket;
 import java.util.Collections;
 import java.util.List;
 
+import static br.com.kbmg.wsmusiccontrol.constants.AppConstants.LANGUAGE;
+
 @Configuration
 @EnableOpenApi
 public class SwaggerConfig {
@@ -36,8 +38,8 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
                 .build()
-                .securityContexts(Collections.singletonList(securityContext()))
-                .securitySchemes(Collections.singletonList(apiKeyAuthorization()))
+                .securityContexts(List.of(jwtSecurityContext(), languageSecurityContext()))
+                .securitySchemes(List.of(apiKeyAuthorization(), apiKeyLanguage()))
                 .apiInfo(this.apiInfo());
     }
 
@@ -52,20 +54,29 @@ public class SwaggerConfig {
                 .build();
     }
 
-    private SecurityContext securityContext() {
+    private SecurityContext jwtSecurityContext() {
+        SecurityReference referenceAuthorization = new SecurityReference(HttpHeaders.AUTHORIZATION, new AuthorizationScope[0]);
+
         return SecurityContext.builder()
-                .securityReferences(defaultAuth())
+                .securityReferences(Collections.singletonList(referenceAuthorization))
                 .operationSelector(o -> o.requestMappingPattern().startsWith("/api"))
                 .build();
     }
 
-    private List<SecurityReference> defaultAuth() {
-        SecurityReference referenceAuthorization = new SecurityReference(HttpHeaders.AUTHORIZATION, new AuthorizationScope[0]);
-        return Collections.singletonList(referenceAuthorization);
+    private SecurityContext languageSecurityContext() {
+        SecurityReference referenceLanguage = new SecurityReference(LANGUAGE, new AuthorizationScope[0]);
+
+        return SecurityContext.builder()
+                .securityReferences(Collections.singletonList(referenceLanguage))
+                .build();
     }
 
     public ApiKey apiKeyAuthorization() {
         return new ApiKey(HttpHeaders.AUTHORIZATION, HttpHeaders.AUTHORIZATION, In.HEADER.name());
+    }
+
+    public ApiKey apiKeyLanguage() {
+        return new ApiKey(LANGUAGE, LANGUAGE, In.QUERY.name());
     }
 
 }

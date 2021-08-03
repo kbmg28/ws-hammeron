@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.AbstractEntity;
 import br.com.kbmg.wsmusiccontrol.service.GenericService;
@@ -29,6 +30,9 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
 
     @Autowired
     private R jpaRepository;
+
+    @Autowired
+    public MessagesService messagesService;
 
     @Override
     public T create(T entity) {
