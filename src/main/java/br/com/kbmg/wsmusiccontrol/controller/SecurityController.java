@@ -1,10 +1,10 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.TokenDto;
+import br.com.kbmg.wsmusiccontrol.dto.JwtTokenDto;
 import br.com.kbmg.wsmusiccontrol.dto.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
-import br.com.kbmg.wsmusiccontrol.dto.UserTokenDto;
+import br.com.kbmg.wsmusiccontrol.dto.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -35,12 +35,12 @@ public class SecurityController {
     private JwtService jwtService;
 
     @PostMapping("/token-login")
-    public ResponseEntity<ResponseData<TokenDto>> loginAndGetToken(
+    public ResponseEntity<ResponseData<JwtTokenDto>> loginAndGetToken(
             @RequestBody @Valid LoginDto loginDto) {
 
         String token = securityService.validateLoginAndGetToken(loginDto);
 
-        return ResponseEntity.ok(new ResponseData<>(new TokenDto(token)));
+        return ResponseEntity.ok(new ResponseData<>(new JwtTokenDto(token)));
     }
 
     @PostMapping("/token-activate/refresh")
@@ -63,8 +63,8 @@ public class SecurityController {
 
     @PostMapping("/activate")
     public ResponseEntity<ResponseData<Void>> activateUserAccount(
-            @RequestBody @Valid UserTokenDto userTokenDto) {
-        securityService.activateUserAccount(userTokenDto);
+            @RequestBody @Valid UserTokenHashDto userTokenHashDto) {
+        securityService.activateUserAccount(userTokenHashDto);
         return ResponseEntity.ok(new ResponseData<>());
     }
 

@@ -10,10 +10,10 @@ import javax.validation.constraints.NotBlank;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserTokenDto {
+public class UserTokenHashDto {
     @Email
     private String email;
 
     @NotBlank
-    private String token;
+    private String tokenHash;
 }

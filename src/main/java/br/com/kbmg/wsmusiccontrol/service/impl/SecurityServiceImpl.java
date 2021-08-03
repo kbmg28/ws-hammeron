@@ -4,7 +4,7 @@ import br.com.kbmg.wsmusiccontrol.config.security.ValidateJwtTokenFilter;
 import br.com.kbmg.wsmusiccontrol.dto.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
-import br.com.kbmg.wsmusiccontrol.dto.UserTokenDto;
+import br.com.kbmg.wsmusiccontrol.dto.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
@@ -67,14 +67,14 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public void activateUserAccount(UserTokenDto userTokenDto) {
-        UserApp userApp = userAppService.findByEmailValidated(userTokenDto.getEmail());
+    public void activateUserAccount(UserTokenHashDto userTokenHashDto) {
+        UserApp userApp = userAppService.findByEmailValidated(userTokenHashDto.getEmail());
 
         if (userApp.getEnabled()) {
             return;
         }
 
-        VerificationToken verificationToken = tokenRepository.findByTokenAndUserApp(userTokenDto.getToken(), userApp);
+        VerificationToken verificationToken = tokenRepository.findByTokenAndUserApp(userTokenHashDto.getTokenHash(), userApp);
 
         if(verificationToken != null && verificationToken.isValid()) {
             userAppService.saveUserEnabled(userApp);
@@ -91,13 +91,13 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public void resendMailToken(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
-        UserApp userApp = userAppService.findByEmailValidated(activateUserAccountRefreshDto.getEmail());
+        userAppService.findByEmail(activateUserAccountRefreshDto.getEmail()).ifPresent(userApp -> {
+            if (userApp.getEnabled()) {
+                return;
+            }
 
-        if (userApp.getEnabled()) {
-            return;
-        }
-
-        publishEventSendMail(request, userApp);
+            publishEventSendMail(request, userApp);
+        });
     }
 
     private void publishEventSendMail(HttpServletRequest request, UserApp registered) {
