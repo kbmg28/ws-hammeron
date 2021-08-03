@@ -5,7 +5,7 @@
 JDK 11
 
 ### API local
-http://localhost:8000/ws-music-control/swagger-ui/
+http://localhost:8000/swagger-ui/
 
 [badge-jdk-11]: https://img.shields.io/badge/jdk-11-9cf.svg "JDK-11"
 [badge-tool-gradle]: https://img.shields.io/badge/tool-gradle-0440af.svg "Gradle wrapper included"
