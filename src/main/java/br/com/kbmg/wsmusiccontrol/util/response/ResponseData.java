@@ -14,4 +14,8 @@ public class ResponseData<T> {
 
     private T content;
     private ResponseError error;
+
+    public ResponseData(T content) {
+        this.content = content;
+    }
 }

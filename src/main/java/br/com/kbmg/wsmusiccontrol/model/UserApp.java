@@ -30,12 +30,12 @@ public class UserApp extends AbstractEntity {
 	@Column(nullable = false)
 	private String password;
 
-	@Column
-	private boolean enabled;
+	@Column(nullable = false)
+	private Boolean enabled;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "userApp", fetch = FetchType.EAGER)
 	private Set<UserPermission> userPermissionList = new HashSet<>();
 
 }
