@@ -1,4 +1,4 @@
-# ws-music-control ![badge-jdk-11] ![badge-tool-gradle] ![badge-junit-jupiter] ![badge-size] [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+# ws-music-control ![badge-jdk-11] ![badge-tool-gradle] ![badge-junit-jupiter] ![badge-size] [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://ws-music-control.herokuapp.com/swagger-ui/)
 
 ## Mandatory
 
