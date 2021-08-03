@@ -2,6 +2,8 @@ package br.com.kbmg.wsmusiccontrol.config.security;
 
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
+import br.com.kbmg.wsmusiccontrol.service.JwtService;
+import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +21,16 @@ import java.io.IOException;
 @Slf4j
 public class ValidateJwtTokenFilter extends OncePerRequestFilter {
 
-//    @Autowired
-//    private SecurityService securityService;
+    public static final String BEARER = "Bearer ";
+
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private UserSpringSecurityService userSpringSecurityService;
+
+    @Autowired
+    private UserAppService userAppService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
@@ -53,18 +60,18 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
     }
 
     private void loadUserSpringSecurity(UserApp userApp, HttpServletRequest request) {
-        userSpringSecurityService.loadSpringSecurityInContext(userSpringSecurityService.loadUser(userApp), request);
+        userSpringSecurityService.loadSpringSecurityInContext(userApp, request);
     }
 
     private UserApp authJwtTokenAndGetUser(String authorization) {
-        if (Strings.isEmpty(authorization)) {
+        if (Strings.isEmpty(authorization) || !authorization.startsWith(BEARER)) {
             throw new AuthorizationException("Authorization required");
         }
+        String token = authorization.substring(7, authorization.length());
 
-        // TODO:
-        //  implement and return user - securityService.verifyJwtToken(authorization)
+        Long userId = jwtService.validateTokenAndGetUserId(token);
 
-        return new UserApp();
+        return userAppService.findById(userId).orElseThrow(AuthorizationException::new);
     }
 
 }

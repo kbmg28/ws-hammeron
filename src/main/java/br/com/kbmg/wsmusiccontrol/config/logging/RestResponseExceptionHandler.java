@@ -65,7 +65,8 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
 
     @ExceptionHandler({AuthorizationException.class})
     public ResponseEntity<ResponseData<?>> handleAccessDeniedException(final AuthorizationException ex, final WebRequest request) {
-        return generatedError("Invalid token access", HttpStatus.UNAUTHORIZED, ex);
+        String mes = ex.getMessage() == null ? "Invalid token access" : ex.getMessage();
+        return generatedError(mes, HttpStatus.UNAUTHORIZED, ex);
     }
 
     @ExceptionHandler({HttpMessageConversionException.class})

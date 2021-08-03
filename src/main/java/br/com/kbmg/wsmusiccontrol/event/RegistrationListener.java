@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.event;
 
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.service.UserService;
+import br.com.kbmg.wsmusiccontrol.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,7 +17,7 @@ public class RegistrationListener implements
         ApplicationListener<OnRegistrationCompleteEvent> {
 
     @Autowired
-    private UserService userService;
+    private SecurityService securityService;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -30,12 +30,10 @@ public class RegistrationListener implements
     private void confirmRegistration(OnRegistrationCompleteEvent event) {
         UserApp userApp = event.getUserApp();
         String token = UUID.randomUUID().toString();
-        userService.createVerificationToken(userApp, token);
+        securityService.createVerificationToken(userApp, token);
 
         String recipientAddress = userApp.getEmail();
         String subject = "Registration Confirmation";
-        String confirmationUrl
-                = event.getAppUrl() + "/regitrationConfirm.html?token=" + token;
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
 
@@ -49,8 +47,8 @@ public class RegistrationListener implements
                     "</body>\n" +
                     "</html>";
             email.setText(String.format(html, "appUrl:" + event.getAppUrl() + " - Token:" + token), true);
-            mailSender.send(mimeMessage)
-            ;
+
+            mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             e.printStackTrace();
         }

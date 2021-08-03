@@ -8,6 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 
 public interface UserSpringSecurityService extends UserDetailsService {
 
-    UserCredentialsSecurity loadSpringSecurityInContext(UserDetails userDetails, HttpServletRequest request);
+    UserCredentialsSecurity loadSpringSecurityInContext(UserApp userApp, HttpServletRequest request);
     UserDetails loadUser(UserApp userApp);
 }

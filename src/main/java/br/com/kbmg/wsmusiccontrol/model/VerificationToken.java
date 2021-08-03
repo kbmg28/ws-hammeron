@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -20,13 +21,20 @@ import java.util.Date;
 public class VerificationToken extends AbstractEntity {
     private static final int EXPIRATION = 60 * 24;
 
+    @Column(nullable = false)
     private String token;
 
     @OneToOne(targetEntity = UserApp.class, fetch = FetchType.EAGER)
     @JoinColumn(nullable = false, name = "user_app_id")
     private UserApp userApp;
 
+    @Column(nullable = false)
     private Date expiryDate;
+
+    public VerificationToken(String token, UserApp userApp) {
+        this.token = token;
+        this.userApp = userApp;
+    }
 
     private Date calculateExpiryDate(int expiryTimeInMinutes) {
         Calendar cal = Calendar.getInstance();
@@ -35,13 +43,17 @@ public class VerificationToken extends AbstractEntity {
         return new Date(cal.getTime().getTime());
     }
 
-    public VerificationToken(String token, UserApp userApp) {
-        this.token = token;
-        this.userApp = userApp;
+    public Boolean isValid() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Timestamp(cal.getTime().getTime()));
+
+        Date now = new Date(cal.getTime().getTime());
+
+        return now.before(expiryDate);
     }
 
     @PrePersist
     protected void onSave() {
-        expiryDate = calculateExpiryDate(30);
+        expiryDate = calculateExpiryDate(10);
     }
 }
