@@ -4,7 +4,6 @@ import br.com.kbmg.wsmusiccontrol.config.security.SecuredAdminOrUser;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,10 +18,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/user")
 @CrossOrigin(origins = "*")
 @SecuredAdminOrUser
-public class UserController {
-
-    @Autowired
-    ApplicationEventPublisher eventPublisher;
+public class UserController extends GenericController {
 
     @Autowired
     private UserAppService userAppService;
@@ -30,10 +26,12 @@ public class UserController {
     @GetMapping("/all")
     @Transactional
     public ResponseEntity<ResponseData<List<String>>> findAll() {
+
         List<String> collect = userAppService.findAll().stream().map(user -> user.getName() + " " + user.getEmail() + " " +
                 user.getUserPermissionList().stream().map(up -> up.getPermission().toString()).collect(Collectors.toList()))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(new ResponseData<>(collect));
+
+        return super.ok(collect);
     }
 
 }

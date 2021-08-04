@@ -23,7 +23,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/security")
 @CrossOrigin(origins = "*")
-public class SecurityController {
+public class SecurityController extends GenericController {
 
     @Autowired
     private UserAppService userAppService;
@@ -40,7 +40,7 @@ public class SecurityController {
 
         String token = securityService.validateLoginAndGetToken(loginDto);
 
-        return ResponseEntity.ok(new ResponseData<>(new JwtTokenDto(token)));
+        return super.ok(new JwtTokenDto(token));
     }
 
     @PostMapping("/token-activate/refresh")
@@ -50,22 +50,26 @@ public class SecurityController {
 
         securityService.resendMailToken(activateUserAccountRefreshDto, request);
 
-        return ResponseEntity.ok(new ResponseData<>());
+        return super.ok();
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseData<String>> registerUserAccount(
+    public ResponseEntity<ResponseData<Void>> registerUserAccount(
             @RequestBody @Valid UserDto userDto,
             HttpServletRequest request) {
+
         securityService.registerNewUserAccount(userDto, request);
-        return ResponseEntity.ok(new ResponseData<>("ok", null));
+
+        return super.ok();
     }
 
     @PostMapping("/activate")
     public ResponseEntity<ResponseData<Void>> activateUserAccount(
             @RequestBody @Valid UserTokenHashDto userTokenHashDto) {
+
         securityService.activateUserAccount(userTokenHashDto);
-        return ResponseEntity.ok(new ResponseData<>());
+
+        return super.ok();
     }
 
 }
