@@ -23,6 +23,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import java.util.Collections;
 import java.util.List;
 
+import static br.com.kbmg.wsmusiccontrol.constants.AppConstants.API_DESCRIBE;
 import static br.com.kbmg.wsmusiccontrol.constants.AppConstants.LANGUAGE;
 
 @Configuration
@@ -46,7 +47,7 @@ public class SwaggerConfig {
     private ApiInfo apiInfo() {
 
         return new ApiInfoBuilder()
-                .title ("API for controlling church music")
+                .title (API_DESCRIBE)
                 .license("Apache License Version 2.0")
                 .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0")
                 .version(buildProperties.getVersion())

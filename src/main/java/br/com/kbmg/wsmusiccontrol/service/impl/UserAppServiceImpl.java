@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ALREADY_EXISTS;
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_EMAIL_NOT_EXISTS;
+
 @Service
 public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepository> implements UserAppService {
 
@@ -20,7 +23,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @Override
     public UserApp registerNewUserAccount(UserDto userDto) {
         if (userAppRepository.findByEmail(userDto.getEmail()).isPresent()) {
-            throw new ServiceException("User already exists");
+            throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
         }
 
         UserApp userApp = new UserApp();
@@ -44,7 +47,10 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public UserApp findByEmailValidated(String email) {
-        return userAppRepository.findByEmail(email).orElseThrow(() -> new ServiceException("User with this email does not exists"));
+        return userAppRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new ServiceException(String.format(USER_EMAIL_NOT_EXISTS, email)));
     }
 
     @Override

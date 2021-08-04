@@ -152,7 +152,7 @@ springBoot {
 
 bootRun {
 
-	args = ["--spring.profiles.active=${project.properties['profile'] ?: 'test'}",
+	args = ["--spring.profiles.active=${project.properties['profile'] ?: 'h2'}",
 			"--spring.datasource.url=${project.properties['dburl'] ?: 'jdbc:h2:file:~/music-control-h2'}",
 			"--spring.datasource.username=${project.properties['dbuser'] ?: 'inmemory'}",
 			"--spring.datasource.password=${project.properties['dbpass'] ?: 'pass'}",

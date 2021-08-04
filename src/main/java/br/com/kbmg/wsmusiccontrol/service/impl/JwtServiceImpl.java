@@ -1,5 +1,9 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
+import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
+import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
@@ -26,6 +30,9 @@ public class JwtServiceImpl implements JwtService {
     @Autowired
     private UserAppService userAppService;
 
+    @Autowired
+    public MessagesService messagesService;
+
     @Override
     public String generateToken(LoginDto loginDto, UserApp userApp) {
 
@@ -33,11 +40,11 @@ public class JwtServiceImpl implements JwtService {
         Date expirationDate = new Date(today.getTime() + Long.parseLong(expiration));
 
         return Jwts.builder()
-                .setIssuer("API Music Control")
+                .setIssuer(AppConstants.API_DESCRIBE)
                 .setSubject(userApp.getId().toString())
                 .setIssuedAt(today)
-                .claim("email", userApp.getEmail())
-                .claim("name", userApp.getName())
+                .claim(JwtConstants.CLAIM_EMAIL, userApp.getEmail())
+                .claim(JwtConstants.CLAIM_NAME, userApp.getName())
                 .setExpiration(expirationDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
                 .compact();
@@ -57,7 +64,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Long validateTokenAndGetUserId(String token) {
         if (!isValidToken(token)){
-            throw new AuthorizationException("Invalid token");
+            throw new AuthorizationException(messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
         }
 
         Claims claims = Jwts.parser()

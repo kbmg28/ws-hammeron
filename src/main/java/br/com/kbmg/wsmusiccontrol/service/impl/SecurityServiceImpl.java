@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
-import br.com.kbmg.wsmusiccontrol.config.security.ValidateJwtTokenFilter;
+import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
 import br.com.kbmg.wsmusiccontrol.dto.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
@@ -22,6 +23,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.TOKEN_ACTIVATE_EXPIRED;
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ACTIVATE_ACCOUNT;
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_OR_PASSWORD_INCORRECT;
+
 @Service
 public class SecurityServiceImpl implements SecurityService {
 
@@ -37,9 +42,12 @@ public class SecurityServiceImpl implements SecurityService {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    public MessagesService messagesService;
+
     @Override
     public String validateLoginAndGetToken(LoginDto loginDto) {
-        String error = "User or password incorrect";
+        String error = messagesService.get(USER_OR_PASSWORD_INCORRECT);
         UserApp userApp = userAppService
                 .findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new AuthorizationException(error));
@@ -51,12 +59,12 @@ public class SecurityServiceImpl implements SecurityService {
         }
 
         if (!userApp.getEnabled()) {
-            throw new AuthorizationException("Please, activate the account");
+            throw new AuthorizationException(messagesService.get(USER_ACTIVATE_ACCOUNT));
         }
 
         String token = jwtService.generateToken(loginDto, userApp);
 
-        return String.format("%s%s", ValidateJwtTokenFilter.BEARER, token);
+        return String.format("%s%s", JwtConstants.BEARER, token);
     }
 
     @Override
@@ -79,7 +87,7 @@ public class SecurityServiceImpl implements SecurityService {
         if(verificationToken != null && verificationToken.isValid()) {
             userAppService.saveUserEnabled(userApp);
         } else {
-            throw new ServiceException("Token to activate has expired");
+            throw new ServiceException(messagesService.get(TOKEN_ACTIVATE_EXPIRED));
         }
     }
 

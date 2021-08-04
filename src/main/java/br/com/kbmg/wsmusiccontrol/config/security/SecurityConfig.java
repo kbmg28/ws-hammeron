@@ -53,6 +53,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private String[] publicEndPoints() {
-        return new String[] {"/error/**", "/h2-console/**", "/swagger/**", "/**.html", "/webjars/**"};
+        return new String[] {"/error/**", "/h2-console/**", "/swagger**", "/**.html", "/webjars/**"};
     }
 }

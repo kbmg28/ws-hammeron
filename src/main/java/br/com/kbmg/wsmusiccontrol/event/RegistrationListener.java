@@ -1,5 +1,8 @@
 package br.com.kbmg.wsmusiccontrol.event;
 
+import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +11,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.util.UUID;
 
@@ -21,6 +23,9 @@ public class RegistrationListener implements
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    public MessagesService messagesService;
 
     @Override
     public void onApplicationEvent(OnRegistrationCompleteEvent event) {
@@ -49,8 +54,8 @@ public class RegistrationListener implements
             email.setText(String.format(html, "appUrl:" + event.getAppUrl() + " - Token:" + token), true);
 
             mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new ServiceException(messagesService.get(KeyMessageConstants.TOKEN_ACTIVATE_FAILED_SEND));
         }
     }
 }

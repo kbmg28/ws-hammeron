@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.config.security;
 
+import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
@@ -18,10 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static br.com.kbmg.wsmusiccontrol.constants.JwtConstants.BEARER;
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.AUTHORIZATION_REQUIRED;
+
 @Slf4j
 public class ValidateJwtTokenFilter extends OncePerRequestFilter {
-
-    public static final String BEARER = "Bearer ";
 
     @Autowired
     private JwtService jwtService;
@@ -31,6 +33,9 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserAppService userAppService;
+
+    @Autowired
+    public MessagesService messagesService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
@@ -65,11 +70,12 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
 
     private UserApp authJwtTokenAndGetUser(String authorization) {
         if (Strings.isEmpty(authorization) || !authorization.startsWith(BEARER)) {
-            throw new AuthorizationException("Authorization required");
+            throw new AuthorizationException(messagesService.get(AUTHORIZATION_REQUIRED));
         }
-        String token = authorization.substring(7, authorization.length());
 
-        Long userId = jwtService.validateTokenAndGetUserId(token);
+        String jwtToken = authorization.substring(7, authorization.length());
+
+        Long userId = jwtService.validateTokenAndGetUserId(jwtToken);
 
         return userAppService.findById(userId).orElseThrow(AuthorizationException::new);
     }
