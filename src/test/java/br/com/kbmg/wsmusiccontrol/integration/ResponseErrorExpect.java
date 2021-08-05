@@ -1,4 +1,4 @@
-package integration;
+package br.com.kbmg.wsmusiccontrol.integration;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,24 +12,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public abstract class ResponseErrorExpect {
 
     public static void thenReturnHttpError400_BadRequest(ResultActions perform, String msgErrorExpected) throws Exception {
-        thenReturnHttpError(status().isBadRequest(), perform, msgErrorExpected);
+        perform.andExpect(status().isBadRequest());
+        expectMsgInBody(perform, "400 - Bad Request", msgErrorExpected);
+    }
+
+    public static void thenReturnHttpError401_Unauthorized(ResultActions perform, String msgErrorExpected) throws Exception {
+        perform.andExpect(status().isUnauthorized());
+        expectMsgInBody(perform, "401 - Unauthorized", msgErrorExpected);
     }
 
     public static void thenReturnHttpError403_Forbidden(ResultActions perform, String msgErrorExpected) throws Exception {
-        thenReturnHttpError(status().isForbidden(), perform, msgErrorExpected);
+        perform.andExpect(status().isForbidden());
+        expectMsgInBody(perform, "403 - Forbidden", msgErrorExpected);
     }
 
     public static void thenReturnHttpError403_ForbiddenWithPermission(String role, ResultActions perform, String msgErrorExpected) throws Exception {
         perform.andExpect(result -> assertEquals(String.format("Permission [%s]", role), HttpStatus.FORBIDDEN.value(), result.getResponse().getStatus()));
-        expectMsgInBody(perform, msgErrorExpected);
+        expectMsgInBody(perform, "403 - Forbidden", msgErrorExpected);
     }
 
-    private static void thenReturnHttpError(org.springframework.test.web.servlet.ResultMatcher httpStatusResultMatcher, ResultActions perform, String msgErrorExpected) throws Exception {
-        perform.andExpect(status().isForbidden());
-        expectMsgInBody(perform, msgErrorExpected);
-    }
-
-    private static void expectMsgInBody(ResultActions perform, String msgErrorExpected) throws Exception {
-        perform.andExpect(content().contentType(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.error.message").value(msgErrorExpected));
+    private static void expectMsgInBody(ResultActions perform, String httpStatus, String msgErrorExpected) throws Exception {
+        perform.andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error.httpStatus").value(httpStatus))
+                .andExpect(jsonPath("$.error.message").value(msgErrorExpected))
+        ;
     }
 }

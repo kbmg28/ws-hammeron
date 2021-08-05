@@ -1,4 +1,4 @@
-package unit;
+package br.com.kbmg.wsmusiccontrol.unit;
 
 
 import org.junit.jupiter.api.BeforeEach;

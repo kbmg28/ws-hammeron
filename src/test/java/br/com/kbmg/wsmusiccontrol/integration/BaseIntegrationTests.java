@@ -1,12 +1,14 @@
-package integration;
+package br.com.kbmg.wsmusiccontrol.integration;
 
 import br.com.kbmg.wsmusiccontrol.config.AppConfig;
-import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
+import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.repository.UserPermissionRepository;
+import builder.UserBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.tomcat.websocket.Constants;
@@ -15,9 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,9 +33,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static constants.BaseTestsConstants.TOKEN;
 
 
 @ExtendWith(SpringExtension.class)
@@ -43,11 +46,6 @@ import java.util.stream.Collectors;
 @Transactional
 @Tag("integrationTest")
 public abstract class BaseIntegrationTests {
-
-    protected static final String TOKEN = "tokenTest";
-    public static final String AUTHENTICATED_USER_TEST_EMAIL = "integration_test@test.com";
-    public static final String AUTHENTICATED_USER_TEST_NAME = "Integration test name";
-    public static final String AUTHENTICATED_USER_TEST_PASSWORD = "123456";
 
     protected static String testJsonRequest;
     protected static HttpHeaders headers;
@@ -63,10 +61,16 @@ public abstract class BaseIntegrationTests {
     protected MockMvc mockMvc;
 
     @Autowired
+    public MessagesService messagesService;
+
+    @Autowired
     protected UserAppRepository userAppRepository;
 
     @Autowired
     protected UserPermissionRepository userPermissionRepository;
+
+    @MockBean
+    protected JavaMailSender mailSender;
 
     protected void beforeAllTestsBase() {
         givenHeadersRequired();
@@ -76,7 +80,6 @@ public abstract class BaseIntegrationTests {
     protected void givenHeadersRequired() {
         headers = new HttpHeaders();
         headers.add(Constants.AUTHORIZATION_HEADER_NAME, TOKEN);
-        headers.add(AppConstants.LANGUAGE, "pt");
     }
 
     protected void givenUserAuthenticatedAdmin() {
@@ -89,34 +92,62 @@ public abstract class BaseIntegrationTests {
 
     private void saveUserAuthenticated(PermissionEnum... permission) {
         givenHeadersRequired();
-        userAppLoggedTest = new UserApp();
 
-        userAppLoggedTest.setEmail(AUTHENTICATED_USER_TEST_EMAIL);
-        userAppLoggedTest.setName(AUTHENTICATED_USER_TEST_NAME);
-        userAppLoggedTest.setEnabled(true);
-        String hashpw = BCrypt.hashpw(AUTHENTICATED_USER_TEST_PASSWORD, BCrypt.gensalt());
-        userAppLoggedTest.setPassword(hashpw);
-
+        userAppLoggedTest = UserBuilder.generateUserAppLogged();
         userAppRepository.save(userAppLoggedTest);
 
-        Set<UserPermission> userPermissions = Arrays.stream(permission).map(pe -> new UserPermission() {{
-            setPermission(pe);
-            setUserApp(userAppLoggedTest);
-        }}).collect(Collectors.toSet());
-
+        Set<UserPermission> userPermissions = UserBuilder.generateUserPermissions(userAppLoggedTest, permission);
         userPermissionRepository.saveAll(userPermissions);
+    }
+
+    protected void whenRequestGet(String urlTemplate)
+        throws Exception {
+
+        perform = mockMvc.perform(MockMvcRequestBuilders.get(urlTemplate)
+                .headers(headers)
+                .params(requestParams)
+                .contentType(MediaType.APPLICATION_JSON_VALUE));
+    }
+
+    protected <T> void whenRequestPost(String urlTemplate, T body)
+        throws Exception {
+        testJsonRequest = gson.toJson(body);
+
+        perform = mockMvc.perform(MockMvcRequestBuilders.post(urlTemplate)
+                .headers(headers)
+                .params(requestParams)
+                .content(testJsonRequest)
+                .contentType(MediaType.APPLICATION_JSON_VALUE));
+    }
+
+    protected void whenRequestDelete(String urlTemplate)
+        throws Exception {
+
+        perform = mockMvc.perform(MockMvcRequestBuilders.delete(urlTemplate)
+                .headers(headers)
+                .params(requestParams)
+                .contentType(MediaType.APPLICATION_JSON_VALUE));
+    }
+
+    protected void whenRequestPut(String urlTemplate)
+        throws Exception {
+
+        perform = mockMvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                .headers(headers)
+                .params(requestParams)
+                .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
     protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(RequestMethod requestMethod, String urlTemplate, Object... args)
         throws Exception {
         switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_Forbidden(perform, "message error");
+        ResponseErrorExpect.thenReturnHttpError403_Forbidden(perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
     }
 
     protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(PermissionEnum role, RequestMethod requestMethod, String urlTemplate,
                                                                               Object... args) throws Exception {
         switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_ForbiddenWithPermission(role.name(), perform, "message error");
+        ResponseErrorExpect.thenReturnHttpError403_ForbiddenWithPermission(role.name(), perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
     }
 
     private void switchMethodToWhenRequest(RequestMethod requestMethod, String urlTemplate, Object[] args) throws Exception {
