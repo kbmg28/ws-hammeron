@@ -2,7 +2,8 @@
 
 ## Mandatory
 
-JDK 11
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [JDK 11](https://www.oracle.com/br/java/technologies/javase-jdk11-downloads.html)
 
 ## Gradle CLI ![badge-tool-console]
 
