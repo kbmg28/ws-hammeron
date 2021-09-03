@@ -1,5 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.util.response;
 
+import br.com.kbmg.wsmusiccontrol.constants.SwaggerConstants;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

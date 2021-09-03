@@ -30,6 +30,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
         userApp.setEmail(userDto.getEmail());
         userApp.setName(userDto.getName());
+        userApp.setCellPhone(userDto.getCellPhone());
 
         String hashpw = BCrypt.hashpw(userDto.getPassword(), BCrypt.gensalt());
         userApp.setPassword(hashpw);
@@ -50,7 +51,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         return userAppRepository
                 .findByEmail(email)
                 .orElseThrow(() ->
-                        new ServiceException(String.format(USER_EMAIL_NOT_EXISTS, email)));
+                        new ServiceException( messagesService.get(String.format(USER_EMAIL_NOT_EXISTS, email)) ));
     }
 
     @Override

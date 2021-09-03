@@ -31,6 +31,9 @@ public class UserApp extends AbstractEntity {
 	private String password;
 
 	@Column(nullable = false)
+	private String cellPhone;
+
+	@Column(nullable = false)
 	private Boolean enabled;
 
 	@EqualsAndHashCode.Exclude

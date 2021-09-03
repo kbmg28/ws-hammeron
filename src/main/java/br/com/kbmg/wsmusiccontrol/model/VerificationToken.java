@@ -19,7 +19,7 @@ import java.util.Date;
 @Entity
 @Data
 public class VerificationToken extends AbstractEntity {
-    private static final int EXPIRATION = 60 * 24;
+    public static final int EXPIRATION_TIME_MINUTES = 10;
 
     @Column(nullable = false)
     private String token;
@@ -54,6 +54,6 @@ public class VerificationToken extends AbstractEntity {
 
     @PrePersist
     protected void onSave() {
-        expiryDate = calculateExpiryDate(10);
+        expiryDate = calculateExpiryDate(EXPIRATION_TIME_MINUTES);
     }
 }

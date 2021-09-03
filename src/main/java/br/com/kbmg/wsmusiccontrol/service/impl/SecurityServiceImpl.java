@@ -76,7 +76,9 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public void activateUserAccount(UserTokenHashDto userTokenHashDto) {
-        UserApp userApp = userAppService.findByEmailValidated(userTokenHashDto.getEmail());
+        String errorMessage = messagesService.get(TOKEN_ACTIVATE_EXPIRED);
+        UserApp userApp = userAppService.findByEmail(userTokenHashDto.getEmail())
+                .orElseThrow( () -> new ServiceException(messagesService.get(TOKEN_ACTIVATE_EXPIRED)));
 
         if (userApp.getEnabled()) {
             return;
@@ -87,7 +89,7 @@ public class SecurityServiceImpl implements SecurityService {
         if(verificationToken != null && verificationToken.isValid()) {
             userAppService.saveUserEnabled(userApp);
         } else {
-            throw new ServiceException(messagesService.get(TOKEN_ACTIVATE_EXPIRED));
+            throw new ServiceException(errorMessage);
         }
     }
 
@@ -103,6 +105,8 @@ public class SecurityServiceImpl implements SecurityService {
             if (userApp.getEnabled()) {
                 return;
             }
+
+            tokenRepository.findByUserApp(userApp).ifPresent(token -> tokenRepository.delete(token));
 
             publishEventSendMail(request, userApp);
         });
