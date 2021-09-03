@@ -15,8 +15,9 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 public class UserTokenHashDto {
 
-    @ApiModelProperty(example = SwaggerConstants.EMAIL_EXAMPLE)
+    @ApiModelProperty(example = SwaggerConstants.EMAIL_EXAMPLE, required = true)
     @Email
+    @NotBlank
     private String email;
 
     @NotBlank

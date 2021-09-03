@@ -12,9 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_EMAIL;
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_NAME;
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
+import static constants.BaseTestsConstants.*;
 
 public abstract class UserBuilder {
 
@@ -39,7 +37,7 @@ public abstract class UserBuilder {
     }
 
     public static UserDto generateUserDto() {
-        return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD);
+        return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD, AUTHENTICATED_USER_TEST_CELLPHONE);
     }
 
     public static ActivateUserAccountRefreshDto generateActivateUserAccountRefreshDto() {

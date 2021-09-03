@@ -17,11 +17,15 @@ public class UserDto {
     @NotBlank
     private String name;
 
-    @ApiModelProperty(example = SwaggerConstants.EMAIL_EXAMPLE)
+    @ApiModelProperty(example = SwaggerConstants.EMAIL_EXAMPLE, required = true)
     @Email
+    @NotBlank
     private String email;
 
-    @ApiModelProperty(example = SwaggerConstants.PASSWORD_EXAMPLE)
+    @NotBlank
+    private String cellPhone;
+
+    @ApiModelProperty(example = SwaggerConstants.PASSWORD_EXAMPLE, required = true)
     @NotBlank
     @Size(min = 6)
     private String password;
