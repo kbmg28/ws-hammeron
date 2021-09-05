@@ -149,15 +149,3 @@ tasks.withType(Test) { testTask ->
 springBoot {
 	buildInfo()
 }
-
-bootRun {
-
-	args = ["--spring.profiles.active=${project.properties['profile'] ?: 'h2'}",
-			"--spring.datasource.url=${project.properties['dburl'] ?: 'jdbc:h2:file:~/music-control-h2'}",
-			"--spring.datasource.username=${project.properties['dbuser'] ?: 'inmemory'}",
-			"--spring.datasource.password=${project.properties['dbpass'] ?: 'pass'}",
-			"--spring.mail.username=${project.properties['mailUser']}",
-			"--spring.mail.password=${project.properties['mailPassSocial']}"
-	]
-
-}
