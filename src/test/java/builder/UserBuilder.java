@@ -3,9 +3,11 @@ package builder;
 import br.com.kbmg.wsmusiccontrol.dto.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
+import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.Arrays;
@@ -22,6 +24,7 @@ public abstract class UserBuilder {
 
         userAppLoggedTest.setEmail(AUTHENTICATED_USER_TEST_EMAIL);
         userAppLoggedTest.setName(AUTHENTICATED_USER_TEST_NAME);
+        userAppLoggedTest.setCellPhone(AUTHENTICATED_USER_TEST_CELLPHONE);
         userAppLoggedTest.setEnabled(true);
         String hashpw = BCrypt.hashpw(AUTHENTICATED_USER_TEST_PASSWORD, BCrypt.gensalt());
         userAppLoggedTest.setPassword(hashpw);
@@ -40,6 +43,10 @@ public abstract class UserBuilder {
         return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD, AUTHENTICATED_USER_TEST_CELLPHONE);
     }
 
+    public static UserTokenHashDto generateUserTokenHashDto() {
+        return new UserTokenHashDto(AUTHENTICATED_USER_TEST_EMAIL, TOKEN);
+    }
+
     public static ActivateUserAccountRefreshDto generateActivateUserAccountRefreshDto() {
         return new ActivateUserAccountRefreshDto(AUTHENTICATED_USER_TEST_EMAIL);
     }
@@ -50,6 +57,10 @@ public abstract class UserBuilder {
 
     public static LoginDto generateLoginDto(String email, String pass) {
         return new LoginDto(email, pass);
+    }
+
+    public static VerificationToken generateVerificationToken(UserApp userApp) {
+        return new VerificationToken(TOKEN, userApp);
     }
 
 }

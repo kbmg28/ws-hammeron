@@ -48,7 +48,7 @@ import static constants.BaseTestsConstants.TOKEN;
 public abstract class BaseIntegrationTests {
 
     protected static String testJsonRequest;
-    protected static HttpHeaders headers;
+    protected static HttpHeaders headers = new HttpHeaders();
     protected static ObjectMapper objectMapper = new ObjectMapper();
     protected static Gson gson = new Gson();
     protected static UserApp userAppLoggedTest;
@@ -78,7 +78,6 @@ public abstract class BaseIntegrationTests {
     }
 
     protected void givenHeadersRequired() {
-        headers = new HttpHeaders();
         headers.add(Constants.AUTHORIZATION_HEADER_NAME, TOKEN);
     }
 
