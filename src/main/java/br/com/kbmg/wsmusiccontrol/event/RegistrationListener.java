@@ -7,8 +7,11 @@ import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
@@ -23,6 +26,7 @@ import java.util.stream.IntStream;
 import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.*;
 
 @Component
+@PropertySource("classpath:templates-html.properties")
 public class RegistrationListener implements
         ApplicationListener<OnRegistrationCompleteEvent> {
 
@@ -34,6 +38,9 @@ public class RegistrationListener implements
 
     @Autowired
     public MessagesService messagesService;
+
+    @Value("${register.confirmation.token}")
+    private String templateHtml;
 
     @Override
     public void onApplicationEvent(OnRegistrationCompleteEvent event) {
@@ -69,32 +76,20 @@ public class RegistrationListener implements
     private String generateToken() {
         IntStream ints = new SecureRandom().ints(4, 1, 9);
         AtomicReference<String> token = new AtomicReference<>("");
-        ints.forEach(num -> {
-            token.updateAndGet(v -> v + " " + num);
-        });
+        ints.forEach(num -> token.updateAndGet(v -> v + " " + num));
 
         return token.get();
     }
 
     private String getTemplateHtmlWithToken(String token, String recipientAddress) {
-        String html = "";
+        templateHtml = templateHtml.replace(MESSAGE_BEFORE_TOKEN_VARIABLE_HTML, messagesService.get("user.email.verify.title"));
+        templateHtml = templateHtml.replace(TOKEN_VARIABLE_HTML, token);
+        templateHtml = templateHtml.replace(PLEASE_CONFIRM_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt1"));
+        templateHtml = templateHtml.replace(CLIENT_EMAIL_VARIABLE_HTML, recipientAddress);
+        templateHtml = templateHtml.replace(IS_YOUR_EMAIL_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt2"));
+        templateHtml = templateHtml.replace(TIME_QUANTITY_VARIABLE_HTML, String.valueOf(VerificationToken.EXPIRATION_TIME_MINUTES));
+        templateHtml = templateHtml.replace(TIME_TYPE_VARIABLE_HTML, messagesService.get("time.type.minutes"));
 
-        try {
-            File resource = new ClassPathResource("static/templateEmail.html").getFile();
-            html = new String(Files.readAllBytes(resource.toPath()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ServiceException("Failed in load html");
-        }
-
-        html = html.replace(MESSAGE_BEFORE_TOKEN_VARIABLE_HTML, messagesService.get("user.email.verify.title"));
-        html = html.replace(TOKEN_VARIABLE_HTML, token);
-        html = html.replace(PLEASE_CONFIRM_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt1"));
-        html = html.replace(CLIENT_EMAIL_VARIABLE_HTML, recipientAddress);
-        html = html.replace(IS_YOUR_EMAIL_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt2"));
-        html = html.replace(TIME_QUANTITY_VARIABLE_HTML, String.valueOf(VerificationToken.EXPIRATION_TIME_MINUTES));
-        html = html.replace(TIME_TYPE_VARIABLE_HTML, messagesService.get("time.type.minutes"));
-
-        return html;
+        return templateHtml;
     }
 }
