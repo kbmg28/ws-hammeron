@@ -41,4 +41,9 @@ public class UserApp extends AbstractEntity {
 	@OneToMany(mappedBy = "userApp", fetch = FetchType.EAGER)
 	private Set<UserPermission> userPermissionList = new HashSet<>();
 
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
+	private Set<EventUserAppAssociation> eventUserAppAssociationList = new HashSet<>();
+
 }
