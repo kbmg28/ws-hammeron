@@ -1,4 +1,4 @@
-package br.com.kbmg.wsmusiccontrol.dto;
+package br.com.kbmg.wsmusiccontrol.dto.user;
 
 import br.com.kbmg.wsmusiccontrol.constants.SwaggerConstants;
 import io.swagger.annotations.ApiModelProperty;

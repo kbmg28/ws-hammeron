@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
-import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
+import br.com.kbmg.wsmusiccontrol.enums.MusicTypeLinkEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,9 +14,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -24,28 +21,18 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class Music extends AbstractEntity {
+public class MusicLink extends AbstractEntity {
 
 	@Column(nullable = false)
-	private String name;
+	private String link;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private MusicStatusEnum musicStatus;
+	private MusicTypeLinkEnum typeLink;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	private Singer singer;
-
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@OneToMany(mappedBy = "music", fetch = FetchType.LAZY)
-	private Set<MusicLink> musicLinkList = new HashSet<>();
-
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@OneToMany(mappedBy = "music", fetch = FetchType.LAZY)
-	private Set<EventMusicAssociation> eventMusicList = new HashSet<>();
+	private Music music;
 
 }

@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service;
 
-import br.com.kbmg.wsmusiccontrol.dto.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
 import java.util.Optional;

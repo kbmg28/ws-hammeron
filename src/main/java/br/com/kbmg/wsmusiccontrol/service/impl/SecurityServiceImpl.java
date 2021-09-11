@@ -2,10 +2,10 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
-import br.com.kbmg.wsmusiccontrol.dto.ActivateUserAccountRefreshDto;
-import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.UserDto;
-import br.com.kbmg.wsmusiccontrol.dto.UserTokenHashDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
