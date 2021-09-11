@@ -4,7 +4,7 @@ import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
-import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;

@@ -1,7 +1,11 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SecuredAdmin;
 import br.com.kbmg.wsmusiccontrol.config.security.SecuredAdminOrUser;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
+import br.com.kbmg.wsmusiccontrol.util.mapper.UserAppMapper;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/user")
@@ -23,15 +27,16 @@ public class UserController extends GenericController {
     @Autowired
     private UserAppService userAppService;
 
+    @Autowired
+    private UserAppMapper userAppMapper;
+
     @GetMapping("/all")
     @Transactional
-    public ResponseEntity<ResponseData<List<String>>> findAll() {
-
-        List<String> collect = userAppService.findAll().stream().map(user -> user.getName() + " " + user.getEmail() + " " +
-                user.getUserPermissionList().stream().map(up -> up.getPermission().toString()).collect(Collectors.toList()))
-                .collect(Collectors.toList());
-
-        return super.ok(collect);
+    @SecuredAdmin
+    public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAll() {
+        List<UserApp> entityData = userAppService.findAll();
+        Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(entityData);
+        return super.ok(viewData);
     }
 
 }

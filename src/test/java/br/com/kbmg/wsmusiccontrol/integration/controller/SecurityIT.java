@@ -1,18 +1,16 @@
 package br.com.kbmg.wsmusiccontrol.integration.controller;
 
-import br.com.kbmg.wsmusiccontrol.dto.ActivateUserAccountRefreshDto;
-import br.com.kbmg.wsmusiccontrol.dto.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.UserDto;
-import br.com.kbmg.wsmusiccontrol.dto.UserTokenHashDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.integration.BaseIntegrationTests;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
-import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
 import builder.UserBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
-import org.springframework.test.web.servlet.ResultActions;
 
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;

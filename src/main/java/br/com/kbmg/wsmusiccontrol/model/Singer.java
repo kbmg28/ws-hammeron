@@ -19,31 +19,14 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UserApp extends AbstractEntity {
+public class Singer extends AbstractEntity {
 
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false, unique = true)
-	private String email;
-
-	@Column(nullable = false)
-	private String password;
-
-	@Column(nullable = false)
-	private String cellPhone;
-
-	@Column(nullable = false)
-	private Boolean enabled;
-
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.EAGER)
-	private Set<UserPermission> userPermissionList = new HashSet<>();
-
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
-	private Set<EventUserAppAssociation> eventUserAppAssociationList = new HashSet<>();
+	@OneToMany(mappedBy = "singer", fetch = FetchType.LAZY)
+	private Set<Music> musicList = new HashSet<>();
 
 }

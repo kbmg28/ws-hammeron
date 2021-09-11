@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
-import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
+import br.com.kbmg.wsmusiccontrol.enums.MusicTypeLinkEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,22 +15,24 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UserPermission extends AbstractEntity {
+public class MusicLink extends AbstractEntity {
+
+	@Column(nullable = false)
+	private String link;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private PermissionEnum permission;
+	private MusicTypeLinkEnum typeLink;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	private UserApp userApp;
+	private Music music;
 
 }

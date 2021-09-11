@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
+import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,7 +9,11 @@ import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,31 +24,28 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UserApp extends AbstractEntity {
+public class Music extends AbstractEntity {
 
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false, unique = true)
-	private String email;
-
 	@Column(nullable = false)
-	private String password;
+	@Enumerated(EnumType.STRING)
+	private MusicStatusEnum musicStatus;
 
-	@Column(nullable = false)
-	private String cellPhone;
-
-	@Column(nullable = false)
-	private Boolean enabled;
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(nullable = false)
+	@ToString.Exclude
+	private Singer singer;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.EAGER)
-	private Set<UserPermission> userPermissionList = new HashSet<>();
+	@OneToMany(mappedBy = "music", fetch = FetchType.LAZY)
+	private Set<MusicLink> musicLinkList = new HashSet<>();
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
-	private Set<EventUserAppAssociation> eventUserAppAssociationList = new HashSet<>();
+	@OneToMany(mappedBy = "music", fetch = FetchType.LAZY)
+	private Set<EventMusicAssociation> eventMusicList = new HashSet<>();
 
 }

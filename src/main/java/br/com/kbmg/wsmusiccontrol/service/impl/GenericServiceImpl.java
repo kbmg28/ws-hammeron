@@ -29,7 +29,7 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
     private EntityManager entityManager;
 
     @Autowired
-    private R jpaRepository;
+    protected R repository;
 
     @Autowired
     public MessagesService messagesService;
@@ -50,17 +50,17 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
 
     @Override
     public Optional<T> findById(Long id) {
-        return jpaRepository.findById(id);
+        return repository.findById(id);
     }
 
     @Override
     public List<T> findAllById(Set<Long> ids) {
-        return jpaRepository.findAllById(ids);
+        return repository.findAllById(ids);
     }
 
     @Override
     public List<T> findAll() {
-        return this.jpaRepository.findAll();
+        return this.repository.findAll();
     }
 
     @Override
@@ -78,23 +78,23 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
     @Override
     public void deleteById(Long id) {
         this.findById(id);
-        jpaRepository.deleteById(id);
+        repository.deleteById(id);
     }
 
     @Override
     public void deleteByIdValidated(Long id, String msgError) {
         this.findByIdValidated(id, msgError);
-        jpaRepository.deleteById(id);
+        repository.deleteById(id);
     }
 
     @Override
     public void deleteAllById(List<Long> ids) {
-        Set<Long> notExist = ids.stream().filter(id -> jpaRepository.findById(id).isEmpty()).collect(Collectors.toSet());
+        Set<Long> notExist = ids.stream().filter(id -> repository.findById(id).isEmpty()).collect(Collectors.toSet());
 
         if (!notExist.isEmpty())
             throw new EntityNotFoundException("Not found: " + notExist);
 
-        ids.forEach(id -> jpaRepository.deleteById(id));
+        ids.forEach(id -> repository.deleteById(id));
     }
 
     @Override
@@ -104,17 +104,17 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
 
     @Override
     public void deleteInBatch(Collection<T> entities, int size) {
-        Lists.partition(new ArrayList<>(entities), size).forEach(jpaRepository::deleteAllInBatch);
+        Lists.partition(new ArrayList<>(entities), size).forEach(repository::deleteAllInBatch);
     }
 
     @Override
     public Page<T> findPaginated(int page, int size, Direction direction, String sortProperty) {
-        return jpaRepository.findAll(PageRequest.of(page, size, direction, sortProperty));
+        return repository.findAll(PageRequest.of(page, size, direction, sortProperty));
     }
 
     @Override
     public List<T> saveAll(Iterable<T> entities) {
-        return jpaRepository.saveAll(entities);
+        return repository.saveAll(entities);
     }
 
     @Override
@@ -125,12 +125,12 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
 
     @Override
     public List<T> findAll(Sort sort) {
-        return jpaRepository.findAll(sort);
+        return repository.findAll(sort);
     }
 
     @Override
     public void flush() {
-        jpaRepository.flush();
+        repository.flush();
     }
 
     @Override
@@ -141,12 +141,12 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
 
     @Override
     public void delete(T entity) {
-        jpaRepository.delete(entity);
+        repository.delete(entity);
     }
 
     private T saveOrUpdate(T entity) {
         try {
-            return jpaRepository.save(entity);
+            return repository.save(entity);
         } catch (Exception e) {
             e.printStackTrace();
             throw new ServiceException("Failed to save");
