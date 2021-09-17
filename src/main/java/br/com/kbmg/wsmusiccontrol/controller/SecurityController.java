@@ -1,9 +1,10 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
-import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.JwtTokenDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
@@ -43,31 +44,50 @@ public class SecurityController extends GenericController {
         return super.ok(new JwtTokenDto(token));
     }
 
-    @PostMapping("/token-activate/refresh")
-    public ResponseEntity<ResponseData<Void>> resendMailToken(
+    @PostMapping("/password-recovery")
+    public ResponseEntity<ResponseData<Void>> passwordRecovery(
             @RequestBody @Valid ActivateUserAccountRefreshDto activateUserAccountRefreshDto,
             HttpServletRequest request) {
 
-        securityService.resendMailToken(activateUserAccountRefreshDto, request);
+        securityService.passwordRecovery(activateUserAccountRefreshDto, request);
 
         return super.ok();
     }
 
     @PostMapping("/register")
     public ResponseEntity<ResponseData<Void>> registerUserAccount(
-            @RequestBody @Valid UserDto userDto,
+            @RequestBody @Valid RegisterDto registerDto,
             HttpServletRequest request) {
 
-        securityService.registerNewUserAccount(userDto, request);
+        securityService.registerNewUserAccount(registerDto, request);
 
         return super.ok();
     }
 
-    @PostMapping("/activate")
+    @PostMapping("/register/password")
+    public ResponseEntity<ResponseData<Void>> registerUserPassword(
+            @RequestBody @Valid RegisterPasswordDto registerPasswordDto) {
+
+        userAppService.registerUserPassword(registerPasswordDto);
+
+        return super.ok();
+    }
+
+    @PostMapping("/register/token")
     public ResponseEntity<ResponseData<Void>> activateUserAccount(
             @RequestBody @Valid UserTokenHashDto userTokenHashDto) {
 
         securityService.activateUserAccount(userTokenHashDto);
+
+        return super.ok();
+    }
+
+    @PostMapping("/register/token/refresh")
+    public ResponseEntity<ResponseData<Void>> resendMailToken(
+            @RequestBody @Valid ActivateUserAccountRefreshDto activateUserAccountRefreshDto,
+            HttpServletRequest request) {
+
+        securityService.resendMailToken(activateUserAccountRefreshDto, request);
 
         return super.ok();
     }

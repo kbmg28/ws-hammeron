@@ -40,7 +40,7 @@ public abstract class UserBuilder {
     }
 
     public static UserDto generateUserDto() {
-        return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD, AUTHENTICATED_USER_TEST_CELLPHONE);
+        return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_CELLPHONE);
     }
 
     public static UserTokenHashDto generateUserTokenHashDto() {

@@ -161,7 +161,7 @@ class SecurityIT extends BaseIntegrationTests {
     }
 
     private void whenRequestResendMailToken() throws Exception {
-        super.whenRequestPost("/security/token-activate/refresh", activateUserAccountRefreshDtoTest);
+        super.whenRequestPost("/security/register/token/refresh", activateUserAccountRefreshDtoTest);
     }
 
     private void whenRequestRegisterUserAccount() throws Exception {
@@ -169,7 +169,7 @@ class SecurityIT extends BaseIntegrationTests {
     }
 
     private void whenRequestActivateUserAccount() throws Exception {
-        super.whenRequestPost("/security/activate", userTokenHashDtoTest);
+        super.whenRequestPost("/security/register/token", userTokenHashDtoTest);
     }
 
     private void thenShouldReturnJwtToken() throws Exception {

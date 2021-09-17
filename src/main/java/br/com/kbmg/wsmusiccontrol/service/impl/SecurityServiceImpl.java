@@ -4,8 +4,9 @@ import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
+import br.com.kbmg.wsmusiccontrol.event.OnPasswordRecoveryEvent;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
@@ -68,7 +69,7 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public void registerNewUserAccount(UserDto userDto, HttpServletRequest request) {
+    public void registerNewUserAccount(RegisterDto userDto, HttpServletRequest request) {
         UserApp registered = userAppService.registerNewUserAccount(userDto);
 
         publishEventSendMail(request, registered);
@@ -112,15 +113,32 @@ public class SecurityServiceImpl implements SecurityService {
         });
     }
 
+    @Override
+    public void passwordRecovery(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
+        userAppService.findByEmail(activateUserAccountRefreshDto.getEmail())
+                .ifPresent(userApp -> publishEventPasswordRecovery(request, userApp));
+    }
+
     private void publishEventSendMail(HttpServletRequest request, UserApp registered) {
-        String appUrl = ServletUriComponentsBuilder
+        String appUrl = getAppUrl(request);
+
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered,
+                request.getLocale(), appUrl));
+    }
+
+    private void publishEventPasswordRecovery(HttpServletRequest request, UserApp userApp) {
+        String appUrl = getAppUrl(request);
+
+        eventPublisher.publishEvent(new OnPasswordRecoveryEvent(userApp,
+                request.getLocale(), appUrl));
+    }
+
+    private String getAppUrl(HttpServletRequest request) {
+        return ServletUriComponentsBuilder
                 .fromRequestUri(request)
                 .replacePath(null)
                 .build()
                 .toUriString();
-
-        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered,
-                request.getLocale(), appUrl));
     }
 
 }
