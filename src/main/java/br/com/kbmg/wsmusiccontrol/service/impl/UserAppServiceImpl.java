@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
@@ -17,7 +18,7 @@ import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_EMAI
 public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepository> implements UserAppService {
 
     @Override
-    public UserApp registerNewUserAccount(UserDto userDto) {
+    public UserApp registerNewUserAccount(RegisterDto userDto) {
         if (repository.findByEmail(userDto.getEmail()).isPresent()) {
             throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
         }
@@ -27,12 +28,20 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         userApp.setEmail(userDto.getEmail());
         userApp.setName(userDto.getName());
         userApp.setCellPhone(userDto.getCellPhone());
-
-        String hashpw = BCrypt.hashpw(userDto.getPassword(), BCrypt.gensalt());
-        userApp.setPassword(hashpw);
         userApp.setEnabled(false);
 
         return repository.save(userApp);
+    }
+
+    @Override
+    public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
+        this.findByEmail(registerPasswordDto.getEmail()).ifPresent(user -> {
+
+            String hashpw = BCrypt.hashpw(registerPasswordDto.getPassword(), BCrypt.gensalt());
+            user.setPassword(hashpw);
+
+            repository.save(user);
+        });
     }
 
     @Override
@@ -56,4 +65,5 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     public Optional<UserApp> findByEmail(String email) {
         return repository.findByEmail(email);
     }
+
 }

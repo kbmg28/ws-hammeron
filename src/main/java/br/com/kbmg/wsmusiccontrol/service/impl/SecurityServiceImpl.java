@@ -4,7 +4,7 @@ import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
@@ -68,7 +68,7 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public void registerNewUserAccount(UserDto userDto, HttpServletRequest request) {
+    public void registerNewUserAccount(RegisterDto userDto, HttpServletRequest request) {
         UserApp registered = userAppService.registerNewUserAccount(userDto);
 
         publishEventSendMail(request, registered);
