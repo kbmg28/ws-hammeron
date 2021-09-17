@@ -12,4 +12,5 @@ public interface UserAppService extends GenericService<UserApp>{
     UserApp findByEmailValidated(String email);
     Optional<UserApp> findByEmail(String email);
     void registerUserPassword(RegisterPasswordDto registerPasswordDto);
+    void encodePasswordAndSave(UserApp userApp, String password);
 }

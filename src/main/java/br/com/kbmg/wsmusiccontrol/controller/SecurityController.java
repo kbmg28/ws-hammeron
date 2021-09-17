@@ -44,6 +44,16 @@ public class SecurityController extends GenericController {
         return super.ok(new JwtTokenDto(token));
     }
 
+    @PostMapping("/password-recovery")
+    public ResponseEntity<ResponseData<Void>> passwordRecovery(
+            @RequestBody @Valid ActivateUserAccountRefreshDto activateUserAccountRefreshDto,
+            HttpServletRequest request) {
+
+        securityService.passwordRecovery(activateUserAccountRefreshDto, request);
+
+        return super.ok();
+    }
+
     @PostMapping("/register")
     public ResponseEntity<ResponseData<Void>> registerUserAccount(
             @RequestBody @Valid RegisterDto registerDto,

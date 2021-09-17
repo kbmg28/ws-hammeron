@@ -35,13 +35,15 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
-        this.findByEmail(registerPasswordDto.getEmail()).ifPresent(user -> {
+        this.findByEmail(registerPasswordDto.getEmail()).ifPresent(user -> this.encodePasswordAndSave(user, registerPasswordDto.getPassword()));
+    }
 
-            String hashpw = BCrypt.hashpw(registerPasswordDto.getPassword(), BCrypt.gensalt());
-            user.setPassword(hashpw);
+    @Override
+    public void encodePasswordAndSave(UserApp userApp, String password) {
+        String hashpw = BCrypt.hashpw(password, BCrypt.gensalt());
+        userApp.setPassword(hashpw);
 
-            repository.save(user);
-        });
+        repository.save(userApp);
     }
 
     @Override

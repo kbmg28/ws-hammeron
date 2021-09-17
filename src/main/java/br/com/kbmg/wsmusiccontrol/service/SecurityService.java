@@ -19,4 +19,7 @@ public interface SecurityService {
     void createVerificationToken(UserApp userApp, String token);
 
     void resendMailToken(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request);
+
+    void passwordRecovery(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request);
+
 }
