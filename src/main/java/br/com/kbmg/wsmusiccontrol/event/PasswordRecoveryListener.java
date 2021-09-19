@@ -81,14 +81,14 @@ public class PasswordRecoveryListener implements
     }
 
     private String getTemplateHtmlWithToken(String token, String recipientAddress) {
-        templateHtml = templateHtml.replace(MESSAGE_BEFORE_TOKEN_VARIABLE_HTML, messagesService.get("user.email.password.recovery.title"));
-        templateHtml = templateHtml.replace(TOKEN_VARIABLE_HTML, token);
-        templateHtml = templateHtml.replace(PLEASE_CONFIRM_VARIABLE_HTML, messagesService.get("user.email.password.recovery.second.message.pt1"));
-        templateHtml = templateHtml.replace(CLIENT_EMAIL_VARIABLE_HTML, recipientAddress);
-        templateHtml = templateHtml.replace(IS_YOUR_EMAIL_VARIABLE_HTML, messagesService.get("user.email.password.recovery.second.message.pt2"));
-        templateHtml = templateHtml.replace(TIME_QUANTITY_VARIABLE_HTML, String.valueOf(VerificationToken.EXPIRATION_TIME_MINUTES));
-        templateHtml = templateHtml.replace(TIME_TYPE_VARIABLE_HTML, messagesService.get("time.type.minutes"));
+        String emailToClient = templateHtml.replace(MESSAGE_BEFORE_TOKEN_VARIABLE_HTML, messagesService.get("user.email.password.recovery.title"));
+        emailToClient = emailToClient.replace(TOKEN_VARIABLE_HTML, token);
+        emailToClient = emailToClient.replace(PLEASE_CONFIRM_VARIABLE_HTML, messagesService.get("user.email.password.recovery.second.message.pt1"));
+        emailToClient = emailToClient.replace(CLIENT_EMAIL_VARIABLE_HTML, recipientAddress);
+        emailToClient = emailToClient.replace(IS_YOUR_EMAIL_VARIABLE_HTML, messagesService.get("user.email.password.recovery.second.message.pt2"));
+        emailToClient = emailToClient.replace(TIME_QUANTITY_VARIABLE_HTML, String.valueOf(VerificationToken.EXPIRATION_TIME_MINUTES));
+        emailToClient = emailToClient.replace(TIME_TYPE_VARIABLE_HTML, messagesService.get("time.type.minutes"));
 
-        return templateHtml;
+        return emailToClient;
     }
 }

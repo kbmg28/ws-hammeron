@@ -10,20 +10,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import javax.mail.internet.MimeMessage;
-import java.io.File;
-import java.nio.file.Files;
 import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
-import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.*;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.CLIENT_EMAIL_VARIABLE_HTML;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.IS_YOUR_EMAIL_VARIABLE_HTML;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.MESSAGE_BEFORE_TOKEN_VARIABLE_HTML;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.PLEASE_CONFIRM_VARIABLE_HTML;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.TIME_QUANTITY_VARIABLE_HTML;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.TIME_TYPE_VARIABLE_HTML;
+import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.TOKEN_VARIABLE_HTML;
 
 @Component
 @PropertySource("classpath:templates-html.properties")
@@ -82,14 +84,14 @@ public class RegistrationListener implements
     }
 
     private String getTemplateHtmlWithToken(String token, String recipientAddress) {
-        templateHtml = templateHtml.replace(MESSAGE_BEFORE_TOKEN_VARIABLE_HTML, messagesService.get("user.email.verify.title"));
-        templateHtml = templateHtml.replace(TOKEN_VARIABLE_HTML, token);
-        templateHtml = templateHtml.replace(PLEASE_CONFIRM_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt1"));
-        templateHtml = templateHtml.replace(CLIENT_EMAIL_VARIABLE_HTML, recipientAddress);
-        templateHtml = templateHtml.replace(IS_YOUR_EMAIL_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt2"));
-        templateHtml = templateHtml.replace(TIME_QUANTITY_VARIABLE_HTML, String.valueOf(VerificationToken.EXPIRATION_TIME_MINUTES));
-        templateHtml = templateHtml.replace(TIME_TYPE_VARIABLE_HTML, messagesService.get("time.type.minutes"));
+        String emailToClient = templateHtml.replace(MESSAGE_BEFORE_TOKEN_VARIABLE_HTML, messagesService.get("user.email.verify.title"));
+        emailToClient = emailToClient.replace(TOKEN_VARIABLE_HTML, token);
+        emailToClient = emailToClient.replace(PLEASE_CONFIRM_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt1"));
+        emailToClient = emailToClient.replace(CLIENT_EMAIL_VARIABLE_HTML, recipientAddress);
+        emailToClient = emailToClient.replace(IS_YOUR_EMAIL_VARIABLE_HTML, messagesService.get("user.email.verify.confirm.second.message.pt2"));
+        emailToClient = emailToClient.replace(TIME_QUANTITY_VARIABLE_HTML, String.valueOf(VerificationToken.EXPIRATION_TIME_MINUTES));
+        emailToClient = emailToClient.replace(TIME_TYPE_VARIABLE_HTML, messagesService.get("time.type.minutes"));
 
-        return templateHtml;
+        return emailToClient;
     }
 }
