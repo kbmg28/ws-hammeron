@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ALREADY_EXISTS;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_EMAIL_NOT_EXISTS;
@@ -19,18 +20,28 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public UserApp registerNewUserAccount(RegisterDto userDto) {
-        if (repository.findByEmail(userDto.getEmail()).isPresent()) {
-            throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
+        AtomicReference<UserApp> userAppAtomicReference = new AtomicReference<>(null);
+
+        repository.findByEmail(userDto.getEmail()).ifPresent(userAppInDatabase -> {
+            if (userAppInDatabase.getEnabled()) {
+                throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
+            }
+            userAppAtomicReference.set(userAppInDatabase);
+        });
+
+        if (userAppAtomicReference.get() == null) {
+            UserApp newUserApp = new UserApp();
+
+            newUserApp.setEmail(userDto.getEmail());
+            newUserApp.setName(userDto.getName());
+            newUserApp.setCellPhone(userDto.getCellPhone());
+            newUserApp.setEnabled(false);
+            repository.save(newUserApp);
+
+            userAppAtomicReference.set(newUserApp);
         }
 
-        UserApp userApp = new UserApp();
-
-        userApp.setEmail(userDto.getEmail());
-        userApp.setName(userDto.getName());
-        userApp.setCellPhone(userDto.getCellPhone());
-        userApp.setEnabled(false);
-
-        return repository.save(userApp);
+        return userAppAtomicReference.get();
     }
 
     @Override
