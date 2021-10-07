@@ -1,5 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
+import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.AbstractCaptchaService;
+import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
 import br.com.kbmg.wsmusiccontrol.dto.JwtTokenDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,10 +38,14 @@ public class SecurityController extends GenericController {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private AbstractCaptchaService recaptchaService;
+
+
     @PostMapping("/token-login")
     public ResponseEntity<ResponseData<JwtTokenDto>> loginAndGetToken(
-            @RequestBody @Valid LoginDto loginDto) {
-
+            @RequestBody @Valid LoginDto loginDto, @RequestParam(name="g-recaptcha-response") String recaptchaResponse) {
+        recaptchaService.processResponse(recaptchaResponse, RecaptchaEnum.LOGIN_ACTION.getValue());
         String token = securityService.validateLoginAndGetToken(loginDto);
 
         return super.ok(new JwtTokenDto(token));

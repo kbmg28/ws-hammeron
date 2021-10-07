@@ -11,6 +11,7 @@ public abstract class KeyMessageConstants {
     public static final String ERROR_404_DEFAULT = "error.404.default";
     public static final String ERROR_403_DEFAULT = "error.403.default";
     public static final String ERROR_401_DEFAULT = "error.401.default";
+    public static final String ERROR_422_DEFAULT = "error.422.default";
 
     public static final String TOKEN_JWT_INVALID = "token.jwt.invalid";
     public static final String TOKEN_ACTIVATE_EXPIRED = "token.activate.expired";

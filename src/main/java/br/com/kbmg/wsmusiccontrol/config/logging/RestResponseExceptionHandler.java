@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.config.logging;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
+import br.com.kbmg.wsmusiccontrol.exception.LockedClientException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseError;
@@ -34,6 +35,7 @@ import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.DATA_INVA
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.ERROR_401_DEFAULT;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.ERROR_403_DEFAULT;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.ERROR_409_DEFAULT;
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.ERROR_422_DEFAULT;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.ERROR_500_DEFAULT;
 
 @Slf4j
@@ -80,6 +82,12 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     public ResponseEntity<ResponseData<?>> handleAccessDeniedException(final AuthorizationException ex, final WebRequest request) {
         String mes = ex.getMessage() == null ? messagesService.get(ERROR_401_DEFAULT) : ex.getMessage();
         return generatedError(mes, HttpStatus.UNAUTHORIZED, ex);
+    }
+
+    @ExceptionHandler({LockedClientException.class})
+    public ResponseEntity<ResponseData<?>> handleLockedClientException(final LockedClientException ex, final WebRequest request) {
+        String mes = ex.getMessage() == null ? messagesService.get(ERROR_422_DEFAULT) : ex.getMessage();
+        return generatedError(mes, HttpStatus.LOCKED, ex);
     }
 
     @ExceptionHandler({HttpMessageConversionException.class})
