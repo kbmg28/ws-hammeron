@@ -7,6 +7,19 @@
         </encoder>
     </appender>
 
+    <appender name="SYSLOG-TLS" class="com.papertrailapp.logback.Syslog4jAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%-5level %logger{35}: %m%n%xEx</pattern>
+        </layout>
+
+        <syslogConfig class="org.productivity.java.syslog4j.impl.net.tcp.ssl.SSLTCPNetSyslogConfig">
+            <!-- program name to log as -->
+            <ident>java-app</ident>
+            <!-- max log message length in bytes -->
+            <maxMessageLength>128000</maxMessageLength>
+        </syslogConfig>
+    </appender>
+
     <springProfile name="!heroku">
         <root level="INFO">
             <appender-ref ref="STDOUT" />
@@ -14,14 +27,8 @@
     </springProfile>
 
     <springProfile name="heroku">
-        <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
-        </appender>
-        <logger name="jsonLogger" additivity="false" level="DEBUG">
-            <appender-ref ref="consoleAppender"/>
-        </logger>
         <root level="INFO">
-            <appender-ref ref="consoleAppender"/>
+            <appender-ref ref="SYSLOG-TLS" />
         </root>
     </springProfile>
 

@@ -64,8 +64,6 @@ dependencies {
 	implementation group: 'org.passay', name: 'passay', version: '1.6.1'
 	// https://mvnrepository.com/artifact/com.papertrailapp/logback-syslog4j
 	implementation group: 'com.papertrailapp', name: 'logback-syslog4j', version: '1.0.0'
-	// https://mvnrepository.com/artifact/net.logstash.logback/logstash-logback-encoder
-	implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '3.0'
 
 }
 
