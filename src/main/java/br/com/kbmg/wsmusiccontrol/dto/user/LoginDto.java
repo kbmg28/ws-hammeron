@@ -1,7 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.dto.user;
 
 import br.com.kbmg.wsmusiccontrol.constants.SwaggerConstants;
-import com.sun.istack.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
