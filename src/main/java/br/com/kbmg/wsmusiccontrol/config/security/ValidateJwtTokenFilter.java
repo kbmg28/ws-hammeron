@@ -49,7 +49,6 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
                 this.loadUserSpringSecurity(userApp, request);
 
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
                 if (e instanceof AuthorizationException) {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
                     return;
@@ -70,7 +69,7 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
 
     private UserApp authJwtTokenAndGetUser(String authorization) {
         if (Strings.isEmpty(authorization) || !authorization.startsWith(BEARER)) {
-            throw new AuthorizationException(messagesService.get(AUTHORIZATION_REQUIRED));
+            throw new AuthorizationException(null, messagesService.get(AUTHORIZATION_REQUIRED));
         }
 
         String jwtToken = authorization.substring(7, authorization.length());

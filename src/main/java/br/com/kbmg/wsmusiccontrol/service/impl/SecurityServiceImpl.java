@@ -48,19 +48,20 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public String validateLoginAndGetToken(LoginDto loginDto) {
+        String email = loginDto.getEmail();
         String error = messagesService.get(USER_OR_PASSWORD_INCORRECT);
         UserApp userApp = userAppService
-                .findByEmail(loginDto.getEmail())
-                .orElseThrow(() -> new AuthorizationException(error));
+                .findByEmail(email)
+                .orElseThrow(() -> new AuthorizationException(email, error));
 
         boolean isCorrectPassword = BCrypt.checkpw(loginDto.getPassword(), userApp.getPassword());
 
         if (!isCorrectPassword) {
-            throw new AuthorizationException(error);
+            throw new AuthorizationException(email, error);
         }
 
         if (!userApp.getEnabled()) {
-            throw new AuthorizationException(messagesService.get(USER_ACTIVATE_ACCOUNT));
+            throw new AuthorizationException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
         }
 
         String token = jwtService.generateToken(loginDto, userApp);

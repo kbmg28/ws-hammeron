@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class LogObject {
+public class LogTraceApp {
     private UserCredentialsSecurity credentials;
     private String className;
     private Object methodName;

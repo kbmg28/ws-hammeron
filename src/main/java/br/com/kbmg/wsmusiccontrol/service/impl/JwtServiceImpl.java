@@ -64,7 +64,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public Long validateTokenAndGetUserId(String token) {
         if (!isValidToken(token)){
-            throw new AuthorizationException(messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
+            throw new AuthorizationException(null, messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
         }
 
         Claims claims = Jwts.parser()
