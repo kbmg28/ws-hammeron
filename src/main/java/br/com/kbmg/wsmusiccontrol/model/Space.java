@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
+import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,14 +24,14 @@ import java.util.Set;
 @ToString(callSuper = true)
 public class Space extends AbstractEntity {
 
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private String name;
 
 	@Column(nullable = false)
 	private String justification;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(nullable = false)
+	@JoinColumn
 	@ToString.Exclude
 	private UserApp requestedBy;
 
@@ -45,6 +46,6 @@ public class Space extends AbstractEntity {
 	private Set<EventSpaceAssociation> eventSpaceAssociationList = new HashSet<>();
 
 	public boolean isApproved() {
-		return this.approvedBy != null;
+		return this.approvedBy != null || name.equals(KeyMessageConstants.PUBLIC_SPACE);
 	}
 }
