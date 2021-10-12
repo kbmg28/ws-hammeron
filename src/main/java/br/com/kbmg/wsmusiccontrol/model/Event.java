@@ -32,6 +32,6 @@ public class Event extends AbstractEntity {
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
-	private Set<EventUserAppAssociation> eventUserAppAssociationList = new HashSet<>();
+	private Set<EventSpaceAssociation> eventSpaceAssociationList = new HashSet<>();
 
 }

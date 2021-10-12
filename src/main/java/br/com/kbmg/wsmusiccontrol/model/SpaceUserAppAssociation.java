@@ -17,12 +17,12 @@ import javax.persistence.ManyToOne;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class EventUserAppAssociation extends AbstractEntity {
+public class SpaceUserAppAssociation extends AbstractEntity {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	private Event event;
+	private Space space;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)

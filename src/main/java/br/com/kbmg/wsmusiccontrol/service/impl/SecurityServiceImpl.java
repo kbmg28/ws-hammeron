@@ -10,11 +10,13 @@ import br.com.kbmg.wsmusiccontrol.event.OnPasswordRecoveryEvent;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
+import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
+import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -39,6 +41,9 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private SpaceUserAppAssociationService spaceUserAppAssociationService;
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -93,6 +98,8 @@ public class SecurityServiceImpl implements SecurityService {
         } else {
             throw new ServiceException(errorMessage);
         }
+
+        spaceUserAppAssociationService.createAssociationWithPublicSpace(userApp);
     }
 
     @Override

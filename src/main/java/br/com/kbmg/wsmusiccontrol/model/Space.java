@@ -9,6 +9,8 @@ import lombok.ToString;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,31 +21,30 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class UserApp extends AbstractEntity {
+public class Space extends AbstractEntity {
 
 	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false, unique = true)
-	private String email;
-
-	@Column
-	private String password;
-
 	@Column(nullable = false)
-	private String cellPhone;
+	private String justification;
 
-	@Column(nullable = false)
-	private Boolean enabled;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false)
+	@ToString.Exclude
+	private UserApp requestedBy;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn
+	@ToString.Exclude
+	private UserApp approvedBy;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.EAGER)
-	private Set<UserPermission> userPermissionList = new HashSet<>();
+	@OneToMany(mappedBy = "space", fetch = FetchType.LAZY)
+	private Set<EventSpaceAssociation> eventSpaceAssociationList = new HashSet<>();
 
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
-	private Set<SpaceUserAppAssociation> spaceUserAppAssociationList = new HashSet<>();
-
+	public boolean isApproved() {
+		return this.approvedBy != null;
+	}
 }
