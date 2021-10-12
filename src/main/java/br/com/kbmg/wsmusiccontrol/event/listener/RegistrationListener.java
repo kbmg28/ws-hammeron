@@ -1,7 +1,8 @@
-package br.com.kbmg.wsmusiccontrol.event;
+package br.com.kbmg.wsmusiccontrol.event.listener;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
@@ -50,7 +51,7 @@ public class RegistrationListener implements
     }
 
     private void confirmRegistration(OnRegistrationCompleteEvent event) {
-        UserApp userApp = event.getUserApp();
+        UserApp userApp = event.getData();
 
         String recipientAddress = userApp.getEmail();
         String subject = messagesService.get("user.email.verify.subject");

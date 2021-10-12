@@ -1,5 +1,5 @@
 package br.com.kbmg.wsmusiccontrol.enums;
 
 public enum PermissionEnum {
-    ADMIN, USER
+    SYS_ADMIN, ADMIN, USER
 }

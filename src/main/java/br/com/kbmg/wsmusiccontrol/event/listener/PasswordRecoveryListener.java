@@ -1,6 +1,7 @@
-package br.com.kbmg.wsmusiccontrol.event;
+package br.com.kbmg.wsmusiccontrol.event.listener;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.event.OnPasswordRecoveryEvent;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
@@ -51,7 +52,7 @@ public class PasswordRecoveryListener implements
     }
 
     private void recoveryPassword(OnPasswordRecoveryEvent event) {
-        UserApp userApp = event.getUserApp();
+        UserApp userApp = event.getData();
 
         String recipientAddress = userApp.getEmail();
         String subject = messagesService.get("user.email.password.recovery.subject");
