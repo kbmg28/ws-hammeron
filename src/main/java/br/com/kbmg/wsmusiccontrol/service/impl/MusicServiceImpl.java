@@ -6,14 +6,17 @@ import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.MusicLink;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
+import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
 import br.com.kbmg.wsmusiccontrol.service.MusicLinkService;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
 import br.com.kbmg.wsmusiccontrol.service.SingerService;
+import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -27,6 +30,9 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Autowired
     private MusicLinkService musicLinkService;
+
+    @Autowired
+    private SpaceService spaceService;
 
     @Override
     public Music createMusic(MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
@@ -80,6 +86,12 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
         musicLinkService.updateMusicLink(musicInDatabase, musicWithSingerAndLinksDto.getLinks());
         return musicMapper.updateMusic(musicInDatabase, musicUpdated);
+    }
+
+    @Override
+    public List<Music> findAllBySpace(Long spaceId) {
+        Space space = spaceService.findByIdValidated(spaceId);
+        return repository.findAllBySpace(space);
     }
 
     private void validateAssociationBetweenMusicAndSinger(Music music, Singer singer) {

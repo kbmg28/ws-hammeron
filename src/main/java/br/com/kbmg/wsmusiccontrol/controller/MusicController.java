@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/musics")
+@RequestMapping("/api/spaces/{space-id}/musics")
 @CrossOrigin(origins = "*")
 @SecuredAdminOrUser
 public class MusicController extends GenericController {
@@ -44,8 +44,9 @@ public class MusicController extends GenericController {
 
     @GetMapping
     @Transactional
-    public ResponseEntity<ResponseData<Set<MusicWithSingerAndLinksDto>>> findAllMusic() {
-        List<Music> entityData = musicService.findAll();
+    public ResponseEntity<ResponseData<Set<MusicWithSingerAndLinksDto>>> findAllMusic(
+            @PathVariable("space-id") Long spaceId) {
+        List<Music> entityData = musicService.findAllBySpace(spaceId);
         Set<MusicWithSingerAndLinksDto> viewData = musicMapper.toMusicWithSingerAndLinksDtoList(entityData);
         return super.ok(viewData);
     }
@@ -53,6 +54,7 @@ public class MusicController extends GenericController {
     @GetMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> findById(
+            @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic) {
         Music entityData = musicService.findByIdValidated(idMusic);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
@@ -61,7 +63,8 @@ public class MusicController extends GenericController {
 
     @GetMapping("/singers")
     @Transactional
-    public ResponseEntity<ResponseData<Set<SingerDto>>> findAllSinger() {
+    public ResponseEntity<ResponseData<Set<SingerDto>>> findAllSinger(
+            @PathVariable("space-id") Long spaceId) {
         List<Singer> entityData = singerService.findAll();
         Set<SingerDto> viewData = musicMapper.toSingerDtoList(entityData);
         return super.ok(viewData);
@@ -70,6 +73,7 @@ public class MusicController extends GenericController {
     @PostMapping
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> createMusic(
+            @PathVariable("space-id") Long spaceId,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
 
         Music entityData = musicService.createMusic(musicWithSingerAndLinksDto);
@@ -81,6 +85,7 @@ public class MusicController extends GenericController {
     @PutMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> updateMusic(
+            @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Music entityData = musicService.updateMusic(idMusic, musicWithSingerAndLinksDto);
@@ -91,6 +96,7 @@ public class MusicController extends GenericController {
     @PutMapping("/{id-music}/status/{new-status}")
     @Transactional
     public ResponseEntity<ResponseData<Void>> updateStatusMusic(
+            @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic,
             @PathVariable("new-status") MusicStatusEnum newStatus) {
         musicService.updateStatusMusic(idMusic, newStatus);
@@ -100,6 +106,7 @@ public class MusicController extends GenericController {
     @DeleteMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<Void>> deleteMusic(
+            @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic) {
         musicService.deleteMusic(idMusic);
         return super.ok();

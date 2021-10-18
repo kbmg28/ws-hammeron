@@ -55,4 +55,11 @@ public class SpaceServiceImpl
 
         spaceRequestProducer.publishEvent(request, space);
     }
+
+    @Override
+    public Space findByIdValidated(Long spaceId) {
+        return repository.findById(spaceId)
+                .orElseThrow(() -> new ServiceException(
+                        messagesService.get("space.not.exist")));
+    }
 }

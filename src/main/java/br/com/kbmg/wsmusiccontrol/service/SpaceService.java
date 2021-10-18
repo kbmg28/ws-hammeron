@@ -9,4 +9,6 @@ public interface SpaceService extends GenericService<Space>{
     Space findOrCreatePublicSpace();
 
     void requestNewSpaceForUser(SpaceRequestDto spaceRequestDto, HttpServletRequest request);
+
+    Space findByIdValidated(Long spaceId);
 }
