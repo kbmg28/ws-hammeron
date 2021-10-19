@@ -7,15 +7,15 @@ import br.com.kbmg.wsmusiccontrol.model.Music;
 import java.util.List;
 
 public interface MusicService extends GenericService<Music>{
-    Music createMusic(MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
+    Music createMusic(Long spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
 
-    void updateStatusMusic(Long idMusic, MusicStatusEnum newStatus);
+    void updateStatusMusic(Long spaceId, Long idMusic, MusicStatusEnum newStatus);
 
-    Music findByIdValidated(Long idMusic);
+    void deleteMusic(Long spaceId, Long idMusic);
 
-    void deleteMusic(Long idMusic);
-
-    Music updateMusic(Long idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
+    Music updateMusic(Long spaceId, Long idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
 
     List<Music> findAllBySpace(Long spaceId);
+
+    Music findBySpaceAndId(Long spaceId, Long idMusic);
 }

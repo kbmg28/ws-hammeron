@@ -56,7 +56,7 @@ public class MusicController extends GenericController {
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> findById(
             @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic) {
-        Music entityData = musicService.findByIdValidated(idMusic);
+        Music entityData = musicService.findBySpaceAndId(spaceId, idMusic);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
         return super.ok(viewData);
     }
@@ -65,7 +65,8 @@ public class MusicController extends GenericController {
     @Transactional
     public ResponseEntity<ResponseData<Set<SingerDto>>> findAllSinger(
             @PathVariable("space-id") Long spaceId) {
-        List<Singer> entityData = singerService.findAll();
+
+        List<Singer> entityData = singerService.findAllBySpace(spaceId);
         Set<SingerDto> viewData = musicMapper.toSingerDtoList(entityData);
         return super.ok(viewData);
     }
@@ -76,7 +77,7 @@ public class MusicController extends GenericController {
             @PathVariable("space-id") Long spaceId,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
 
-        Music entityData = musicService.createMusic(musicWithSingerAndLinksDto);
+        Music entityData = musicService.createMusic(spaceId, musicWithSingerAndLinksDto);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
 
         return super.ok(viewData);
@@ -88,7 +89,7 @@ public class MusicController extends GenericController {
             @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
-        Music entityData = musicService.updateMusic(idMusic, musicWithSingerAndLinksDto);
+        Music entityData = musicService.updateMusic(spaceId, idMusic, musicWithSingerAndLinksDto);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
         return super.ok(viewData);
     }
@@ -99,7 +100,7 @@ public class MusicController extends GenericController {
             @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic,
             @PathVariable("new-status") MusicStatusEnum newStatus) {
-        musicService.updateStatusMusic(idMusic, newStatus);
+        musicService.updateStatusMusic(spaceId, idMusic, newStatus);
         return super.ok();
     }
 
@@ -108,7 +109,7 @@ public class MusicController extends GenericController {
     public ResponseEntity<ResponseData<Void>> deleteMusic(
             @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic) {
-        musicService.deleteMusic(idMusic);
+        musicService.deleteMusic(spaceId, idMusic);
         return super.ok();
     }
 

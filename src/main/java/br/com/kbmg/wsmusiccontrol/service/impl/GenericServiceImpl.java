@@ -64,15 +64,22 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
     }
 
     @Override
-    public <F> void validateIfAlreadyExist(Long id, F fieldUnique, Function<F, Optional<T>> method, String msgError) {
+    public <F> void validateIfAlreadyExist(Long id, F fieldUnique, Function<F, Optional<T>> method, String keyMessage) {
         T entityFound = method.apply(fieldUnique).orElse(null);
-        this.verifyIfAlreadyExist(id, entityFound, msgError);
+        this.verifyIfAlreadyExist(id, entityFound, keyMessage);
     }
 
     @Override
-    public <F, O> void validateIfAlreadyExist(Long id, F field, O otherField, BiFunction<F, O, Optional<T>> method, String msgError) {
+    public <F, O> void validateIfAlreadyExist(Long id, F field, O otherField, BiFunction<F, O, Optional<T>> method, String keyMessage) {
         T entityFound = method.apply(field, otherField).orElse(null);
-        this.verifyIfAlreadyExist(id, entityFound, msgError);
+        this.verifyIfAlreadyExist(id, entityFound, keyMessage);
+    }
+
+    @Override
+    public void verifyIfAlreadyExist(Long id, T entityFound, String keyMessage) {
+        if (entityFound != null && !entityFound.getId().equals(id)) {
+            throw new ServiceException(messagesService.get(keyMessage));
+        }
     }
 
     @Override
@@ -150,12 +157,6 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
         } catch (Exception e) {
             e.printStackTrace();
             throw new ServiceException("Failed to save");
-        }
-    }
-
-    private void verifyIfAlreadyExist(Long id, T entityFound, String msgError) {
-        if (entityFound != null && !entityFound.getId().equals(id)) {
-            throw new ServiceException(msgError);
         }
     }
 

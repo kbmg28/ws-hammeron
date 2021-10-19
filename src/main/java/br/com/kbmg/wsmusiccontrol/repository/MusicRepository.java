@@ -12,7 +12,9 @@ import java.util.Optional;
 @Repository
 public interface MusicRepository extends JpaRepository<Music, Long> {
 
-    Optional<Music> findByNameIgnoreCaseAndSinger(String name, Singer singer);
+    Optional<Music> findByNameIgnoreCaseAndSingerAndSpace(String name, Singer singer, Space space);
 
     List<Music> findAllBySpace(Space space);
+
+    Optional<Music> findBySpaceAndId(Space space, Long idMusic);
 }
