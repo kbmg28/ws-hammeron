@@ -50,6 +50,11 @@ public class Space extends AbstractEntity {
 	@OneToMany(mappedBy = "space", fetch = FetchType.LAZY)
 	private Set<Music> musicList = new HashSet<>();
 
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@OneToMany(mappedBy = "space", fetch = FetchType.LAZY)
+	private Set<SpaceUserAppAssociation> spaceUserAppAssociationList = new HashSet<>();
+
 	public boolean isApproved() {
 		return this.approvedBy != null || name.equals(KeyMessageConstants.PUBLIC_SPACE);
 	}

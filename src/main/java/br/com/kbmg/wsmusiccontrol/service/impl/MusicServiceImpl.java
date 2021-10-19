@@ -68,7 +68,8 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         Music music = this.findBySpaceAndId(spaceId, idMusic);
 
         if (!music.getEventMusicList().isEmpty()) {
-            throw new ServiceException("music already used in events. Only is permitted disable");
+            throw new ServiceException(
+                    messagesService.get("music.already.used.in.events"));
         }
         Singer singer = music.getSinger();
 
@@ -126,12 +127,8 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     private Space getSpaceValidatingIfUserCanAccess(Long spaceId) {
-        Space space = spaceService.findByIdValidated(spaceId);
-
         UserApp userLogged = userAppService.findUserLogged();
-        // TODO: validate if user can access this space
-
-        return space;
+        return spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
     }
 
 }

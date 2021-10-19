@@ -3,11 +3,13 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceRequestProducer;
+import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
+import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,9 @@ public class SpaceServiceImpl
 
     @Autowired
     private UserAppService userAppService;
+
+    @Autowired
+    private SpaceUserAppAssociationService spaceUserAppAssociationService;
 
     @Autowired
     private SpaceRequestProducer spaceRequestProducer;
@@ -57,9 +62,11 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public Space findByIdValidated(Long spaceId) {
-        return repository.findById(spaceId)
-                .orElseThrow(() -> new ServiceException(
-                        messagesService.get("space.not.exist")));
+    public Space findByIdAndUserAppValidated(Long spaceId, UserApp userApp) {
+        return repository.findByIdAndUserApp(spaceId, userApp)
+                .orElseThrow(() -> new ForbiddenException(
+                        messagesService.get("space.user.not.access"))
+                );
     }
+
 }

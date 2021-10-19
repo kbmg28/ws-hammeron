@@ -4,6 +4,7 @@ import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.UserCredentialsSecurity;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
+import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.LockedClientException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
@@ -61,6 +62,11 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         return generatedError(messagesService.get(ERROR_403_DEFAULT), HttpStatus.FORBIDDEN, ex);
     }
 
+    @ExceptionHandler({ForbiddenException.class})
+    public ResponseEntity<ResponseData<?>> handleForbiddenException(final ForbiddenException ex, final WebRequest request) {
+        return generatedError(ex.getMessage(), HttpStatus.FORBIDDEN, ex);
+    }
+
     @ExceptionHandler({DataAccessException.class, HibernateException.class, DataIntegrityViolationException.class})
     protected ResponseEntity<ResponseData<?>> handleConflict(final DataAccessException ex, final WebRequest request) {
 
@@ -85,7 +91,6 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler({AuthorizationException.class})
     public ResponseEntity<ResponseData<?>> handleAccessDeniedException(final AuthorizationException ex, final WebRequest request) {
         String mes = ex.getMessage() == null ? messagesService.get(ERROR_401_DEFAULT) : ex.getMessage();
-        System.err.println(request.getContextPath());
         return generatedError(mes, HttpStatus.UNAUTHORIZED, ex);
     }
 
