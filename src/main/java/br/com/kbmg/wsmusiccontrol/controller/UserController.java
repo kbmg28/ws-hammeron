@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
-import br.com.kbmg.wsmusiccontrol.config.security.SecuredAdmin;
-import br.com.kbmg.wsmusiccontrol.config.security.SecuredAdminOrUser;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -21,7 +21,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/user")
 @CrossOrigin(origins = "*")
-@SecuredAdminOrUser
+@SecuredAnyUserAuth
 public class UserController extends GenericController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class UserController extends GenericController {
 
     @GetMapping("/all")
     @Transactional
-    @SecuredAdmin
+    @SecuredSpaceOwner
     public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAll() {
         List<UserApp> entityData = userAppService.findAll();
         Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(entityData);

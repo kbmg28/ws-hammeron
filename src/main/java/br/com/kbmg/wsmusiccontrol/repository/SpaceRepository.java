@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -15,4 +16,6 @@ public interface SpaceRepository extends JpaRepository<Space, Long> {
 
     @Query("SELECT ass.space from SpaceUserAppAssociation ass where ass.space.id = :spaceId and ass.userApp = :userApp")
     Optional<Space> findByIdAndUserApp(Long spaceId, UserApp userApp);
+
+    List<Space> findAllByApprovedByIsNull();
 }

@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
-import br.com.kbmg.wsmusiccontrol.config.security.SecuredAdminOrUser;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
@@ -30,7 +31,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/spaces/{space-id}/musics")
 @CrossOrigin(origins = "*")
-@SecuredAdminOrUser
+@SecuredAnyUserAuth
 public class MusicController extends GenericController {
 
     @Autowired
@@ -106,6 +107,7 @@ public class MusicController extends GenericController {
 
     @DeleteMapping("/{id-music}")
     @Transactional
+    @SecuredSpaceOwner
     public ResponseEntity<ResponseData<Void>> deleteMusic(
             @PathVariable("space-id") Long spaceId,
             @PathVariable("id-music") Long idMusic) {

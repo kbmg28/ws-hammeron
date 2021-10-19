@@ -82,7 +82,7 @@ public abstract class BaseIntegrationTests {
     }
 
     protected void givenUserAuthenticatedAdmin() {
-        this.saveUserAuthenticated(PermissionEnum.ADMIN);
+        this.saveUserAuthenticated(PermissionEnum.SPACE_OWNER);
     }
 
     protected void givenUserAuthenticatedWithoutRoles() {

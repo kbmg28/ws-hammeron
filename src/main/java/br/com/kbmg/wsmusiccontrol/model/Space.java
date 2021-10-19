@@ -13,6 +13,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,10 +36,16 @@ public class Space extends AbstractEntity {
 	@ToString.Exclude
 	private UserApp requestedBy;
 
+	@Column
+	private LocalDateTime requestedByDate;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn
 	@ToString.Exclude
 	private UserApp approvedBy;
+
+	@Column
+	private LocalDateTime approvedByDate;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude

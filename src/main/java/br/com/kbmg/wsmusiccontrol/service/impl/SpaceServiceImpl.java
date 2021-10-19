@@ -2,10 +2,12 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
+import br.com.kbmg.wsmusiccontrol.event.producer.SpaceApproveProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceRequestProducer;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
+import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
@@ -15,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SpaceServiceImpl
@@ -29,6 +34,9 @@ public class SpaceServiceImpl
 
     @Autowired
     private SpaceRequestProducer spaceRequestProducer;
+
+    @Autowired
+    private SpaceApproveProducer spaceApproveProducer;
 
     @Override
     public Space findOrCreatePublicSpace() {
@@ -56,6 +64,7 @@ public class SpaceServiceImpl
         space.setJustification(spaceRequestDto.getJustification());
         space.setRequestedBy(userLogged);
 
+        space.setRequestedByDate(LocalDateTime.now());
         repository.save(space);
 
         spaceRequestProducer.publishEvent(request, space);
@@ -67,6 +76,43 @@ public class SpaceServiceImpl
                 .orElseThrow(() -> new ForbiddenException(
                         messagesService.get("space.user.not.access"))
                 );
+    }
+
+    @Override
+    public void approveNewSpaceForUser(Long idSpace, HttpServletRequest request) {
+        repository.findById(idSpace).ifPresent(space -> {
+            if (space.isApproved()) {
+                return;
+            }
+
+            if(space.getRequestedBy() == null) {
+                throw new ServiceException(
+                        messagesService.get("space.approve.notFound.requested")
+                );
+            }
+
+            UserApp userLogged = userAppService.findUserLogged();
+
+            space.setApprovedBy(userLogged);
+            space.setApprovedByDate(LocalDateTime.now());
+            repository.save(space);
+
+            spaceApproveProducer.publishEvent(request, space);
+        });
+    }
+
+    @Override
+    public List<Space> findAllSpaceToApprove() {
+        return repository.findAllByApprovedByIsNull();
+    }
+
+    @Override
+    public List<Space> findAllMySpaces() {
+        UserApp userLogged = userAppService.findUserLogged();
+        return userLogged.getSpaceUserAppAssociationList()
+                .stream()
+                .map(SpaceUserAppAssociation::getSpace)
+                .collect(Collectors.toList());
     }
 
 }
