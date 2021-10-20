@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.service;
 
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
+import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
 import java.util.List;
@@ -18,4 +19,8 @@ public interface UserAppService extends GenericService<UserApp>{
     List<UserApp> findAllSysAdmin();
 
     UserApp findUserLogged();
+
+    List<UserApp> findAllBySpace(Long spaceId);
+
+    void addPermissionToUserInSpace(Long idUser, Long spaceId, PermissionEnum permissionEnum);
 }

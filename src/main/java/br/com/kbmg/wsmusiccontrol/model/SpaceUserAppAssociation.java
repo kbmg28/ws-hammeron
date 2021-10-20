@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -29,4 +30,6 @@ public class SpaceUserAppAssociation extends AbstractEntity {
 	@ToString.Exclude
 	private UserApp userApp;
 
+	@Column(nullable = false)
+	private Boolean isOwner;
 }

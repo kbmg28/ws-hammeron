@@ -72,6 +72,13 @@ public class SpaceServiceImpl
 
     @Override
     public Space findByIdAndUserAppValidated(Long spaceId, UserApp userApp) {
+        if(userApp.isSysAdmin()) {
+            return repository.findById(spaceId)
+                    .orElseThrow(() -> new ServiceException(
+                            String.format(messagesService.get("space.not.exist"), spaceId)
+                    ));
+        }
+
         return repository.findByIdAndUserApp(spaceId, userApp)
                 .orElseThrow(() -> new ForbiddenException(
                         messagesService.get("space.user.not.access"))
@@ -84,8 +91,8 @@ public class SpaceServiceImpl
             if (space.isApproved()) {
                 return;
             }
-
-            if(space.getRequestedBy() == null) {
+            UserApp requestedBy = space.getRequestedBy();
+            if(requestedBy == null) {
                 throw new ServiceException(
                         messagesService.get("space.approve.notFound.requested")
                 );
@@ -96,6 +103,9 @@ public class SpaceServiceImpl
             space.setApprovedBy(userLogged);
             space.setApprovedByDate(LocalDateTime.now());
             repository.save(space);
+
+            spaceUserAppAssociationService.createAssociationToParticipant(space, requestedBy);
+            spaceUserAppAssociationService.createAssociationToSpaceOwner(space, requestedBy);
 
             spaceApproveProducer.publishEvent(request, space);
         });

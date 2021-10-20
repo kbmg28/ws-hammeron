@@ -13,6 +13,6 @@ public class MySpace {
     private Long spaceId;
     private String name;
 
-    //TODO: CREATE ASSOCIATION IN MODEL TO SPACE OWNER LIST
+    //TODO: Modify mapper to owner list
     private UserDto spaceOwner;
 }
