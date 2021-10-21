@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -96,10 +95,9 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public void addPermissionToUserInSpace(String idUser, String spaceId, PermissionEnum permissionEnum) {
+    public void addPermissionToUserInSpace(String emailUser, String spaceId, PermissionEnum permissionEnum) {
         validateIfPermissionIsSysAdmin(permissionEnum);
-        UserApp userAppToAddRole = this.findById(idUser)
-                .orElseThrow(() -> new ServiceException(messagesService.get("user.not.exists")));
+        UserApp userAppToAddRole = this.findByEmailValidated(emailUser);
         UserApp userLogged = this.findUserLogged();
         Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
 

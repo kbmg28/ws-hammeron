@@ -22,5 +22,5 @@ public interface UserAppService extends GenericService<UserApp>{
 
     List<UserApp> findAllBySpace(String spaceId);
 
-    void addPermissionToUserInSpace(String idUser, String spaceId, PermissionEnum permissionEnum);
+    void addPermissionToUserInSpace(String emailUser, String spaceId, PermissionEnum permissionEnum);
 }

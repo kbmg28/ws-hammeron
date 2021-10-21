@@ -58,13 +58,13 @@ public class UserController extends GenericController {
         return super.ok(viewData);
     }
 
-    @PostMapping("/{id-user}/permissions/{permission-key}")
+    @PostMapping("/{email-user}/permissions/{permission-key}")
     public ResponseEntity<ResponseData<Void>> addPermission(
             @PathVariable("space-id") String spaceId,
-            @PathVariable("id-user") String idUser, // TODO: change to email-user
+            @PathVariable("email-user") String emailUser,
             @PathVariable("permission-key") PermissionEnum permissionEnum
             ) {
-        userAppService.addPermissionToUserInSpace(idUser, spaceId, permissionEnum);
+        userAppService.addPermissionToUserInSpace(emailUser, spaceId, permissionEnum);
         return super.ok();
     }
 
