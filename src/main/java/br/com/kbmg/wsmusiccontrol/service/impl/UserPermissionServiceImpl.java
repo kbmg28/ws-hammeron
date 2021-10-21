@@ -27,7 +27,7 @@ public class UserPermissionServiceImpl
     private SpaceService spaceService;
 
     @Override
-    public List<UserPermission> findBySpaceAndPermission(Long spaceId, PermissionEnum permissionEnum) {
+    public List<UserPermission> findBySpaceAndPermission(String spaceId, PermissionEnum permissionEnum) {
         UserApp userLogged = userAppService.findUserLogged();
         Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
         verifyIfUserLoggedIsSuperUserAndArgumentIsSuperUser(userLogged, permissionEnum);
@@ -43,7 +43,10 @@ public class UserPermissionServiceImpl
 
         if(hasNoPermission) {
             UserApp userLogged = userAppService.findUserLogged();
-            verifyIfUserLoggedCanExecuteTheAction(userLogged, permissionEnum);
+
+            if (userLogged != null) {
+                verifyIfUserLoggedCanExecuteTheAction(userLogged, permissionEnum);
+            }
 
             UserPermission newUserPermission = new UserPermission();
             newUserPermission.setPermission(permissionEnum);

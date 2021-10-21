@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserAppRepository extends JpaRepository<UserApp, Long> {
+public interface UserAppRepository extends JpaRepository<UserApp, String> {
 
     Optional<UserApp> findByEmail(String email);
 

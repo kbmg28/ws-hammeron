@@ -41,7 +41,7 @@ public class UserController extends GenericController {
     @GetMapping("/all")
     @Transactional
     public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAllBySpace(
-            @PathVariable("space-id") Long spaceId
+            @PathVariable("space-id") String spaceId
     ) {
         List<UserApp> entityData = userAppService.findAllBySpace(spaceId);
         Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(entityData);
@@ -50,7 +50,7 @@ public class UserController extends GenericController {
 
     @GetMapping("/permissions/{permission-key}")
     public ResponseEntity<ResponseData<Set<UserDto>>> findAllByPermission(
-            @PathVariable("space-id") Long spaceId,
+            @PathVariable("space-id") String spaceId,
             @PathVariable("permission-key") PermissionEnum permissionEnum
             ) {
         List<UserPermission> entityData = userPermissionService.findBySpaceAndPermission(spaceId, permissionEnum);
@@ -60,8 +60,8 @@ public class UserController extends GenericController {
 
     @PostMapping("/{id-user}/permissions/{permission-key}")
     public ResponseEntity<ResponseData<Void>> addPermission(
-            @PathVariable("space-id") Long spaceId,
-            @PathVariable("id-user") Long idUser, // TODO: change to email-user
+            @PathVariable("space-id") String spaceId,
+            @PathVariable("id-user") String idUser, // TODO: change to email-user
             @PathVariable("permission-key") PermissionEnum permissionEnum
             ) {
         userAppService.addPermissionToUserInSpace(idUser, spaceId, permissionEnum);

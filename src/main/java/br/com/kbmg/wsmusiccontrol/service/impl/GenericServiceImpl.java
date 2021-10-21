@@ -19,11 +19,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public abstract class GenericServiceImpl<T extends AbstractEntity, R extends JpaRepository<T, Long>> implements GenericService<T> {
+public abstract class GenericServiceImpl<T extends AbstractEntity, R extends JpaRepository<T, String>> implements GenericService<T> {
 
     @Autowired
     private EntityManager entityManager;
@@ -49,12 +50,12 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
     }
 
     @Override
-    public Optional<T> findById(Long id) {
+    public Optional<T> findById(String id) {
         return repository.findById(id);
     }
 
     @Override
-    public List<T> findAllById(Set<Long> ids) {
+    public List<T> findAllById(Set<String> ids) {
         return repository.findAllById(ids);
     }
 
@@ -64,39 +65,39 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
     }
 
     @Override
-    public <F> void validateIfAlreadyExist(Long id, F fieldUnique, Function<F, Optional<T>> method, String keyMessage) {
+    public <F> void validateIfAlreadyExist(String id, F fieldUnique, Function<F, Optional<T>> method, String keyMessage) {
         T entityFound = method.apply(fieldUnique).orElse(null);
         this.verifyIfAlreadyExist(id, entityFound, keyMessage);
     }
 
     @Override
-    public <F, O> void validateIfAlreadyExist(Long id, F field, O otherField, BiFunction<F, O, Optional<T>> method, String keyMessage) {
+    public <F, O> void validateIfAlreadyExist(String id, F field, O otherField, BiFunction<F, O, Optional<T>> method, String keyMessage) {
         T entityFound = method.apply(field, otherField).orElse(null);
         this.verifyIfAlreadyExist(id, entityFound, keyMessage);
     }
 
     @Override
-    public void verifyIfAlreadyExist(Long id, T entityFound, String keyMessage) {
+    public void verifyIfAlreadyExist(String id, T entityFound, String keyMessage) {
         if (entityFound != null && !entityFound.getId().equals(id)) {
             throw new ServiceException(messagesService.get(keyMessage));
         }
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         this.findById(id);
         repository.deleteById(id);
     }
 
     @Override
-    public void deleteByIdValidated(Long id, String msgError) {
+    public void deleteByIdValidated(String id, String msgError) {
         this.findByIdValidated(id, msgError);
         repository.deleteById(id);
     }
 
     @Override
-    public void deleteAllById(List<Long> ids) {
-        Set<Long> notExist = ids.stream().filter(id -> repository.findById(id).isEmpty()).collect(Collectors.toSet());
+    public void deleteAllById(List<String> ids) {
+        Set<String> notExist = ids.stream().filter(id -> repository.findById(id).isEmpty()).collect(Collectors.toSet());
 
         if (!notExist.isEmpty())
             throw new EntityNotFoundException("Not found: " + notExist);
@@ -125,7 +126,7 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
     }
 
     @Override
-    public T findByIdValidated(Long id, String msgError) {
+    public T findByIdValidated(String id, String msgError) {
         Optional<T> entity = findById(id);
         return entity.orElseThrow(() -> new EntityNotFoundException(msgError));
     }

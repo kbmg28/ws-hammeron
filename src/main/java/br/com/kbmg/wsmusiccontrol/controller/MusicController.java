@@ -27,6 +27,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/spaces/{space-id}/musics")
@@ -46,7 +47,7 @@ public class MusicController extends GenericController {
     @GetMapping
     @Transactional
     public ResponseEntity<ResponseData<Set<MusicWithSingerAndLinksDto>>> findAllMusic(
-            @PathVariable("space-id") Long spaceId) {
+            @PathVariable("space-id") String spaceId) {
         List<Music> entityData = musicService.findAllBySpace(spaceId);
         Set<MusicWithSingerAndLinksDto> viewData = musicMapper.toMusicWithSingerAndLinksDtoList(entityData);
         return super.ok(viewData);
@@ -55,8 +56,8 @@ public class MusicController extends GenericController {
     @GetMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> findById(
-            @PathVariable("space-id") Long spaceId,
-            @PathVariable("id-music") Long idMusic) {
+            @PathVariable("space-id") String spaceId,
+            @PathVariable("id-music") String idMusic) {
         Music entityData = musicService.findBySpaceAndId(spaceId, idMusic);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
         return super.ok(viewData);
@@ -65,7 +66,7 @@ public class MusicController extends GenericController {
     @GetMapping("/singers")
     @Transactional
     public ResponseEntity<ResponseData<Set<SingerDto>>> findAllSinger(
-            @PathVariable("space-id") Long spaceId) {
+            @PathVariable("space-id") String spaceId) {
 
         List<Singer> entityData = singerService.findAllBySpace(spaceId);
         Set<SingerDto> viewData = musicMapper.toSingerDtoList(entityData);
@@ -75,7 +76,7 @@ public class MusicController extends GenericController {
     @PostMapping
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> createMusic(
-            @PathVariable("space-id") Long spaceId,
+            @PathVariable("space-id") String spaceId,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
 
         Music entityData = musicService.createMusic(spaceId, musicWithSingerAndLinksDto);
@@ -87,8 +88,8 @@ public class MusicController extends GenericController {
     @PutMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> updateMusic(
-            @PathVariable("space-id") Long spaceId,
-            @PathVariable("id-music") Long idMusic,
+            @PathVariable("space-id") String spaceId,
+            @PathVariable("id-music") String idMusic,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Music entityData = musicService.updateMusic(spaceId, idMusic, musicWithSingerAndLinksDto);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
@@ -98,8 +99,8 @@ public class MusicController extends GenericController {
     @PutMapping("/{id-music}/status/{new-status}")
     @Transactional
     public ResponseEntity<ResponseData<Void>> updateStatusMusic(
-            @PathVariable("space-id") Long spaceId,
-            @PathVariable("id-music") Long idMusic,
+            @PathVariable("space-id") String spaceId,
+            @PathVariable("id-music") String idMusic,
             @PathVariable("new-status") MusicStatusEnum newStatus) {
         musicService.updateStatusMusic(spaceId, idMusic, newStatus);
         return super.ok();
@@ -109,8 +110,8 @@ public class MusicController extends GenericController {
     @Transactional
     @SecuredSpaceOwner
     public ResponseEntity<ResponseData<Void>> deleteMusic(
-            @PathVariable("space-id") Long spaceId,
-            @PathVariable("id-music") Long idMusic) {
+            @PathVariable("space-id") String spaceId,
+            @PathVariable("id-music") String idMusic) {
         musicService.deleteMusic(spaceId, idMusic);
         return super.ok();
     }

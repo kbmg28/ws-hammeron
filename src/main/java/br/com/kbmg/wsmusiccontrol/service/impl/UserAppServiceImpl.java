@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -84,18 +85,18 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public UserApp findUserLogged() {
-        return repository.findByEmail(SpringSecurityUtil.getEmail()).orElseThrow();
+        return repository.findByEmail(SpringSecurityUtil.getEmail()).orElse(null);
     }
 
     @Override
-    public List<UserApp> findAllBySpace(Long spaceId) {
+    public List<UserApp> findAllBySpace(String spaceId) {
         UserApp userLogged = this.findUserLogged();
         Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
         return repository.findAllBySpace(space);
     }
 
     @Override
-    public void addPermissionToUserInSpace(Long idUser, Long spaceId, PermissionEnum permissionEnum) {
+    public void addPermissionToUserInSpace(String idUser, String spaceId, PermissionEnum permissionEnum) {
         validateIfPermissionIsSysAdmin(permissionEnum);
         UserApp userAppToAddRole = this.findById(idUser)
                 .orElseThrow(() -> new ServiceException(messagesService.get("user.not.exists")));

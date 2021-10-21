@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository> implements MusicService {
@@ -40,7 +41,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     private UserAppService userAppService;
 
     @Override
-    public Music createMusic(Long spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
+    public Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
         Singer singer = singerService.findByNameOrCreateIfNotExist(musicWithSingerAndLinksDto.getSinger().getName());
         Music music = musicMapper.toMusic(musicWithSingerAndLinksDto);
@@ -57,14 +58,14 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public void updateStatusMusic(Long spaceId, Long idMusic, MusicStatusEnum newStatus) {
+    public void updateStatusMusic(String spaceId, String idMusic, MusicStatusEnum newStatus) {
         Music music = this.findBySpaceAndId(spaceId, idMusic);
         music.setMusicStatus(newStatus);
         this.update(music);
     }
 
     @Override
-    public void deleteMusic(Long spaceId, Long idMusic) {
+    public void deleteMusic(String spaceId, String idMusic) {
         Music music = this.findBySpaceAndId(spaceId, idMusic);
 
         if (!music.getEventMusicList().isEmpty()) {
@@ -79,7 +80,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public Music updateMusic(Long spaceId, Long idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
+    public Music updateMusic(String spaceId, String idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
         Music musicInDatabase = findBySpaceAndIdValidated(idMusic, space);
         Music musicUpdated = musicMapper.toMusic(musicWithSingerAndLinksDto);
@@ -95,19 +96,19 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public List<Music> findAllBySpace(Long spaceId) {
+    public List<Music> findAllBySpace(String spaceId) {
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
 
         return repository.findAllBySpace(space);
     }
 
     @Override
-    public Music findBySpaceAndId(Long spaceId, Long idMusic) {
+    public Music findBySpaceAndId(String spaceId, String idMusic) {
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
         return findBySpaceAndIdValidated(idMusic, space);
     }
 
-    private Music findBySpaceAndIdValidated(Long idMusic, Space space) {
+    private Music findBySpaceAndIdValidated(String idMusic, Space space) {
         return repository.findBySpaceAndId(space, idMusic)
                 .orElseThrow(() ->
                         new ServiceException(
@@ -126,7 +127,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         music.setSinger(singer);
     }
 
-    private Space getSpaceValidatingIfUserCanAccess(Long spaceId) {
+    private Space getSpaceValidatingIfUserCanAccess(String spaceId) {
         UserApp userLogged = userAppService.findUserLogged();
         return spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
     }

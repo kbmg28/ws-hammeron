@@ -5,17 +5,18 @@ import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface MusicService extends GenericService<Music>{
-    Music createMusic(Long spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
+    Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
 
-    void updateStatusMusic(Long spaceId, Long idMusic, MusicStatusEnum newStatus);
+    void updateStatusMusic(String spaceId, String idMusic, MusicStatusEnum newStatus);
 
-    void deleteMusic(Long spaceId, Long idMusic);
+    void deleteMusic(String spaceId, String idMusic);
 
-    Music updateMusic(Long spaceId, Long idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
+    Music updateMusic(String spaceId, String idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
 
-    List<Music> findAllBySpace(Long spaceId);
+    List<Music> findAllBySpace(String spaceId);
 
-    Music findBySpaceAndId(Long spaceId, Long idMusic);
+    Music findBySpaceAndId(String spaceId, String idMusic);
 }

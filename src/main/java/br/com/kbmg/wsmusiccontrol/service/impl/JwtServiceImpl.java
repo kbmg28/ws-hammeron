@@ -62,7 +62,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public Long validateTokenAndGetUserId(String token) {
+    public String validateTokenAndGetUserId(String token) {
         if (!isValidToken(token)){
             throw new AuthorizationException(null, messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
         }
@@ -70,6 +70,6 @@ public class JwtServiceImpl implements JwtService {
         Claims claims = Jwts.parser()
                 .setSigningKey(this.secret).parseClaimsJws(token).getBody();
 
-        return Long.parseLong(claims.getSubject());
+        return claims.getSubject();
     }
 }

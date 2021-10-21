@@ -27,11 +27,7 @@ public class SpaceUserAppAssociationServiceImpl
     public void createAssociationWithPublicSpace(UserApp userApp) {
         Space space = spaceService.findOrCreatePublicSpace();
 
-        SpaceUserAppAssociation spaceUserAppAssociation = new SpaceUserAppAssociation();
-        spaceUserAppAssociation.setUserApp(userApp);
-        spaceUserAppAssociation.setSpace(space);
-
-        repository.save(spaceUserAppAssociation);
+        createAssociation(space, userApp, false);;
     }
 
     @Override
@@ -45,7 +41,7 @@ public class SpaceUserAppAssociationServiceImpl
     }
 
     private void createAssociation(Space space, UserApp userApp, Boolean isOwner) {
-        repository.findBySpaceAndUserApp(space, userApp).ifPresent(ass -> {
+        repository.findBySpaceAndUserAppAndIsOwner(space, userApp, isOwner).ifPresent(ass -> {
             throw new ServiceException(
                     messagesService.get("space.user.already.exists")
             );

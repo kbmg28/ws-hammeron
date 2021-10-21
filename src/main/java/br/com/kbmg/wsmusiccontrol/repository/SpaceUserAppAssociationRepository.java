@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface SpaceUserAppAssociationRepository extends
-        JpaRepository<SpaceUserAppAssociation, Long> {
+        JpaRepository<SpaceUserAppAssociation, String> {
 
-    Optional<SpaceUserAppAssociation> findBySpaceAndUserApp(Space space, UserApp userApp);
+    Optional<SpaceUserAppAssociation> findBySpaceAndUserAppAndIsOwner(Space space, UserApp userApp, Boolean isOwner);
 }

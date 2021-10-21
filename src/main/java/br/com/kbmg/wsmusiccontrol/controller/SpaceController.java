@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/spaces")
@@ -55,7 +56,7 @@ public class SpaceController extends GenericController {
     @PostMapping("/{id-space}/approve")
     @SecuredSysAdmin
     public ResponseEntity<ResponseData<Void>> approveNewSpaceForUser(
-            @PathVariable("id-space") Long idSpace,
+            @PathVariable("id-space") String idSpace,
             HttpServletRequest request) {
         spaceService.approveNewSpaceForUser(idSpace, request);
 

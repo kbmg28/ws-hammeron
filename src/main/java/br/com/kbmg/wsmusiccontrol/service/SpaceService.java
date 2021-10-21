@@ -6,15 +6,16 @@ import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.UUID;
 
 public interface SpaceService extends GenericService<Space>{
     Space findOrCreatePublicSpace();
 
     void requestNewSpaceForUser(SpaceRequestDto spaceRequestDto, HttpServletRequest request);
 
-    Space findByIdAndUserAppValidated(Long spaceId, UserApp userApp);
+    Space findByIdAndUserAppValidated(String spaceId, UserApp userApp);
 
-    void approveNewSpaceForUser(Long idSpace, HttpServletRequest request);
+    void approveNewSpaceForUser(String idSpace, HttpServletRequest request);
 
     List<Space> findAllSpaceToApprove();
 

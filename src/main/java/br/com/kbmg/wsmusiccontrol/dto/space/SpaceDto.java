@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(callSuper = true)
 public class SpaceDto extends SpaceRequestDto{
 
-    private Long spaceId;
+    private String spaceId;
 
     private UserDto requestedBy;
     private LocalDateTime requestedByDate;

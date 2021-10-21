@@ -20,7 +20,7 @@ public interface UserAppService extends GenericService<UserApp>{
 
     UserApp findUserLogged();
 
-    List<UserApp> findAllBySpace(Long spaceId);
+    List<UserApp> findAllBySpace(String spaceId);
 
-    void addPermissionToUserInSpace(Long idUser, Long spaceId, PermissionEnum permissionEnum);
+    void addPermissionToUserInSpace(String idUser, String spaceId, PermissionEnum permissionEnum);
 }

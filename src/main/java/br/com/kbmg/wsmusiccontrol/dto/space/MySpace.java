@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MySpace {
 
-    private Long spaceId;
+    private String spaceId;
     private String name;
 
     //TODO: Modify mapper to owner list

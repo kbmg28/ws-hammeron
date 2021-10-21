@@ -70,7 +70,7 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     @ExceptionHandler({DataAccessException.class, HibernateException.class, DataIntegrityViolationException.class})
     protected ResponseEntity<ResponseData<?>> handleConflict(final DataAccessException ex, final WebRequest request) {
 
-        return generatedError(ERROR_409_DEFAULT, HttpStatus.CONFLICT, ex);
+        return generatedError(messagesService.get(ERROR_409_DEFAULT), HttpStatus.CONFLICT, ex);
     }
 
     @ExceptionHandler(value = {EntityNotFoundException.class})

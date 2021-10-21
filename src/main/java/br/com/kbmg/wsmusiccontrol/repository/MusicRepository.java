@@ -8,13 +8,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface MusicRepository extends JpaRepository<Music, Long> {
+public interface MusicRepository extends JpaRepository<Music, String> {
 
     Optional<Music> findByNameIgnoreCaseAndSingerAndSpace(String name, Singer singer, Space space);
 
     List<Music> findAllBySpace(Space space);
 
-    Optional<Music> findBySpaceAndId(Space space, Long idMusic);
+    Optional<Music> findBySpaceAndId(Space space, String idMusic);
 }

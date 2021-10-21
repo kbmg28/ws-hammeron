@@ -8,14 +8,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface SpaceRepository extends JpaRepository<Space, Long> {
+public interface SpaceRepository extends JpaRepository<Space, String> {
 
     Optional<Space> findByName(String name);
 
     @Query("SELECT ass.space from SpaceUserAppAssociation ass where ass.space.id = :spaceId and ass.userApp = :userApp")
-    Optional<Space> findByIdAndUserApp(Long spaceId, UserApp userApp);
+    Optional<Space> findByIdAndUserApp(String spaceId, UserApp userApp);
 
     List<Space> findAllByApprovedByIsNull();
 }

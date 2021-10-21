@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface EventMusicAssociationRepository extends JpaRepository<EventMusicAssociation, Long> {
+public interface EventMusicAssociationRepository extends JpaRepository<EventMusicAssociation, String> {
 
 }

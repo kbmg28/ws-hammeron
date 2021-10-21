@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,7 +72,7 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public Space findByIdAndUserAppValidated(Long spaceId, UserApp userApp) {
+    public Space findByIdAndUserAppValidated(String spaceId, UserApp userApp) {
         if(userApp.isSysAdmin()) {
             return repository.findById(spaceId)
                     .orElseThrow(() -> new ServiceException(
@@ -86,7 +87,7 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public void approveNewSpaceForUser(Long idSpace, HttpServletRequest request) {
+    public void approveNewSpaceForUser(String idSpace, HttpServletRequest request) {
         repository.findById(idSpace).ifPresent(space -> {
             if (space.isApproved()) {
                 return;

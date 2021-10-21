@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerRepository> implements SingerService {
@@ -64,7 +65,7 @@ public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerReposito
     }
 
     @Override
-    public List<Singer> findAllBySpace(Long spaceId) {
+    public List<Singer> findAllBySpace(String spaceId) {
         UserApp userLogged = userAppService.findUserLogged();
         Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
         return repository.findAllBySpace(space);

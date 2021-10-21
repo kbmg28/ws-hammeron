@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserPermissionRepository extends JpaRepository<UserPermission, Long> {
+public interface UserPermissionRepository extends JpaRepository<UserPermission, String> {
 
     List<UserPermission> findByPermission(PermissionEnum permissionEnum);
 
