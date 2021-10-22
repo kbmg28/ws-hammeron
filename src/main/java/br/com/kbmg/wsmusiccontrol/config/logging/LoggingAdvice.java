@@ -2,7 +2,6 @@ package br.com.kbmg.wsmusiccontrol.config.logging;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.UserCredentialsSecurity;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -28,6 +27,9 @@ public class LoggingAdvice {
     @Value("${app.logs}")
     private boolean appLogsEnabled;
 
+    @Autowired
+    public LogService logService;
+
     @Pointcut("within(br.com.kbmg.wsmusiccontrol.service..*)")
     public void pointcutService() {
 
@@ -51,7 +53,7 @@ public class LoggingAdvice {
         return result;
     }
 
-    private void generateLogObject(ProceedingJoinPoint jp, MethodInvocationTypeEnum methodInvocationTypeEnum, StopWatch watch) throws JsonProcessingException {
+    private void generateLogObject(ProceedingJoinPoint jp, MethodInvocationTypeEnum methodInvocationTypeEnum, StopWatch watch) {
 
         if (appLogsEnabled) {
             String methodName = jp.getSignature().getName();
@@ -66,14 +68,17 @@ public class LoggingAdvice {
                 argsMap.put(i, arg != null ? arg.toString() : null);
             }
 
-            LogTraceApp logTraceApp = new LogTraceApp(credentials, className, methodName, argsMap, methodInvocationTypeEnum);
-            String stringLogObject = map.writeValueAsString(logTraceApp);
+            LogTraceApp logTraceApp = new LogTraceApp(
+                    credentials,
+                    className,
+                    methodName,
+                    argsMap,
+                    methodInvocationTypeEnum,
+                    MethodInvocationTypeEnum.METHOD_OUT.equals(methodInvocationTypeEnum) ?
+                            watch.getTotalTimeMillis() : null
+            );
 
-            String logInfo = MethodInvocationTypeEnum.METHOD_OUT.equals(methodInvocationTypeEnum) ?
-                    String.format("%s - Execution time: %d ms", stringLogObject, watch.getTotalTimeMillis()) :
-                    stringLogObject;
-
-            log.info(logInfo);
+            logService.logTraceApp(logTraceApp);
         }
     }
 

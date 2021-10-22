@@ -1,8 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.config.logging;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
-import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
-import br.com.kbmg.wsmusiccontrol.config.security.UserCredentialsSecurity;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.LockedClientException;
@@ -30,8 +28,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.ARGUMENTS_INVALID;
@@ -51,6 +47,9 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
 
     @Autowired
     public MessagesService messagesService;
+
+    @Autowired
+    public LogService logService;
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResponseData<?>> handleInternal(final Exception ex, final WebRequest request) {
@@ -111,7 +110,7 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         String msg = messagesService.get(DATA_FIELDS_INVALID);
         String errors = ex.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(", "));
         ResponseError responseError = new ResponseError(HttpStatus.BAD_REQUEST, String.format("%s %s", msg, errors));
-        logDefaultErrorSpring(ex, responseError);
+        logService.logExceptionWithStackTraceFilter(ex, responseError);
         return handleExceptionInternal(ex, responseError, headers, HttpStatus.BAD_REQUEST, request);
     }
 
@@ -119,7 +118,8 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status,
         WebRequest request) {
         ResponseError responseError = new ResponseError(HttpStatus.BAD_REQUEST, messagesService.get(DATA_INVALID));
-        logDefaultErrorSpring(ex, responseError);
+
+        logService.logExceptionWithStackTraceFilter(ex, responseError);
 
         return handleExceptionInternal(ex, responseError, headers, HttpStatus.BAD_REQUEST, request);
     }
@@ -128,35 +128,9 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         ResponseError responseError = new ResponseError(http, message);
         ResponseData<?> data = new ResponseData<>(null, responseError);
 
-        List<LogExceptionTraceApp> logExceptionTraceAppList = Arrays.stream(ex.getStackTrace())
-                .filter(trace -> trace.getClassName().startsWith("br.com.kbmg.wsmusiccontrol")
-                        && trace.getLineNumber() > 0
-                        && !trace.getClassName().contains(LoggingAdvice.class.getName()))
-                .map(LogExceptionTraceApp::new)
-                .collect(Collectors.toList());
-
-        if (ex instanceof AuthorizationException) {
-            logErrorAuthorizationApplication((AuthorizationException) ex, responseError, logExceptionTraceAppList);
-        } else {
-            logErrorApplication(ex, responseError, logExceptionTraceAppList);
-        }
+        logService.logExceptionWithStackTraceFilter(ex, responseError);
 
         return new ResponseEntity<>(data, http);
     }
 
-
-    private void logDefaultErrorSpring(Exception exception, ResponseError responseError) {
-
-        logErrorApplication(exception, responseError, null);
-    }
-
-    private void logErrorApplication(Exception exception, ResponseError responseError, List<LogExceptionTraceApp> errorAppTrace) {
-        UserCredentialsSecurity credentials = SpringSecurityUtil.getCredentials();
-        log.error(gson.toJson(new LogErrorApp(credentials, responseError, errorAppTrace)), exception);
-    }
-
-    private void logErrorAuthorizationApplication(AuthorizationException authorizationException, ResponseError responseError, List<LogExceptionTraceApp> errorAppTrace) {
-        UserCredentialsSecurity credentials = new UserCredentialsSecurity(authorizationException.getEmail());
-        log.error(gson.toJson(new LogErrorApp(credentials, responseError, errorAppTrace)), authorizationException);
-    }
 }

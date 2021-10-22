@@ -12,5 +12,6 @@ import java.util.List;
 public class LogErrorApp {
     private UserCredentialsSecurity credentials;
     private ResponseError errorDetails;
+    private Class<? extends Exception> exceptionClass;
     private List<LogExceptionTraceApp> errorAppTrace;
 }

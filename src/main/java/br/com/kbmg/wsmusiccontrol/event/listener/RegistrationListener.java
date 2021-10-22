@@ -3,7 +3,6 @@ package br.com.kbmg.wsmusiccontrol.event.listener;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
-import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
@@ -12,10 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import javax.mail.internet.MimeMessage;
 import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
@@ -30,8 +27,9 @@ import static br.com.kbmg.wsmusiccontrol.constants.EmailConstants.TOKEN_VARIABLE
 
 @Component
 @PropertySource("classpath:templates-html.properties")
-public class RegistrationListener implements
-        ApplicationListener<OnRegistrationCompleteEvent> {
+public class RegistrationListener
+        extends AbstractEmailListener
+        implements ApplicationListener<OnRegistrationCompleteEvent> {
 
     @Autowired
     private SecurityService securityService;
@@ -52,28 +50,14 @@ public class RegistrationListener implements
 
     private void confirmRegistration(OnRegistrationCompleteEvent event) {
         UserApp userApp = event.getData();
-
         String recipientAddress = userApp.getEmail();
         String subject = messagesService.get("user.email.verify.subject");
-
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
         String tokenStr = generateToken();
-
         String templateHtmlWithToken = getTemplateHtmlWithToken(tokenStr, recipientAddress);
 
         securityService.createVerificationToken(userApp, tokenStr.replaceAll("\\s+",""));
 
-        try {
-            MimeMessageHelper email = new MimeMessageHelper(mimeMessage, true);
-            email.setTo(recipientAddress);
-            email.setSubject(subject);
-
-            email.setText(templateHtmlWithToken, true);
-
-            mailSender.send(mimeMessage);
-        } catch (Exception e) {
-            throw new ServiceException(messagesService.get(KeyMessageConstants.TOKEN_ACTIVATE_FAILED_SEND));
-        }
+        super.sendEmail(recipientAddress, subject, templateHtmlWithToken, KeyMessageConstants.TOKEN_ACTIVATE_FAILED_SEND);
     }
 
     private String generateToken() {

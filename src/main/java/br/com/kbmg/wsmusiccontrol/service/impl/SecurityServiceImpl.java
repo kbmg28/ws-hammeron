@@ -89,7 +89,7 @@ public class SecurityServiceImpl implements SecurityService {
     public void activateUserAccount(UserTokenHashDto userTokenHashDto) {
         String errorMessage = messagesService.get(TOKEN_ACTIVATE_EXPIRED);
         UserApp userApp = userAppService.findByEmail(userTokenHashDto.getEmail())
-                .orElseThrow( () -> new ServiceException(messagesService.get(TOKEN_ACTIVATE_EXPIRED)));
+                .orElseThrow( () -> new ServiceException(errorMessage));
 
         if (userApp.getEnabled()) {
             return;

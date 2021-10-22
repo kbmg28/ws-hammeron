@@ -2,6 +2,8 @@ package br.com.kbmg.wsmusiccontrol.integration;
 
 import br.com.kbmg.wsmusiccontrol.config.AppConfig;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.AbstractCaptchaService;
+import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
@@ -35,13 +37,25 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.TOKEN;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { AppConfig.class })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = { "mail=mail@test.com", "mailPassSocial=senha123" })
+        properties = {
+            "mail=mail@test.com",
+            "mailPassSocial=senha123",
+            "mail=mail@test.com",
+            "show-sql=false",
+            "recaptchaKeySite=key_site_integration_test",
+            "recaptchaKeySecret=key_secret_integration_test",
+            "recaptchaThreshold=0.8",
+        }
+)
 @AutoConfigureMockMvc
 @Transactional
 @Tag("integrationTest")
@@ -55,7 +69,17 @@ public abstract class BaseIntegrationTests {
     protected static ResultActions perform;
     protected static ResultActions resultActions;
 
+    protected static final String templateUrlRecaptcha="%s?g-recaptcha-response=" + ANY_VALUE;
+
     protected LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
+
+    @MockBean
+    protected JavaMailSender mailSenderMockBean;
+
+    @MockBean
+    protected AbstractCaptchaService recaptchaServiceMockBean;
+
+
 
     @Autowired
     protected MockMvc mockMvc;
@@ -68,9 +92,6 @@ public abstract class BaseIntegrationTests {
 
     @Autowired
     protected UserPermissionRepository userPermissionRepository;
-
-    @MockBean
-    protected JavaMailSender mailSender;
 
     protected void beforeAllTestsBase() {
         givenHeadersRequired();
@@ -198,4 +219,9 @@ public abstract class BaseIntegrationTests {
         String str = contentAsString.split("\"content\":")[1];
         return (str == null) ? "" : str.substring(0, str.length() - 1);
     }
+
+    protected void thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum module) {
+        verify(recaptchaServiceMockBean, times(1)).processResponse(ANY_VALUE, module.getValue());
+    }
+
 }

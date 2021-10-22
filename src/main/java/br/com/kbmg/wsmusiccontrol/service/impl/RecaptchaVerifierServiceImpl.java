@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.GoogleResponse;
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaV3Config;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,10 @@ public class RecaptchaVerifierServiceImpl {
     @Autowired
     private RestTemplate restClient;
 
+    @Autowired
+    private LogService logService;
+
+
     private static final String RECAPTCHA_URL = "https://www.google.com/recaptcha/api/siteverify";
 
     public boolean verify(String recaptchaResponse) {
@@ -29,7 +34,7 @@ public class RecaptchaVerifierServiceImpl {
             GoogleResponse googleResponse = this.restClient.postForEntity(verifyUri, null, GoogleResponse.class).getBody();
             isVerified = googleResponse.isSuccess();
         } catch (Exception e) {
-            log.error("Error in JSON processing: " + e.getMessage());
+            logService.logUnexpectedException(e);
             isVerified = false;
         }
         return isVerified;
