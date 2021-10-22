@@ -1,16 +1,13 @@
 package br.com.kbmg.wsmusiccontrol.event.listener;
 
-import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.event.OnPasswordRecoveryEvent;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
-import br.com.kbmg.wsmusiccontrol.service.SecurityService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -29,16 +26,7 @@ public class PasswordRecoveryListener extends AbstractEmailListener implements
         ApplicationListener<OnPasswordRecoveryEvent> {
 
     @Autowired
-    private SecurityService securityService;
-
-    @Autowired
     private UserAppService userAppService;
-
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    public MessagesService messagesService;
 
     @Value("${register.confirmation.token}")
     private String templateHtml;

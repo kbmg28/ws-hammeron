@@ -1,25 +1,8 @@
 package br.com.kbmg.wsmusiccontrol.integration.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
-import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
-import br.com.kbmg.wsmusiccontrol.integration.BaseIntegrationTests;
-import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
-import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
-import builder.UserBuilder;
+import br.com.kbmg.wsmusiccontrol.integration.BaseEntityIntegrationTests;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.Nullable;
-
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Properties;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.TOKEN_ACTIVATE_EXPIRED;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.TOKEN_ACTIVATE_FAILED_SEND;
@@ -29,23 +12,10 @@ import static br.com.kbmg.wsmusiccontrol.integration.ResponseErrorExpect.thenRet
 import static br.com.kbmg.wsmusiccontrol.integration.ResponseErrorExpect.thenReturnHttpError401_Unauthorized;
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_EMAIL;
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class SecurityIT extends BaseIntegrationTests {
-
-    private LoginDto loginDtoTest;
-    private UserDto userDtoTest;
-    private RegisterPasswordDto registerPasswordDtoTest;
-    private UserTokenHashDto userTokenHashDtoTest;
-    private ActivateUserAccountRefreshDto activateUserAccountRefreshDtoTest;
-
-    @Autowired
-    protected VerificationTokenRepository verificationTokenRepository;
-
-    @Nullable
-    private Session session;
+class SecurityIT extends BaseEntityIntegrationTests {
 
     @Test
     public void loginAndGetToken_shouldReturnJwtToken() throws Exception {
@@ -173,67 +143,6 @@ class SecurityIT extends BaseIntegrationTests {
         givenMimeMessage();
         whenRequestResendMailToken();
         thenShouldReturnNoBody();
-    }
-
-    private void givenMimeMessage() {
-        Properties javaMailProperties = new Properties();
-        if (this.session == null) {
-            this.session = Session.getInstance(javaMailProperties);
-        }
-
-        MimeMessage mimeMessageTest = new MimeMessage(session);
-
-        when(mailSenderMockBean.createMimeMessage()).thenReturn(mimeMessageTest);
-    }
-
-    private void givenUserLoggedNotEnabled() {
-        userAppLoggedTest.setEnabled(false);
-        userAppRepository.save(userAppLoggedTest);
-    }
-
-    private void givenUserDto() {
-        userDtoTest = UserBuilder.generateUserDto();
-    }
-
-    private void givenRegisterPasswordDto() {
-        registerPasswordDtoTest = UserBuilder.generateRegisterPasswordDto();
-    }
-
-    private void givenActivateUserAccountRefreshDto() {
-        activateUserAccountRefreshDtoTest = UserBuilder.generateActivateUserAccountRefreshDto();
-    }
-
-    private void givenUserTokenHashDto() {
-        userTokenHashDtoTest = UserBuilder.generateUserTokenHashDto();
-    }
-
-    private void givenLoginDto() {
-        loginDtoTest = UserBuilder.generateLoginDto(AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD);
-    }
-
-    private void givenLoginDto(String email, String pass) {
-        loginDtoTest = UserBuilder.generateLoginDto(email, pass);
-    }
-
-    private void givenVerificationToken() {
-        VerificationToken verificationTokenTest = UserBuilder.generateVerificationToken(userAppLoggedTest);
-        verificationTokenRepository.save(verificationTokenTest);
-    }
-
-    private void givenVerificationTokenExpired() {
-        VerificationToken verificationTokenTest = UserBuilder.generateVerificationToken(userAppLoggedTest);
-        verificationTokenRepository.save(verificationTokenTest);
-
-        LocalDateTime localDateTime = verificationTokenTest.getExpiryDate()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime();
-
-        LocalDateTime expiredTime = localDateTime.minusMinutes(11);
-
-        verificationTokenTest.setExpiryDate(Timestamp.valueOf(expiredTime));
-
-        verificationTokenRepository.save(verificationTokenTest);
     }
 
     private void whenRequestPostLoginAndGetToken() throws Exception {

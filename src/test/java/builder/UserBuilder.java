@@ -38,10 +38,14 @@ public abstract class UserBuilder {
     }
 
     public static Set<UserPermission> generateUserPermissions(UserApp userApp, PermissionEnum... permission) {
-        return Arrays.stream(permission).map(pe -> new UserPermission() {{
-            setPermission(pe);
-            setUserApp(userApp);
-        }}).collect(Collectors.toSet());
+        return Arrays.stream(permission).map(pe -> {
+            UserPermission userPermission = new UserPermission();
+
+            userPermission.setPermission(pe);
+            userPermission.setUserApp(userApp);
+
+            return userPermission;
+        }).collect(Collectors.toSet());
     }
 
     public static UserDto generateUserDto() {

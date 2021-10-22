@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.AbstractEntity;
@@ -19,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,6 +34,9 @@ public abstract class GenericServiceImpl<T extends AbstractEntity, R extends Jpa
 
     @Autowired
     public MessagesService messagesService;
+
+    @Autowired
+    public LogService logService;
 
     @Override
     public T create(T entity) {

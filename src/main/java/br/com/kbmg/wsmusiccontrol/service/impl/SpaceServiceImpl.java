@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,7 +75,7 @@ public class SpaceServiceImpl
         if(userApp.isSysAdmin()) {
             return repository.findById(spaceId)
                     .orElseThrow(() -> new ServiceException(
-                            String.format(messagesService.get("space.not.exist"), spaceId)
+                            messagesService.get("space.not.exist")
                     ));
         }
 

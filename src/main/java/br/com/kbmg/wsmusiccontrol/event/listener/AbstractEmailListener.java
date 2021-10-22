@@ -3,7 +3,6 @@ package br.com.kbmg.wsmusiccontrol.event.listener;
 import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,8 +14,6 @@ import javax.mail.internet.MimeMessage;
 @Component
 @Slf4j
 public abstract class AbstractEmailListener {
-
-    private static Gson gson = new Gson();
 
     @Autowired
     private JavaMailSender mailSender;

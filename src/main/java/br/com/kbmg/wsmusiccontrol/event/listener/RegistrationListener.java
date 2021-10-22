@@ -1,6 +1,5 @@
 package br.com.kbmg.wsmusiccontrol.event.listener;
 
-import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.event.OnRegistrationCompleteEvent;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
@@ -33,12 +31,6 @@ public class RegistrationListener
 
     @Autowired
     private SecurityService securityService;
-
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    public MessagesService messagesService;
 
     @Value("${register.confirmation.token}")
     private String templateHtml;

@@ -10,6 +10,7 @@ import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.repository.UserPermissionRepository;
+import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import builder.UserBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -29,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -39,9 +41,10 @@ import java.util.Set;
 
 import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.TOKEN;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { AppConfig.class })
@@ -54,6 +57,7 @@ import static org.mockito.Mockito.verify;
             "recaptchaKeySite=key_site_integration_test",
             "recaptchaKeySecret=key_secret_integration_test",
             "recaptchaThreshold=0.8",
+            "app.logs=true"
         }
 )
 @AutoConfigureMockMvc
@@ -73,14 +77,18 @@ public abstract class BaseIntegrationTests {
 
     protected LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
 
+    /* Beans -> No invoke real method */
     @MockBean
     protected JavaMailSender mailSenderMockBean;
 
     @MockBean
     protected AbstractCaptchaService recaptchaServiceMockBean;
 
+    @MockBean
+    private JwtService jwtServiceMockBean;
 
 
+    /* Instances */
     @Autowired
     protected MockMvc mockMvc;
 
@@ -93,8 +101,8 @@ public abstract class BaseIntegrationTests {
     @Autowired
     protected UserPermissionRepository userPermissionRepository;
 
+
     protected void beforeAllTestsBase() {
-        givenHeadersRequired();
         givenUserAuthenticatedWithoutRoles();
     }
 
@@ -102,35 +110,62 @@ public abstract class BaseIntegrationTests {
         headers.add(Constants.AUTHORIZATION_HEADER_NAME, TOKEN);
     }
 
-    protected void givenUserAuthenticatedAdmin() {
-        this.saveUserAuthenticated(PermissionEnum.SPACE_OWNER);
+    protected void givenUserAuthenticatedWithPermission(PermissionEnum permissionEnum) {
+        associatePermissionToUserLogged(permissionEnum);
     }
 
     protected void givenUserAuthenticatedWithoutRoles() {
         this.saveUserAuthenticated();
     }
 
+    private void associatePermissionToUserLogged(PermissionEnum permissionEnum) {
+        if (userAppLoggedTest == null) {
+            this.saveUserAuthenticated(permissionEnum);
+        } else {
+            addPermissionToUserAppLogged(permissionEnum);
+        }
+    }
+
     private void saveUserAuthenticated(PermissionEnum... permission) {
-        givenHeadersRequired();
+        if(CollectionUtils.isEmpty(headers)){
+            givenHeadersRequired();
+        }
 
         userAppLoggedTest = UserBuilder.generateUserAppLogged();
         userAppRepository.save(userAppLoggedTest);
 
+        addPermissionToUserAppLogged(permission);
+    }
+
+    private void addPermissionToUserAppLogged(PermissionEnum... permission) {
         Set<UserPermission> userPermissions = UserBuilder.generateUserPermissions(userAppLoggedTest, permission);
-        userPermissionRepository.saveAll(userPermissions);
+
+        if(!CollectionUtils.isEmpty(userPermissions)) {
+            userPermissionRepository.saveAll(userPermissions);
+            userAppLoggedTest.setUserPermissionList(userPermissions);
+        }
     }
 
     protected void whenRequestGet(String urlTemplate)
         throws Exception {
 
+        checkUrlToApi(urlTemplate);
         perform = mockMvc.perform(MockMvcRequestBuilders.get(urlTemplate)
                 .headers(headers)
                 .params(requestParams)
                 .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
+    private void checkUrlToApi(String urlTemplate) {
+        if (urlTemplate.contains("/api/")) {
+
+            when(jwtServiceMockBean.validateTokenAndGetUserId(any())).thenReturn(userAppLoggedTest.getId());
+        }
+    }
+
     protected <T> void whenRequestPost(String urlTemplate, T body)
         throws Exception {
+        checkUrlToApi(urlTemplate);
         testJsonRequest = gson.toJson(body);
 
         perform = mockMvc.perform(MockMvcRequestBuilders.post(urlTemplate)
@@ -142,6 +177,7 @@ public abstract class BaseIntegrationTests {
 
     protected void whenRequestDelete(String urlTemplate)
         throws Exception {
+        checkUrlToApi(urlTemplate);
 
         perform = mockMvc.perform(MockMvcRequestBuilders.delete(urlTemplate)
                 .headers(headers)
@@ -151,6 +187,7 @@ public abstract class BaseIntegrationTests {
 
     protected void whenRequestPut(String urlTemplate)
         throws Exception {
+        checkUrlToApi(urlTemplate);
 
         perform = mockMvc.perform(MockMvcRequestBuilders.put(urlTemplate)
                 .headers(headers)
@@ -167,7 +204,7 @@ public abstract class BaseIntegrationTests {
     protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(PermissionEnum role, RequestMethod requestMethod, String urlTemplate,
                                                                               Object... args) throws Exception {
         switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_ForbiddenWithPermission(role.name(), perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
+        ResponseErrorExpect.thenReturnHttpError403_ForbiddenWithPermission(role, perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
     }
 
     private void switchMethodToWhenRequest(RequestMethod requestMethod, String urlTemplate, Object[] args) throws Exception {

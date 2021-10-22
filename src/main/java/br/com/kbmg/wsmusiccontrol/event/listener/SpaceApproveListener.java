@@ -1,16 +1,13 @@
 package br.com.kbmg.wsmusiccontrol.event.listener;
 
-import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.event.OnSpaceApproveEvent;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -21,17 +18,8 @@ public class SpaceApproveListener
         extends AbstractEmailListener
         implements ApplicationListener<OnSpaceApproveEvent> {
 
-    private static Gson gson = new Gson();
-
     @Autowired
     private UserAppService userAppService;
-
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    public MessagesService messagesService;
-
 
     @Override
     public void onApplicationEvent(OnSpaceApproveEvent spaceApproveEvent) {

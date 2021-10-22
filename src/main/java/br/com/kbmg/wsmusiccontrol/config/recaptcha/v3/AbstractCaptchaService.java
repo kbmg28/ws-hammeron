@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 @Slf4j
 public abstract class AbstractCaptchaService implements RecaptchaV3Service {
 
-//    private final static Logger LOGGER = LoggerFactory.getLogger(AbstractCaptchaService.class);
-
     @Autowired
     protected HttpServletRequest request;
 
