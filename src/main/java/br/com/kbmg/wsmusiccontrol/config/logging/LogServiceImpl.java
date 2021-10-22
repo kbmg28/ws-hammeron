@@ -83,7 +83,7 @@ public class LogServiceImpl implements LogService {
 
     private <T> String parseJsonToString(T obj) {
         try {
-            map.writeValueAsString(obj);
+            return map.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             this.logMessage(Level.WARN, "Failed parse json: " + obj.getClass());
         }
