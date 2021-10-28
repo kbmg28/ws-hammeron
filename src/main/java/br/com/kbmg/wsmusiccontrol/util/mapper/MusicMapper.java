@@ -63,7 +63,6 @@ public interface MusicMapper {
     @Mapping(target = "eventMusicList", ignore = true)
     @Mapping(target = "singer", ignore = true)
     @Mapping(target = "musicLinkList", ignore = true)
-    @Mapping(target = "musicStatus", ignore = true)
     @Mapping(target = "space", ignore = true)
     Music updateMusic(@MappingTarget Music musicInDatabase, Music musicUpdated);
 }
