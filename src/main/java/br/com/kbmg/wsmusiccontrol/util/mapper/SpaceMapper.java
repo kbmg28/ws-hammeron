@@ -28,7 +28,7 @@ public interface SpaceMapper {
 
     @Named(TO_MY_SPACE_DTO)
     @Mapping(target = "spaceId", source = "id")
-    @Mapping(target = "spaceOwner", source = "requestedBy")
+    @Mapping(target = "lastAccessed", ignore = true)
     MySpace toMySpaceDto(Space space);
 
 }

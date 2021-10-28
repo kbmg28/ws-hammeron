@@ -1,6 +1,5 @@
 package br.com.kbmg.wsmusiccontrol.dto.space;
 
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,5 @@ public class MySpace {
 
     private String spaceId;
     private String name;
-
-    //TODO: Modify mapper to owner list
-    private UserDto spaceOwner;
+    private Boolean lastAccessed;
 }

@@ -6,7 +6,6 @@ import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.UUID;
 
 public interface SpaceService extends GenericService<Space>{
     Space findOrCreatePublicSpace();
@@ -19,5 +18,9 @@ public interface SpaceService extends GenericService<Space>{
 
     List<Space> findAllSpaceToApprove();
 
-    List<Space> findAllMySpaces();
+    List<Space> findAllSpacesByUserApp();
+
+    Space changeViewSpaceUser(String idSpace);
+
+    Space findLastAccessedSpace();
 }

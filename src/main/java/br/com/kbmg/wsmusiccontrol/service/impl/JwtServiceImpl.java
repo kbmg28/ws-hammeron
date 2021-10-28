@@ -41,7 +41,7 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.builder()
                 .setIssuer(AppConstants.API_DESCRIBE)
-                .setSubject(userApp.getId().toString())
+                .setSubject(userApp.getId())
                 .setIssuedAt(today)
                 .claim(JwtConstants.CLAIM_EMAIL, userApp.getEmail())
                 .claim(JwtConstants.CLAIM_NAME, userApp.getName())

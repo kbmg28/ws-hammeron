@@ -32,4 +32,7 @@ public class SpaceUserAppAssociation extends AbstractEntity {
 
 	@Column(nullable = false)
 	private Boolean isOwner;
+
+	@Column(nullable = false)
+	private Boolean lastAccessedSpace;
 }

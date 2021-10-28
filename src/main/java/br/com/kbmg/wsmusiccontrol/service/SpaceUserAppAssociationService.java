@@ -12,4 +12,8 @@ public interface SpaceUserAppAssociationService
     void createAssociationToParticipant(Space space, UserApp userApp);
 
     void createAssociationToSpaceOwner(Space space, UserApp userApp);
+
+    SpaceUserAppAssociation findLastAccessedSpace(UserApp userApp);
+
+    void updateLastAccessedSpace(UserApp userLogged, Space space);
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/spaces")
@@ -35,14 +35,6 @@ public class SpaceController extends GenericController {
 
     @Autowired
     private SpaceMapper spaceMapper;
-
-    @GetMapping
-    @SecuredSysAdmin
-    public ResponseEntity<ResponseData<List<SpaceDto>>> findAllSpaces() {
-        List<Space> spaceList = spaceService.findAll();
-
-        return super.ok(spaceMapper.toSpaceDtoList(spaceList));
-    }
 
     @PostMapping("/request")
     public ResponseEntity<ResponseData<Void>> requestNewSpaceForUser(
@@ -71,12 +63,26 @@ public class SpaceController extends GenericController {
         return super.ok(spaceMapper.toSpaceDtoList(spaceList));
     }
 
-    @GetMapping("/my")
-    @SecuredAnyUserAuth
-    public ResponseEntity<ResponseData<List<MySpace>>> findAllMySpaces() {
-        List<Space> spaceList = spaceService.findAllMySpaces();
+    @GetMapping("")
+    public ResponseEntity<ResponseData<List<MySpace>>> findAllSpacesByUserApp() {
+        List<Space> spaceList = spaceService.findAllSpacesByUserApp();
 
         return super.ok(spaceMapper.toMySpaceDtoList(spaceList));
+    }
+
+    @GetMapping("/last")
+    public ResponseEntity<ResponseData<MySpace>> findLastAccessedSpace() {
+        Space space = spaceService.findLastAccessedSpace();
+
+        return super.ok(new MySpace(space.getId(), space.getName(), true));
+    }
+
+    @PutMapping("/{id-space}/change-view")
+    public ResponseEntity<ResponseData<MySpace>> changeViewSpaceUser(
+            @PathVariable("id-space") String idSpace) {
+        Space space = spaceService.changeViewSpaceUser(idSpace);
+
+        return super.ok(spaceMapper.toMySpaceDto(space));
     }
 
 }

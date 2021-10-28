@@ -13,4 +13,6 @@ public interface SpaceUserAppAssociationRepository extends
         JpaRepository<SpaceUserAppAssociation, String> {
 
     Optional<SpaceUserAppAssociation> findBySpaceAndUserAppAndIsOwner(Space space, UserApp userApp, Boolean isOwner);
+
+    SpaceUserAppAssociation findByLastAccessedSpaceTrue();
 }

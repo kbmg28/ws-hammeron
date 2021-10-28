@@ -117,12 +117,42 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public List<Space> findAllMySpaces() {
+    public List<Space> findAllSpacesByUserApp() {
         UserApp userLogged = userAppService.findUserLogged();
+
+        if(userLogged.isSysAdmin()) {
+            return this.findAll();
+        }
+
         return userLogged.getSpaceUserAppAssociationList()
                 .stream()
                 .map(SpaceUserAppAssociation::getSpace)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Space changeViewSpaceUser(String idSpace) {
+        UserApp userLogged = userAppService.findUserLogged();
+        Space space = findByIdAndUserAppValidated(idSpace, userLogged);
+
+        if(!userLogged.isSysAdmin()) {
+            spaceUserAppAssociationService.updateLastAccessedSpace(userLogged, space);
+        }
+
+        return space;
+    }
+
+    @Override
+    public Space findLastAccessedSpace() {
+        UserApp userLogged = userAppService.findUserLogged();
+
+        if (userLogged.isSysAdmin()) {
+            return this.findOrCreatePublicSpace();
+        } else {
+            SpaceUserAppAssociation ass = spaceUserAppAssociationService.findLastAccessedSpace(userLogged);
+
+            return ass.getSpace();
+        }
     }
 
 }
