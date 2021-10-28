@@ -1,4 +1,4 @@
-package br.com.kbmg.wsmusiccontrol.config.security;
+package br.com.kbmg.wsmusiccontrol.config.security.annotations;
 
 import org.springframework.security.access.annotation.Secured;
 
@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Secured({"ROLE_ADMIN"})
-public @interface SecuredAdmin {
+@Secured({"ROLE_SYS_ADMIN", "ROLE_SPACE_OWNER", "ROLE_PARTICIPANT"})
+public @interface SecuredAnyUserAuth {
 }

@@ -2,7 +2,6 @@ package br.com.kbmg.wsmusiccontrol.config.logging;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.UserCredentialsSecurity;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -28,10 +27,8 @@ public class LoggingAdvice {
     @Value("${app.logs}")
     private boolean appLogsEnabled;
 
-    @Pointcut("within(br.com.kbmg.wsmusiccontrol.config.security.UserSpringSecurityService+)")
-    public void pointcutLoadUserAndPermissions() {
-
-    }
+    @Autowired
+    public LogService logService;
 
     @Pointcut("within(br.com.kbmg.wsmusiccontrol.service..*)")
     public void pointcutService() {
@@ -56,43 +53,32 @@ public class LoggingAdvice {
         return result;
     }
 
-    @Around("pointcutLoadUserAndPermissions()")
-    public Object auditUserAndRoles(ProceedingJoinPoint jp) throws Throwable {
-        String methodName = jp.getSignature().getName();
-        Object result = jp.proceed();
-
-        if (methodName.equals("loadSpringSecurityInContext")) {
-            log.warn(map.writeValueAsString(result));
-        }
-
-        return result;
-    }
-
-    private void generateLogObject(ProceedingJoinPoint jp, MethodInvocationTypeEnum methodInvocationTypeEnum, StopWatch watch) throws JsonProcessingException {
+    private void generateLogObject(ProceedingJoinPoint jp, MethodInvocationTypeEnum methodInvocationTypeEnum, StopWatch watch) {
 
         if (appLogsEnabled) {
             String methodName = jp.getSignature().getName();
             String className = jp.getTarget().getClass().toString();
             UserCredentialsSecurity credentials = SpringSecurityUtil.getCredentials();
 
-            if (credentials != null) {
-                Object[] args = jp.getArgs();
-                Map<Integer, String> argsMap = new LinkedHashMap<>();
+            Object[] args = jp.getArgs();
+            Map<Integer, String> argsMap = new LinkedHashMap<>();
 
-                for (int i = 0; i < args.length; i++) {
-                    Object arg = args[i];
-                    argsMap.put(i, arg != null ? arg.toString() : null);
-                }
-
-                LogObject logObject = new LogObject(credentials, className, methodName, argsMap, methodInvocationTypeEnum);
-                String stringLogObject = map.writeValueAsString(logObject);
-
-                String logInfo = MethodInvocationTypeEnum.METHOD_OUT.equals(methodInvocationTypeEnum) ?
-                        String.format("%s - Execution time: %d ms", stringLogObject, watch.getTotalTimeMillis()) :
-                        stringLogObject;
-
-                log.info(logInfo);
+            for (int i = 0; i < args.length; i++) {
+                Object arg = args[i];
+                argsMap.put(i, arg != null ? arg.toString() : null);
             }
+
+            LogTraceApp logTraceApp = new LogTraceApp(
+                    credentials,
+                    className,
+                    methodName,
+                    argsMap,
+                    methodInvocationTypeEnum,
+                    MethodInvocationTypeEnum.METHOD_OUT.equals(methodInvocationTypeEnum) ?
+                            watch.getTotalTimeMillis() : null
+            );
+
+            logService.logTraceApp(logTraceApp);
         }
     }
 

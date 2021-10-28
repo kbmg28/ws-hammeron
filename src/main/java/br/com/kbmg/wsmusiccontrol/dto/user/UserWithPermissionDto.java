@@ -12,7 +12,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class UserWithPermissionDto {
 
-    private Long id;
+    private String id;
     private String name;
     private String email;
     private String cellPhone;

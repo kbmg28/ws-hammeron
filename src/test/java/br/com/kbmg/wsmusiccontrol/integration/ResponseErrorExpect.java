@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.integration;
 
+import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -26,8 +27,8 @@ public abstract class ResponseErrorExpect {
         expectMsgInBody(perform, "403 - Forbidden", msgErrorExpected);
     }
 
-    public static void thenReturnHttpError403_ForbiddenWithPermission(String role, ResultActions perform, String msgErrorExpected) throws Exception {
-        perform.andExpect(result -> assertEquals(String.format("Permission [%s]", role), HttpStatus.FORBIDDEN.value(), result.getResponse().getStatus()));
+    public static void thenReturnHttpError403_ForbiddenWithPermission(PermissionEnum permissionEnum, ResultActions perform, String msgErrorExpected) throws Exception {
+        perform.andExpect(result -> assertEquals(String.format("Permission [%s]", permissionEnum.toString()), HttpStatus.FORBIDDEN.value(), result.getResponse().getStatus()));
         expectMsgInBody(perform, "403 - Forbidden", msgErrorExpected);
     }
 

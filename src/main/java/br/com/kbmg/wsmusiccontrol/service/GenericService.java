@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -21,17 +22,17 @@ public interface GenericService<T> {
     T create(T entity);
     T update(T entity);
 
-    Optional<T> findById(Long id);
-    T findByIdValidated(Long id, String msgError);
+    Optional<T> findById(String id);
+    T findByIdValidated(String id, String msgError);
     Page<T> findPaginated(int page, int size, Direction direction, String sortProperty);
-    List<T> findAllById(Set<Long> ids);
+    List<T> findAllById(Set<String> ids);
     List<T> findAll();
     List<T> findAll(Sort sort);
 
     void delete(T entity);
-    void deleteById(Long id);
-    void deleteByIdValidated(Long id, String msgError);
-    void deleteAllById(List<Long> ids);
+    void deleteById(String id);
+    void deleteByIdValidated(String id, String msgError);
+    void deleteAllById(List<String> ids);
     void deleteInBatch(Collection<T> entities);
     void deleteInBatch(Collection<T> entities, int size);
 
@@ -47,10 +48,10 @@ public interface GenericService<T> {
      * @param id          id from entity
      * @param fieldUnique any entity field value that is unique
      * @param method      any method in your repository that accepts the type specified in <F> as a parameter and returns an Optional <T>
-     * @param msgError    error message for exception
+     * @param keyMessage  key error message for exception
      * @param <F>         a field type of the entity
      */
-    <F> void validateIfAlreadyExist(Long id, F fieldUnique, Function<F, Optional<T>> method, String msgError);
+    <F> void validateIfAlreadyExist(String id, F fieldUnique, Function<F, Optional<T>> method, String keyMessage);
 
     /**
      * <p>
@@ -61,9 +62,11 @@ public interface GenericService<T> {
      * @param field any field value
      * @param otherField other field value different
      * @param method any method in your repository that accepts the type specified in <F> and <O> as parameters and returns an Optional <T>
-     * @param msgError error message for exception
+     * @param keyMessage key error message for exception
      * @param <F> a field type of the entity
      * @param <O> other field type of the entity
      */
-    <F, O> void validateIfAlreadyExist(Long id, F field, O otherField, BiFunction<F, O, Optional<T>> method, String msgError);
+    <F, O> void validateIfAlreadyExist(String id, F field, O otherField, BiFunction<F, O, Optional<T>> method, String keyMessage);
+
+    void verifyIfAlreadyExist(String id, T entityFound, String msgError);
 }

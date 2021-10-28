@@ -2,12 +2,14 @@ package br.com.kbmg.wsmusiccontrol.integration;
 
 import br.com.kbmg.wsmusiccontrol.config.AppConfig;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
-import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.AbstractCaptchaService;
+import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.repository.UserPermissionRepository;
+import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import builder.UserBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -27,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -35,13 +38,29 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.TOKEN;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { AppConfig.class })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = { "mail=mail@test.com", "mailPassSocial=senha123" })
+        properties = {
+            "mail=mail@test.com",
+            "mailPassSocial=senha123",
+            "mail=mail@test.com",
+            "show-sql=false",
+            "recaptchaKeySite=key_site_integration_test",
+            "recaptchaKeySecret=key_secret_integration_test",
+            "recaptchaThreshold=0.8",
+            "app.logs=true"
+        }
+)
 @AutoConfigureMockMvc
 @Transactional
 @Tag("integrationTest")
@@ -55,8 +74,22 @@ public abstract class BaseIntegrationTests {
     protected static ResultActions perform;
     protected static ResultActions resultActions;
 
+    protected static final String templateUrlRecaptcha="%s?g-recaptcha-response=" + ANY_VALUE;
+
     protected LinkedMultiValueMap<String, String> requestParams = new LinkedMultiValueMap<>();
 
+    /* Beans -> No invoke real method */
+    @MockBean
+    protected JavaMailSender mailSenderMockBean;
+
+    @MockBean
+    protected AbstractCaptchaService recaptchaServiceMockBean;
+
+    @MockBean
+    private JwtService jwtServiceMockBean;
+
+
+    /* Instances */
     @Autowired
     protected MockMvc mockMvc;
 
@@ -69,11 +102,8 @@ public abstract class BaseIntegrationTests {
     @Autowired
     protected UserPermissionRepository userPermissionRepository;
 
-    @MockBean
-    protected JavaMailSender mailSender;
 
     protected void beforeAllTestsBase() {
-        givenHeadersRequired();
         givenUserAuthenticatedWithoutRoles();
     }
 
@@ -81,35 +111,62 @@ public abstract class BaseIntegrationTests {
         headers.add(Constants.AUTHORIZATION_HEADER_NAME, TOKEN);
     }
 
-    protected void givenUserAuthenticatedAdmin() {
-        this.saveUserAuthenticated(PermissionEnum.ADMIN);
+    protected void givenUserAuthenticatedWithPermission(PermissionEnum permissionEnum) {
+        associatePermissionToUserLogged(permissionEnum);
     }
 
     protected void givenUserAuthenticatedWithoutRoles() {
         this.saveUserAuthenticated();
     }
 
+    private void associatePermissionToUserLogged(PermissionEnum permissionEnum) {
+        if (userAppLoggedTest == null) {
+            this.saveUserAuthenticated(permissionEnum);
+        } else {
+            addPermissionToUserAppLogged(permissionEnum);
+        }
+    }
+
     private void saveUserAuthenticated(PermissionEnum... permission) {
-        givenHeadersRequired();
+        if(CollectionUtils.isEmpty(headers)){
+            givenHeadersRequired();
+        }
 
         userAppLoggedTest = UserBuilder.generateUserAppLogged();
         userAppRepository.save(userAppLoggedTest);
 
+        addPermissionToUserAppLogged(permission);
+    }
+
+    private void addPermissionToUserAppLogged(PermissionEnum... permission) {
         Set<UserPermission> userPermissions = UserBuilder.generateUserPermissions(userAppLoggedTest, permission);
-        userPermissionRepository.saveAll(userPermissions);
+
+        if(!CollectionUtils.isEmpty(userPermissions)) {
+            userPermissionRepository.saveAll(userPermissions);
+            userAppLoggedTest.setUserPermissionList(userPermissions);
+        }
     }
 
     protected void whenRequestGet(String urlTemplate)
         throws Exception {
 
+        checkUrlToApi(urlTemplate);
         perform = mockMvc.perform(MockMvcRequestBuilders.get(urlTemplate)
                 .headers(headers)
                 .params(requestParams)
                 .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
+    private void checkUrlToApi(String urlTemplate) {
+        if (urlTemplate.contains("/api/")) {
+
+            when(jwtServiceMockBean.validateTokenAndGetUserId(any())).thenReturn(userAppLoggedTest.getId());
+        }
+    }
+
     protected <T> void whenRequestPost(String urlTemplate, T body)
         throws Exception {
+        checkUrlToApi(urlTemplate);
         testJsonRequest = gson.toJson(body);
 
         perform = mockMvc.perform(MockMvcRequestBuilders.post(urlTemplate)
@@ -121,6 +178,7 @@ public abstract class BaseIntegrationTests {
 
     protected void whenRequestDelete(String urlTemplate)
         throws Exception {
+        checkUrlToApi(urlTemplate);
 
         perform = mockMvc.perform(MockMvcRequestBuilders.delete(urlTemplate)
                 .headers(headers)
@@ -130,6 +188,7 @@ public abstract class BaseIntegrationTests {
 
     protected void whenRequestPut(String urlTemplate)
         throws Exception {
+        checkUrlToApi(urlTemplate);
 
         perform = mockMvc.perform(MockMvcRequestBuilders.put(urlTemplate)
                 .headers(headers)
@@ -137,16 +196,16 @@ public abstract class BaseIntegrationTests {
                 .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
-    protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(RequestMethod requestMethod, String urlTemplate, Object... args)
+    protected <T> void whenRequestPut(String urlTemplate, T body)
         throws Exception {
-        switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_Forbidden(perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
-    }
+        checkUrlToApi(urlTemplate);
+        testJsonRequest = gson.toJson(body);
 
-    protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(PermissionEnum role, RequestMethod requestMethod, String urlTemplate,
-                                                                              Object... args) throws Exception {
-        switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_ForbiddenWithPermission(role.name(), perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
+        perform = mockMvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                .headers(headers)
+                .params(requestParams)
+                .content(testJsonRequest)
+                .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
     private void switchMethodToWhenRequest(RequestMethod requestMethod, String urlTemplate, Object[] args) throws Exception {
@@ -198,4 +257,21 @@ public abstract class BaseIntegrationTests {
         String str = contentAsString.split("\"content\":")[1];
         return (str == null) ? "" : str.substring(0, str.length() - 1);
     }
+
+    protected void thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum module) {
+        verify(recaptchaServiceMockBean, times(1)).processResponse(ANY_VALUE, module.getValue());
+    }
+
+    protected void thenShouldReturnList() throws Exception {
+        perform.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isNotEmpty());
+    }
+
+    protected void thenShouldReturnEmptyBody() throws Exception {
+        perform.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").doesNotExist())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
 }

@@ -5,6 +5,8 @@ import lombok.*;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -29,9 +31,9 @@ public class Event extends AbstractEntity {
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
 	private Set<EventMusicAssociation> eventMusicList = new HashSet<>();
 
-	@EqualsAndHashCode.Exclude
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
-	private Set<EventUserAppAssociation> eventUserAppAssociationList = new HashSet<>();
+	private Space space;
 
 }

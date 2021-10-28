@@ -41,7 +41,7 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.builder()
                 .setIssuer(AppConstants.API_DESCRIBE)
-                .setSubject(userApp.getId().toString())
+                .setSubject(userApp.getId())
                 .setIssuedAt(today)
                 .claim(JwtConstants.CLAIM_EMAIL, userApp.getEmail())
                 .claim(JwtConstants.CLAIM_NAME, userApp.getName())
@@ -62,14 +62,14 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public Long validateTokenAndGetUserId(String token) {
+    public String validateTokenAndGetUserId(String token) {
         if (!isValidToken(token)){
-            throw new AuthorizationException(messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
+            throw new AuthorizationException(null, messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
         }
 
         Claims claims = Jwts.parser()
                 .setSigningKey(this.secret).parseClaimsJws(token).getBody();
 
-        return Long.parseLong(claims.getSubject());
+        return claims.getSubject();
     }
 }

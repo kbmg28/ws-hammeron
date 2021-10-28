@@ -43,6 +43,11 @@ public class Music extends AbstractEntity {
 	@OneToMany(mappedBy = "music", fetch = FetchType.LAZY)
 	private Set<MusicLink> musicLinkList = new HashSet<>();
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false)
+	@ToString.Exclude
+	private Space space;
+
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "music", fetch = FetchType.LAZY)

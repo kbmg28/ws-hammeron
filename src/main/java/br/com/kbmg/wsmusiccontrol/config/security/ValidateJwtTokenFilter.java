@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.UUID;
 
 import static br.com.kbmg.wsmusiccontrol.constants.JwtConstants.BEARER;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.AUTHORIZATION_REQUIRED;
@@ -49,7 +50,6 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
                 this.loadUserSpringSecurity(userApp, request);
 
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
                 if (e instanceof AuthorizationException) {
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
                     return;
@@ -70,12 +70,12 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
 
     private UserApp authJwtTokenAndGetUser(String authorization) {
         if (Strings.isEmpty(authorization) || !authorization.startsWith(BEARER)) {
-            throw new AuthorizationException(messagesService.get(AUTHORIZATION_REQUIRED));
+            throw new AuthorizationException(null, messagesService.get(AUTHORIZATION_REQUIRED));
         }
 
         String jwtToken = authorization.substring(7, authorization.length());
 
-        Long userId = jwtService.validateTokenAndGetUserId(jwtToken);
+        String userId = jwtService.validateTokenAndGetUserId(jwtToken);
 
         return userAppService.findById(userId).orElseThrow(AuthorizationException::new);
     }

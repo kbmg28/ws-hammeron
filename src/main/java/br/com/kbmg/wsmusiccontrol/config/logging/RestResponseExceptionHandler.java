@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.config.logging;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
+import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.LockedClientException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
@@ -47,6 +48,9 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
     @Autowired
     public MessagesService messagesService;
 
+    @Autowired
+    public LogService logService;
+
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResponseData<?>> handleInternal(final Exception ex, final WebRequest request) {
         return generatedError(messagesService.get(ERROR_500_DEFAULT), HttpStatus.INTERNAL_SERVER_ERROR, ex);
@@ -57,10 +61,15 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         return generatedError(messagesService.get(ERROR_403_DEFAULT), HttpStatus.FORBIDDEN, ex);
     }
 
+    @ExceptionHandler({ForbiddenException.class})
+    public ResponseEntity<ResponseData<?>> handleForbiddenException(final ForbiddenException ex, final WebRequest request) {
+        return generatedError(ex.getMessage(), HttpStatus.FORBIDDEN, ex);
+    }
+
     @ExceptionHandler({DataAccessException.class, HibernateException.class, DataIntegrityViolationException.class})
     protected ResponseEntity<ResponseData<?>> handleConflict(final DataAccessException ex, final WebRequest request) {
 
-        return generatedError(ERROR_409_DEFAULT, HttpStatus.CONFLICT, ex);
+        return generatedError(messagesService.get(ERROR_409_DEFAULT), HttpStatus.CONFLICT, ex);
     }
 
     @ExceptionHandler(value = {EntityNotFoundException.class})
@@ -100,21 +109,27 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         final WebRequest request) {
         String msg = messagesService.get(DATA_FIELDS_INVALID);
         String errors = ex.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(", "));
-
-        return handleExceptionInternal(ex, new ResponseError(HttpStatus.BAD_REQUEST, String.format("%s %s", msg, errors)), headers, HttpStatus.BAD_REQUEST, request);
+        ResponseError responseError = new ResponseError(HttpStatus.BAD_REQUEST, String.format("%s %s", msg, errors));
+        logService.logExceptionWithStackTraceFilter(ex, responseError);
+        return handleExceptionInternal(ex, responseError, headers, HttpStatus.BAD_REQUEST, request);
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatus status,
         WebRequest request) {
-        return handleExceptionInternal(ex, new ResponseError(HttpStatus.BAD_REQUEST, messagesService.get(DATA_INVALID)), headers, HttpStatus.BAD_REQUEST, request);
+        ResponseError responseError = new ResponseError(HttpStatus.BAD_REQUEST, messagesService.get(DATA_INVALID));
+
+        logService.logExceptionWithStackTraceFilter(ex, responseError);
+
+        return handleExceptionInternal(ex, responseError, headers, HttpStatus.BAD_REQUEST, request);
     }
 
     private ResponseEntity<ResponseData<?>> generatedError(String message, HttpStatus http, Exception ex) {
         ResponseError responseError = new ResponseError(http, message);
         ResponseData<?> data = new ResponseData<>(null, responseError);
 
-        log.error(gson.toJson(responseError), ex);
+        logService.logExceptionWithStackTraceFilter(ex, responseError);
+
         return new ResponseEntity<>(data, http);
     }
 

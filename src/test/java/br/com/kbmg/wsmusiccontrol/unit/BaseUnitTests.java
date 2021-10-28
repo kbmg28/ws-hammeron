@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.unit;
 
 
+import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +16,10 @@ import javax.persistence.EntityManager;
 public abstract class BaseUnitTests {
 
     @Mock
-    private EntityManager entityManager;
+    protected EntityManager entityManager;
+
+    @Mock
+    protected LogService logService;
 
     @BeforeEach
     public void setup() {

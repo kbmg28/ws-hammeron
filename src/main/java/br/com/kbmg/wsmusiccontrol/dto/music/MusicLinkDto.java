@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class MusicLinkDto {
 
-    private Long id;
+    private String id;
 
     @NotBlank
     private String link;

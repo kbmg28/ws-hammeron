@@ -2,6 +2,7 @@ package builder;
 
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
@@ -14,7 +15,11 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static constants.BaseTestsConstants.*;
+import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_CELLPHONE;
+import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_EMAIL;
+import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_NAME;
+import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
+import static constants.BaseTestsConstants.TOKEN;
 
 public abstract class UserBuilder {
 
@@ -33,14 +38,22 @@ public abstract class UserBuilder {
     }
 
     public static Set<UserPermission> generateUserPermissions(UserApp userApp, PermissionEnum... permission) {
-        return Arrays.stream(permission).map(pe -> new UserPermission() {{
-            setPermission(pe);
-            setUserApp(userApp);
-        }}).collect(Collectors.toSet());
+        return Arrays.stream(permission).map(pe -> {
+            UserPermission userPermission = new UserPermission();
+
+            userPermission.setPermission(pe);
+            userPermission.setUserApp(userApp);
+
+            return userPermission;
+        }).collect(Collectors.toSet());
     }
 
     public static UserDto generateUserDto() {
         return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_CELLPHONE);
+    }
+
+    public static RegisterPasswordDto generateRegisterPasswordDto() {
+        return new RegisterPasswordDto(AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD);
     }
 
     public static UserTokenHashDto generateUserTokenHashDto() {
