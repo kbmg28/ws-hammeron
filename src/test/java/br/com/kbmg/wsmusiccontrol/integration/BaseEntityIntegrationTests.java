@@ -1,16 +1,23 @@
 package br.com.kbmg.wsmusiccontrol.integration;
 
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
+import br.com.kbmg.wsmusiccontrol.model.AbstractEntity;
+import br.com.kbmg.wsmusiccontrol.model.Music;
+import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
+import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
+import br.com.kbmg.wsmusiccontrol.repository.SingerRepository;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceUserAppAssociationRepository;
 import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
+import builder.MusicBuilder;
 import builder.SpaceBuilder;
 import builder.UserBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +29,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Properties;
+import java.util.UUID;
 
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_EMAIL;
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
@@ -35,10 +43,13 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     protected RegisterPasswordDto registerPasswordDtoTest;
     protected UserTokenHashDto userTokenHashDtoTest;
     protected ActivateUserAccountRefreshDto activateUserAccountRefreshDtoTest;
+    protected MusicWithSingerAndLinksDto musicWithSingerAndLinksDtoTest;
 
     /* Entities */
     protected Space spaceTest;
     protected SpaceUserAppAssociation spaceUserAppAssociationTest;
+    protected Music musicTest;
+    protected Singer singerTest;
 
     /* Injects */
     @Nullable
@@ -52,6 +63,12 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
 
     @Autowired
     protected SpaceUserAppAssociationRepository spaceUserAppAssociationRepository;
+
+    @Autowired
+    protected MusicRepository musicRepository;
+
+    @Autowired
+    protected SingerRepository singerRepository;
 
     /* TESTS */
 
@@ -95,6 +112,10 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
         loginDtoTest = UserBuilder.generateLoginDto(email, pass);
     }
 
+    protected void givenMusicWithSingerAndLinksDto() {
+        musicWithSingerAndLinksDtoTest = MusicBuilder.generateMusicWithSingerAndLinksDto();
+    }
+
     protected void givenVerificationToken() {
         VerificationToken verificationTokenTest = UserBuilder.generateVerificationToken(userAppLoggedTest);
         verificationTokenRepository.save(verificationTokenTest);
@@ -124,6 +145,18 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     protected void givenSpaceUserAppAssociationInDatabase(Boolean isOwner) {
         spaceUserAppAssociationTest = SpaceBuilder.generateSpaceUserAppAssociation(spaceTest, userAppLoggedTest, isOwner);
         spaceUserAppAssociationRepository.save(spaceUserAppAssociationTest);
+    }
+
+    protected void givenMusicInDatabase() {
+        singerTest = MusicBuilder.generateSinger();
+        singerRepository.save(singerTest);
+
+        musicTest = MusicBuilder.generateMusic(spaceTest, singerTest);
+        musicRepository.save(musicTest);
+    }
+
+    protected <T extends AbstractEntity> String getIdOrOtherInvalid(T entity) {
+        return entity == null ? UUID.randomUUID().toString() : entity.getId();
     }
 
 }

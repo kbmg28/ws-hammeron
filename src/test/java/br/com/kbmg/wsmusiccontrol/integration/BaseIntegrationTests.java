@@ -4,7 +4,6 @@ import br.com.kbmg.wsmusiccontrol.config.AppConfig;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.AbstractCaptchaService;
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
-import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
@@ -45,6 +44,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { AppConfig.class })
@@ -195,16 +196,16 @@ public abstract class BaseIntegrationTests {
                 .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
-    protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(RequestMethod requestMethod, String urlTemplate, Object... args)
+    protected <T> void whenRequestPut(String urlTemplate, T body)
         throws Exception {
-        switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_Forbidden(perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
-    }
+        checkUrlToApi(urlTemplate);
+        testJsonRequest = gson.toJson(body);
 
-    protected <T> void whenRequest_thenShouldReturnWithHttpError403_Forbidden(PermissionEnum role, RequestMethod requestMethod, String urlTemplate,
-                                                                              Object... args) throws Exception {
-        switchMethodToWhenRequest(requestMethod, urlTemplate, args);
-        ResponseErrorExpect.thenReturnHttpError403_ForbiddenWithPermission(role, perform, messagesService.get(KeyMessageConstants.ERROR_403_DEFAULT));
+        perform = mockMvc.perform(MockMvcRequestBuilders.put(urlTemplate)
+                .headers(headers)
+                .params(requestParams)
+                .content(testJsonRequest)
+                .contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
     private void switchMethodToWhenRequest(RequestMethod requestMethod, String urlTemplate, Object[] args) throws Exception {
@@ -259,6 +260,18 @@ public abstract class BaseIntegrationTests {
 
     protected void thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum module) {
         verify(recaptchaServiceMockBean, times(1)).processResponse(ANY_VALUE, module.getValue());
+    }
+
+    protected void thenShouldReturnList() throws Exception {
+        perform.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content").isNotEmpty());
+    }
+
+    protected void thenShouldReturnEmptyBody() throws Exception {
+        perform.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").doesNotExist())
+                .andExpect(jsonPath("$").isEmpty());
     }
 
 }
