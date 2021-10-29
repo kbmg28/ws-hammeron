@@ -23,13 +23,18 @@ public class Event extends AbstractEntity {
 	@Column(nullable = false)
 	private LocalDate date;
 
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private Boolean isPrincipalEventWeek;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
 	private Set<EventMusicAssociation> eventMusicList = new HashSet<>();
+
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
+	private Set<EventSpaceUserAppAssociation> spaceUserAppAssociationList = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)

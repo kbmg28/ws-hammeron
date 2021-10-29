@@ -6,14 +6,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -21,27 +17,16 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class SpaceUserAppAssociation extends AbstractEntity {
+public class EventSpaceUserAppAssociation extends AbstractEntity {
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	private Space space;
+	private Event event;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	private UserApp userApp;
-
-	@Column(nullable = false)
-	private Boolean isOwner;
-
-	@Column(nullable = false)
-	private Boolean lastAccessedSpace;
-
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@OneToMany(mappedBy = "spaceUserAppAssociation", fetch = FetchType.LAZY)
-	private Set<EventSpaceUserAppAssociation> eventAssociationList = new HashSet<>();
+	private SpaceUserAppAssociation spaceUserAppAssociation;
 
 }
