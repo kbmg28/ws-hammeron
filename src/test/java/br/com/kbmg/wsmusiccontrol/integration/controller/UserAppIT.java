@@ -3,6 +3,7 @@ package br.com.kbmg.wsmusiccontrol.integration.controller;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.integration.BaseEntityIntegrationTests;
 import br.com.kbmg.wsmusiccontrol.integration.annotations.PermissionWithoutSysAdminParameterizedTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,11 @@ class UserAppIT extends BaseEntityIntegrationTests {
     @BeforeEach
     public void before() {
         super.beforeAllTestsBase();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        super.deleteUserAndAssociations(userAppLoggedTest);
     }
 
     @PermissionWithoutSysAdminParameterizedTest

@@ -16,10 +16,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_CELLPHONE;
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_EMAIL;
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_NAME;
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
 import static constants.BaseTestsConstants.TOKEN;
+import static constants.BaseTestsConstants.generateRandomEmail;
 
 public abstract class UserBuilder {
 
@@ -27,7 +27,7 @@ public abstract class UserBuilder {
 
         UserApp userAppLoggedTest = new UserApp();
 
-        userAppLoggedTest.setEmail(AUTHENTICATED_USER_TEST_EMAIL);
+        userAppLoggedTest.setEmail(generateRandomEmail());
         userAppLoggedTest.setName(AUTHENTICATED_USER_TEST_NAME);
         userAppLoggedTest.setCellPhone(AUTHENTICATED_USER_TEST_CELLPHONE);
         userAppLoggedTest.setEnabled(true);
@@ -48,24 +48,24 @@ public abstract class UserBuilder {
         }).collect(Collectors.toSet());
     }
 
-    public static UserDto generateUserDto() {
-        return new UserDto(AUTHENTICATED_USER_TEST_NAME, AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_CELLPHONE);
+    public static UserDto generateUserDto(String email) {
+        return new UserDto(AUTHENTICATED_USER_TEST_NAME, email, AUTHENTICATED_USER_TEST_CELLPHONE);
     }
 
-    public static RegisterPasswordDto generateRegisterPasswordDto() {
-        return new RegisterPasswordDto(AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD);
+    public static RegisterPasswordDto generateRegisterPasswordDto(String email) {
+        return new RegisterPasswordDto(email, AUTHENTICATED_USER_TEST_PASSWORD);
     }
 
-    public static UserTokenHashDto generateUserTokenHashDto() {
-        return new UserTokenHashDto(AUTHENTICATED_USER_TEST_EMAIL, TOKEN);
+    public static UserTokenHashDto generateUserTokenHashDto(String email) {
+        return new UserTokenHashDto(email, TOKEN);
     }
 
-    public static ActivateUserAccountRefreshDto generateActivateUserAccountRefreshDto() {
-        return new ActivateUserAccountRefreshDto(AUTHENTICATED_USER_TEST_EMAIL);
+    public static ActivateUserAccountRefreshDto generateActivateUserAccountRefreshDto(String email) {
+        return new ActivateUserAccountRefreshDto(email);
     }
 
     public static LoginDto generateLoginDto() {
-        return generateLoginDto(AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD);
+        return generateLoginDto(generateRandomEmail(), AUTHENTICATED_USER_TEST_PASSWORD);
     }
 
     public static LoginDto generateLoginDto(String email, String pass) {

@@ -7,6 +7,7 @@ import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
+import br.com.kbmg.wsmusiccontrol.repository.SpaceUserAppAssociationRepository;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.repository.UserPermissionRepository;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
@@ -29,7 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -40,12 +40,14 @@ import java.util.Set;
 
 import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.TOKEN;
+import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { AppConfig.class })
@@ -70,7 +72,8 @@ public abstract class BaseIntegrationTests {
     protected static HttpHeaders headers = new HttpHeaders();
     protected static ObjectMapper objectMapper = new ObjectMapper();
     protected static Gson gson = new Gson();
-    protected static UserApp userAppLoggedTest;
+    protected UserApp userAppLoggedTest;
+
     protected static ResultActions perform;
     protected static ResultActions resultActions;
 
@@ -102,6 +105,9 @@ public abstract class BaseIntegrationTests {
     @Autowired
     protected UserPermissionRepository userPermissionRepository;
 
+    @Autowired
+    protected SpaceUserAppAssociationRepository spaceUserAppAssociationRepository;
+
 
     protected void beforeAllTestsBase() {
         givenUserAuthenticatedWithoutRoles();
@@ -119,6 +125,26 @@ public abstract class BaseIntegrationTests {
         this.saveUserAuthenticated();
     }
 
+    protected void checkIfEmailAlreadyExistAndDeleteIfPresent(){
+        userAppRepository.findByEmail(generateRandomEmail())
+                .ifPresent(this::deleteUserAndAssociations);
+    }
+
+    protected void deleteUserAndAssociations(UserApp userInDatabase) {
+        if (userInDatabase != null) {
+            if(!isEmpty(userInDatabase.getUserPermissionList())) {
+                userPermissionRepository.deleteAll(userInDatabase.getUserPermissionList());
+            }
+
+            if(!isEmpty(userInDatabase.getSpaceUserAppAssociationList())) {
+                spaceUserAppAssociationRepository.deleteAll(userInDatabase.getSpaceUserAppAssociationList());
+            }
+
+            userAppRepository.delete(userInDatabase);
+            userInDatabase = null;
+        }
+    }
+
     private void associatePermissionToUserLogged(PermissionEnum permissionEnum) {
         if (userAppLoggedTest == null) {
             this.saveUserAuthenticated(permissionEnum);
@@ -128,11 +154,12 @@ public abstract class BaseIntegrationTests {
     }
 
     private void saveUserAuthenticated(PermissionEnum... permission) {
-        if(CollectionUtils.isEmpty(headers)){
+        if(isEmpty(headers)){
             givenHeadersRequired();
         }
 
         userAppLoggedTest = UserBuilder.generateUserAppLogged();
+
         userAppRepository.save(userAppLoggedTest);
 
         addPermissionToUserAppLogged(permission);
@@ -141,7 +168,7 @@ public abstract class BaseIntegrationTests {
     private void addPermissionToUserAppLogged(PermissionEnum... permission) {
         Set<UserPermission> userPermissions = UserBuilder.generateUserPermissions(userAppLoggedTest, permission);
 
-        if(!CollectionUtils.isEmpty(userPermissions)) {
+        if(!isEmpty(userPermissions)) {
             userPermissionRepository.saveAll(userPermissions);
             userAppLoggedTest.setUserPermissionList(userPermissions);
         }
