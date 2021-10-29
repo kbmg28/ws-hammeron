@@ -14,5 +14,5 @@ public interface SpaceUserAppAssociationRepository extends
 
     Optional<SpaceUserAppAssociation> findBySpaceAndUserAppAndIsOwner(Space space, UserApp userApp, Boolean isOwner);
 
-    SpaceUserAppAssociation findByLastAccessedSpaceTrue();
+    SpaceUserAppAssociation findByUserAppAndLastAccessedSpaceTrue(UserApp userApp);
 }

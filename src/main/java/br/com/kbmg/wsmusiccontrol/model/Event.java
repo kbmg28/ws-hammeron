@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +23,9 @@ public class Event extends AbstractEntity {
 
 	@Column(nullable = false)
 	private LocalDate date;
+
+	@Column(nullable = false)
+	private LocalTime time;
 
 	@Column(nullable = true)
 	private Boolean isPrincipalEventWeek;

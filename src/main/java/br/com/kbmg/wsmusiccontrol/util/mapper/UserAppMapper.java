@@ -46,4 +46,7 @@ public interface UserAppMapper {
     @Mapping(target = "cellPhone", source = "userApp.cellPhone")
     UserDto toUserDto(UserPermission userPermission);
 
+    @IterableMapping(elementTargetType = UserDto.class)
+    Set<UserDto> toUserDtoListFromUserAppList(List<UserApp> userAppList);
+
 }

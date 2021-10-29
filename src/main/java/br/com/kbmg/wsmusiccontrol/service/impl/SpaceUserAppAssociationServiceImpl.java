@@ -62,7 +62,7 @@ public class SpaceUserAppAssociationServiceImpl
 
     @Override
     public SpaceUserAppAssociation findLastAccessedSpace(UserApp userApp) {
-        return repository.findByLastAccessedSpaceTrue();
+        return repository.findByUserAppAndLastAccessedSpaceTrue(userApp);
     }
 
     private SpaceUserAppAssociation createAssociation(Space space, UserApp userApp, Boolean isOwner) {
