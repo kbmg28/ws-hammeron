@@ -4,6 +4,8 @@ import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
+import java.util.Set;
+
 public interface SpaceUserAppAssociationService
         extends GenericService<SpaceUserAppAssociation>{
 
@@ -16,4 +18,6 @@ public interface SpaceUserAppAssociationService
     SpaceUserAppAssociation findLastAccessedSpace(UserApp userApp);
 
     void updateLastAccessedSpace(UserApp userLogged, Space space);
+
+    Set<SpaceUserAppAssociation> findAllByEmailAndSpace(Space space, Set<String> userEmailList);
 }

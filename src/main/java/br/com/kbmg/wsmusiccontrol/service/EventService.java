@@ -10,4 +10,6 @@ public interface EventService extends GenericService<Event>{
     Set<EventWithMusicListDto> findAllEventsBySpace(String spaceId, LocalDate startFilter, LocalDate endFilter);
 
     EventWithMusicListDto findBySpaceAndId(String spaceId, String idMusic);
+
+    EventWithMusicListDto createEvent(String spaceId, EventWithMusicListDto body);
 }

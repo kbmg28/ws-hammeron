@@ -13,6 +13,8 @@ import br.com.kbmg.wsmusiccontrol.service.UserPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 public class SpaceUserAppAssociationServiceImpl
         extends GenericServiceImpl<SpaceUserAppAssociation, SpaceUserAppAssociationRepository>
@@ -58,6 +60,12 @@ public class SpaceUserAppAssociationServiceImpl
 
         repository.save(associationOld);
         repository.save(associationLast);
+    }
+
+    @Override
+    public Set<SpaceUserAppAssociation> findAllByEmailAndSpace(Space space, Set<String> userEmailList) {
+        //TODO: search email list validated
+        return null;
     }
 
     @Override

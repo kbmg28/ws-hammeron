@@ -8,4 +8,6 @@ import java.util.Set;
 
 public interface EventMusicAssociationService extends GenericService<EventMusicAssociation>{
     Set<MusicWithSingerAndLinksDto> findAllMusicByEvent(Event event);
+
+    Set<EventMusicAssociation> createAssociation(Event event, Set<MusicWithSingerAndLinksDto> musicList);
 }

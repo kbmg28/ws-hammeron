@@ -24,4 +24,10 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
         List<Music> list = repository.findAllMusicByEvent(event);
         return musicMapper.toMusicWithSingerAndLinksDtoList(list);
     }
+
+    @Override
+    public Set<EventMusicAssociation> createAssociation(Event event, Set<MusicWithSingerAndLinksDto> musicList) {
+        // TODO: create logic to association
+        return null;
+    }
 }

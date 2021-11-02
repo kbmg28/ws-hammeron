@@ -5,6 +5,9 @@ import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
+import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
+import br.com.kbmg.wsmusiccontrol.model.EventSpaceUserAppAssociation;
+import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.EventRepository;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository> implements EventService {
@@ -59,6 +63,30 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
         eventWithMusicListDto.setMusicList(musicList);
         return eventWithMusicListDto;
+    }
+
+    @Override
+    public EventWithMusicListDto createEvent(String spaceId, EventWithMusicListDto body) {
+        UserApp userLogged = userAppService.findUserLogged();
+        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+        repository.findBySpaceAndDateAndTime(space, body.getDate(), body.getTime())
+                .ifPresent(event -> {
+                    throw new ServiceException("..."); //TODO: already exist
+                });
+
+        Set<EventMusicAssociation> list = eventMusicAssociationService
+                .createAssociation(null, body.getMusicList());
+
+        Set<String> emailList = body
+                .getUserList()
+                .stream()
+                .map(UserDto::getEmail)
+                .collect(Collectors.toSet());
+
+        Set<EventSpaceUserAppAssociation> list2 = eventSpaceUserAppAssociationService
+                .createAssociation(space, new Event(), emailList);
+
+        return null;
     }
 
 }
