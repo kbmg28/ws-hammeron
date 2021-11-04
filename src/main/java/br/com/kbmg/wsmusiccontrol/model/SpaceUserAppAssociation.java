@@ -23,14 +23,12 @@ import java.util.Set;
 @ToString(callSuper = true)
 public class SpaceUserAppAssociation extends AbstractEntity {
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
-	@ToString.Exclude
 	private Space space;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
-	@ToString.Exclude
 	private UserApp userApp;
 
 	@Column(nullable = false)

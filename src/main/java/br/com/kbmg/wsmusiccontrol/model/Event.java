@@ -22,13 +22,13 @@ import java.util.Set;
 public class Event extends AbstractEntity {
 
 	@Column(nullable = false)
-	private LocalDate date;
+	private LocalDate dateEvent;
 
 	@Column(nullable = false)
-	private LocalTime time;
+	private LocalTime timeEvent;
 
 	@Column(nullable = true)
-	private Boolean isPrincipalEventWeek;
+	private String name;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude

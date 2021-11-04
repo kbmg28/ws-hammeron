@@ -1,8 +1,9 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
+import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
 import br.com.kbmg.wsmusiccontrol.service.EventService;
 import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/spaces/{space-id}/events")
@@ -34,12 +33,12 @@ public class EventController extends GenericController {
 
     @GetMapping
     @Transactional
-    public ResponseEntity<ResponseData<Set<EventWithMusicListDto>>> findAllEvents(
+    public ResponseEntity<ResponseData<List<EventDto>>> findAllEvents(
             @PathVariable("space-id") String spaceId,
-            @RequestParam(name = "startFilter") Optional<LocalDate> startFilter,
-            @RequestParam(name = "endFilter") Optional<LocalDate> endFilter) {
+            @RequestParam(name = "nextEvents", required = true) Boolean nextEvents,
+            @RequestParam(name = "rangeDate", required = false) RangeDateFilterEnum rangeDate) {
 //        startFilter.
-        Set<EventWithMusicListDto> list = eventService.findAllEventsBySpace(spaceId, null,null);
+        List<EventDto> list = eventService.findAllEventsBySpace(spaceId, nextEvents, rangeDate);
         return super.ok(list);
     }
 
@@ -54,10 +53,10 @@ public class EventController extends GenericController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<ResponseData<EventWithMusicListDto>> createEvent(
+    public ResponseEntity<ResponseData<EventDto>> createEvent(
             @PathVariable("space-id") String spaceId,
             @RequestBody @Valid EventWithMusicListDto body) {
-        EventWithMusicListDto data = eventService.createEvent(spaceId, body);
+        EventDto data = eventService.createEvent(spaceId, body);
         return super.ok(data);
     }
 

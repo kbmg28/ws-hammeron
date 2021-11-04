@@ -3,9 +3,7 @@ package br.com.kbmg.wsmusiccontrol.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -31,12 +29,10 @@ public abstract class AbstractEntity implements Serializable {
 	@Column(name = "id", updatable = false, nullable = false, columnDefinition = "VARCHAR(255)")
 	private String id;
 
-	@CreationTimestamp
 	@EqualsAndHashCode.Exclude
 	protected LocalDateTime createdDate;
 
 	@Column
-	@UpdateTimestamp
 	@EqualsAndHashCode.Exclude
 	protected LocalDateTime updatedDate;
 
@@ -53,11 +49,13 @@ public abstract class AbstractEntity implements Serializable {
 
 	@PrePersist
 	protected void onSave() {
+		this.createdDate = LocalDateTime.now();
 		createdByEmail = this.getEmailOfUserLogged();
 	}
 
 	@PreUpdate
 	protected void onUpdate() {
+		this.updatedDate = LocalDateTime.now();
 		updatedByEmail = this.getEmailOfUserLogged();
 	}
 

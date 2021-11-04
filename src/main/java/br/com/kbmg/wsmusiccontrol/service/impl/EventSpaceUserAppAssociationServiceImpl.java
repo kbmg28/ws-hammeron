@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<EventSpaceUserAppAssociation, EventSpaceUserAppAssociationRepository> implements EventSpaceUserAppAssociationService {
@@ -33,7 +34,12 @@ public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<
 
     @Override
     public Set<EventSpaceUserAppAssociation> createAssociation(Space space, Event event, Set<String> userEmailList) {
-        Set<SpaceUserAppAssociation> list = spaceUserAppAssociationService.findAllByEmailAndSpace(space, userEmailList);
-        return null;
+        Set<SpaceUserAppAssociation> spaceUserList = spaceUserAppAssociationService
+                .findAllBySpaceAndEmailList(space, userEmailList);
+
+        return spaceUserList.stream().map(spaceUserAppAssociation -> {
+            EventSpaceUserAppAssociation eventSpaceUserAppAssociation = new EventSpaceUserAppAssociation(event, spaceUserAppAssociation);
+            return repository.save(eventSpaceUserAppAssociation);
+        }).collect(Collectors.toSet());
     }
 }

@@ -63,9 +63,14 @@ public class SpaceUserAppAssociationServiceImpl
     }
 
     @Override
-    public Set<SpaceUserAppAssociation> findAllByEmailAndSpace(Space space, Set<String> userEmailList) {
-        //TODO: search email list validated
-        return null;
+    public Set<SpaceUserAppAssociation> findAllBySpaceAndEmailList(Space space, Set<String> userEmailList) {
+        Set<SpaceUserAppAssociation> associationList = repository.findBySpaceAndEmailUserList(space, userEmailList);
+
+        if(associationList.size() != userEmailList.size()) {
+            throw new ServiceException(messagesService.get("event.user.list.invalid"));
+        }
+
+        return associationList;
     }
 
     @Override

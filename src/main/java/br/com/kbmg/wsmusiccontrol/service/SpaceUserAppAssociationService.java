@@ -19,5 +19,5 @@ public interface SpaceUserAppAssociationService
 
     void updateLastAccessedSpace(UserApp userLogged, Space space);
 
-    Set<SpaceUserAppAssociation> findAllByEmailAndSpace(Space space, Set<String> userEmailList);
+    Set<SpaceUserAppAssociation> findAllBySpaceAndEmailList(Space space, Set<String> userEmailList);
 }

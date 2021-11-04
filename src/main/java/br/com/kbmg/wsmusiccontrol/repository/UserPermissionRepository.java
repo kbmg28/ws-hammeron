@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.repository;
 
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.Space;
+import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,4 +21,6 @@ public interface UserPermissionRepository extends JpaRepository<UserPermission, 
             "       spaceAssociation.space = :space" +
             ")")
     List<UserPermission> findByPermissionAndSpace(PermissionEnum permissionEnum, Space space);
+
+    List<UserPermission> findAllByUserApp(UserApp userApp);
 }

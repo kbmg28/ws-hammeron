@@ -63,6 +63,9 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.passay/passay
 	implementation group: 'org.passay', name: 'passay', version: '1.6.1'
 
+	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
+
 }
 
 tasks.register("unitTest", Test) {
