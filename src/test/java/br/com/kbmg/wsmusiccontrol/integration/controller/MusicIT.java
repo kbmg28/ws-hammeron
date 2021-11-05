@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.integration.controller;
 
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.integration.BaseEntityIntegrationTests;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,9 +18,13 @@ class MusicIT extends BaseEntityIntegrationTests {
     private static final String PATH_PARAM_SPACE_ID = "{space-id}";
 
     @BeforeEach
-    public void before() {
-        super.beforeAllTestsBase();
+    public void beforeEach() {
         givenUserAuthenticatedWithPermission(PermissionEnum.PARTICIPANT);
+    }
+
+   @AfterEach
+    public void afterEach() {
+        super.deleteUserAndAssociations(userAppLoggedTest);
     }
 
     @Test

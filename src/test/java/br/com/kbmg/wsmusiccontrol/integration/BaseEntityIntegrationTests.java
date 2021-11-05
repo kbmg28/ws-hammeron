@@ -15,7 +15,6 @@ import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
 import br.com.kbmg.wsmusiccontrol.repository.SingerRepository;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
-import br.com.kbmg.wsmusiccontrol.repository.SpaceUserAppAssociationRepository;
 import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
 import builder.MusicBuilder;
 import builder.SpaceBuilder;
@@ -31,8 +30,8 @@ import java.time.ZoneId;
 import java.util.Properties;
 import java.util.UUID;
 
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_EMAIL;
 import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
+import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.mockito.Mockito.when;
 
 public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
@@ -62,9 +61,6 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     protected SpaceRepository spaceRepository;
 
     @Autowired
-    protected SpaceUserAppAssociationRepository spaceUserAppAssociationRepository;
-
-    @Autowired
     protected MusicRepository musicRepository;
 
     @Autowired
@@ -89,23 +85,23 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     }
 
     protected void givenUserDto() {
-        userDtoTest = UserBuilder.generateUserDto();
+        userDtoTest = UserBuilder.generateUserDto(generateRandomEmail());
     }
 
-    protected void givenRegisterPasswordDto() {
-        registerPasswordDtoTest = UserBuilder.generateRegisterPasswordDto();
+    protected void givenRegisterPasswordDto(String email) {
+        registerPasswordDtoTest = UserBuilder.generateRegisterPasswordDto(email);
     }
 
-    protected void givenActivateUserAccountRefreshDto() {
-        activateUserAccountRefreshDtoTest = UserBuilder.generateActivateUserAccountRefreshDto();
+    protected void givenActivateUserAccountRefreshDto(String email) {
+        activateUserAccountRefreshDtoTest = UserBuilder.generateActivateUserAccountRefreshDto(email);
     }
 
-    protected void givenUserTokenHashDto() {
-        userTokenHashDtoTest = UserBuilder.generateUserTokenHashDto();
+    protected void givenUserTokenHashDto(String email) {
+        userTokenHashDtoTest = UserBuilder.generateUserTokenHashDto(email);
     }
 
     protected void givenLoginDto() {
-        loginDtoTest = UserBuilder.generateLoginDto(AUTHENTICATED_USER_TEST_EMAIL, AUTHENTICATED_USER_TEST_PASSWORD);
+        loginDtoTest = UserBuilder.generateLoginDto(userAppLoggedTest.getEmail(), AUTHENTICATED_USER_TEST_PASSWORD);
     }
 
     protected void givenLoginDto(String email, String pass) {

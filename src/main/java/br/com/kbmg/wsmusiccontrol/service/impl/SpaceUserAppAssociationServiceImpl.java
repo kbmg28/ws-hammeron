@@ -13,6 +13,8 @@ import br.com.kbmg.wsmusiccontrol.service.UserPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 public class SpaceUserAppAssociationServiceImpl
         extends GenericServiceImpl<SpaceUserAppAssociation, SpaceUserAppAssociationRepository>
@@ -61,8 +63,19 @@ public class SpaceUserAppAssociationServiceImpl
     }
 
     @Override
+    public Set<SpaceUserAppAssociation> findAllBySpaceAndEmailList(Space space, Set<String> userEmailList) {
+        Set<SpaceUserAppAssociation> associationList = repository.findBySpaceAndEmailUserList(space, userEmailList);
+
+        if(associationList.size() != userEmailList.size()) {
+            throw new ServiceException(messagesService.get("event.user.list.invalid"));
+        }
+
+        return associationList;
+    }
+
+    @Override
     public SpaceUserAppAssociation findLastAccessedSpace(UserApp userApp) {
-        return repository.findByLastAccessedSpaceTrue();
+        return repository.findByUserAppAndLastAccessedSpaceTrue(userApp);
     }
 
     private SpaceUserAppAssociation createAssociation(Space space, UserApp userApp, Boolean isOwner) {

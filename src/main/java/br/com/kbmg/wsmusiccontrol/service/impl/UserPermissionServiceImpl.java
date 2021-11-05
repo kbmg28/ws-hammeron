@@ -63,6 +63,11 @@ public class UserPermissionServiceImpl
         return repository.findByPermission(PermissionEnum.SYS_ADMIN);
     }
 
+    @Override
+    public List<UserPermission> findAllByUserApp(UserApp userApp) {
+        return repository.findAllByUserApp(userApp);
+    }
+
     private boolean hasNoPermission(PermissionEnum permissionEnum, Set<UserPermission> userPermissionList) {
         return userPermissionList
                 .stream()

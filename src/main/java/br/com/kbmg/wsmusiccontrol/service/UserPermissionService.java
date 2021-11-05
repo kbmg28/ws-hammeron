@@ -5,7 +5,6 @@ import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface UserPermissionService extends GenericService<UserPermission>{
 
@@ -14,4 +13,7 @@ public interface UserPermissionService extends GenericService<UserPermission>{
     void addPermissionToUser(UserApp userApp, PermissionEnum permissionEnum);
 
     List<UserPermission> findAllSysAdmin();
+
+    List<UserPermission> findAllByUserApp(UserApp userApp);
+
 }

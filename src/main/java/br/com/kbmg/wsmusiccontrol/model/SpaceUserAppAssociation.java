@@ -11,6 +11,9 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -20,14 +23,12 @@ import javax.persistence.ManyToOne;
 @ToString(callSuper = true)
 public class SpaceUserAppAssociation extends AbstractEntity {
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
-	@ToString.Exclude
 	private Space space;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)
-	@ToString.Exclude
 	private UserApp userApp;
 
 	@Column(nullable = false)
@@ -35,4 +36,10 @@ public class SpaceUserAppAssociation extends AbstractEntity {
 
 	@Column(nullable = false)
 	private Boolean lastAccessedSpace;
+
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@OneToMany(mappedBy = "spaceUserAppAssociation", fetch = FetchType.LAZY)
+	private Set<EventSpaceUserAppAssociation> eventAssociationList = new HashSet<>();
+
 }

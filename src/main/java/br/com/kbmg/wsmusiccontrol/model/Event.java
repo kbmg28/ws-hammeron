@@ -9,6 +9,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,15 +22,23 @@ import java.util.Set;
 public class Event extends AbstractEntity {
 
 	@Column(nullable = false)
-	private LocalDate date;
+	private LocalDate dateEvent;
 
 	@Column(nullable = false)
-	private Boolean isPrincipalEventWeek;
+	private LocalTime timeEvent;
+
+	@Column(nullable = true)
+	private String name;
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
 	private Set<EventMusicAssociation> eventMusicList = new HashSet<>();
+
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	@OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
+	private Set<EventSpaceUserAppAssociation> spaceUserAppAssociationList = new HashSet<>();
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(nullable = false)

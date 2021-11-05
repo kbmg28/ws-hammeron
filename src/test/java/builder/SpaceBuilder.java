@@ -28,6 +28,8 @@ public abstract class SpaceBuilder {
         spaceUserAppAssociation.setIsOwner(isOwner);
         space.getSpaceUserAppAssociationList().add(spaceUserAppAssociation);
 
+        spaceUserAppAssociation.setLastAccessedSpace(true);
+
         return spaceUserAppAssociation;
     }
 

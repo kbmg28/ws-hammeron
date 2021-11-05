@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
@@ -27,7 +28,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/spaces/{space-id}/musics")
@@ -50,6 +50,14 @@ public class MusicController extends GenericController {
             @PathVariable("space-id") String spaceId) {
         List<Music> entityData = musicService.findAllBySpace(spaceId);
         Set<MusicWithSingerAndLinksDto> viewData = musicMapper.toMusicWithSingerAndLinksDtoList(entityData);
+        return super.ok(viewData);
+    }
+
+    @GetMapping("/events")
+    @Transactional
+    public ResponseEntity<ResponseData<List<MusicTopUsedDto>>> findTop10MusicMoreUsedInEvents(
+            @PathVariable("space-id") String spaceId) {
+        List<MusicTopUsedDto> viewData = musicService.findTop10MusicMoreUsedInEvents(spaceId);
         return super.ok(viewData);
     }
 

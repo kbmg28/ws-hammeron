@@ -39,7 +39,7 @@ public class UserApp extends AbstractEntity {
 
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
 	private Set<UserPermission> userPermissionList = new HashSet<>();
 
 	@EqualsAndHashCode.Exclude
