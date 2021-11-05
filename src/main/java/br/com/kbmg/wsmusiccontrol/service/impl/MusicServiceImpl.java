@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
@@ -18,9 +19,10 @@ import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository> implements MusicService {
@@ -100,6 +102,15 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
 
         return repository.findAllBySpace(space);
+    }
+
+    @Override
+    public List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId) {
+        getSpaceValidatingIfUserCanAccess(spaceId);
+
+        return repository.findAllBySpaceOrderByEventsCountDescLimit10(spaceId, LocalDate.now()).stream()
+                .map(proj -> new MusicTopUsedDto(proj.getMusicId(), proj.getMusicName(), proj.getSingerName(), proj.getAmountUsedInEvents()))
+                .collect(Collectors.toList());
     }
 
     @Override
