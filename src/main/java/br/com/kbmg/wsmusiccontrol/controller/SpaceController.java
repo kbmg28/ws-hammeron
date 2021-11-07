@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 @RequestMapping("/api/spaces")
 @CrossOrigin(origins = "*")
 @SecuredAnyUserAuth
+@Transactional
 public class SpaceController extends GenericController {
 
     @Autowired

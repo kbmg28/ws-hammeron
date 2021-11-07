@@ -27,6 +27,7 @@ import java.util.Set;
 @RequestMapping("/api/spaces/{space-id}/users")
 @CrossOrigin(origins = "*")
 @SecuredAnyUserAuth
+@Transactional
 public class UserController extends GenericController {
 
     @Autowired
@@ -39,7 +40,6 @@ public class UserController extends GenericController {
     private UserAppMapper userAppMapper;
 
     @GetMapping("/all")
-    @Transactional
     public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAllBySpace(
             @PathVariable("space-id") String spaceId
     ) {

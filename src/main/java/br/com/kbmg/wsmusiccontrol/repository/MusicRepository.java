@@ -30,7 +30,7 @@ public interface MusicRepository extends JpaRepository<Music, String> {
             "               and e.id = ema.event_id " +
             "               and e.date_event < :startDate" +
             "       )" +
-            "    GROUP BY m.id " +
+            "    GROUP BY m.id, m.name, s.name " +
             "    ORDER BY COUNT(ema.id) DESC " +
             "    LIMIT 10", nativeQuery = true)
     List<MusicTopUsedProjection> findAllBySpaceOrderByEventsCountDescLimit10(String spaceId, LocalDate startDate);
