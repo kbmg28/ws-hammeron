@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 @RestController
@@ -81,6 +82,7 @@ public class SecurityController extends GenericController {
     }
 
     @PostMapping("/register/token")
+    @Transactional
     public ResponseEntity<ResponseData<Void>> activateUserAccount(
             @RequestBody @Valid UserTokenHashDto userTokenHashDto) {
 
