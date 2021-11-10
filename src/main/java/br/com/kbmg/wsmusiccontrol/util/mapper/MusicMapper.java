@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.util.mapper;
 
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicLinkDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
@@ -18,6 +19,7 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public interface MusicMapper {
     String TO_MUSIC_WITH_SINGER_AND_LINKS_DTO = "toMusicWithSingerAndLinksDto";
+    String TO_MUSIC_DTO = "toMusicDto";
     String TO_SINGER = "toSinger";
     String TO_MUSIC_LINK_LIST = "toMusicLinkList";
     String TO_MUSIC_LINK = "toMusicLink";
@@ -65,4 +67,13 @@ public interface MusicMapper {
     @Mapping(target = "musicLinkList", ignore = true)
     @Mapping(target = "space", ignore = true)
     Music updateMusic(@MappingTarget Music musicInDatabase, Music musicUpdated);
+
+    @IterableMapping(elementTargetType = MusicDto.class, qualifiedByName = TO_MUSIC_DTO)
+    Set<MusicDto> toMusicDtoList(Collection<Music> musicList);
+
+    @Named(TO_MUSIC_DTO)
+    @Mapping(target = "links", source = "musicLinkList")
+    @Mapping(target = "events", ignore = true)
+    MusicDto toMusicDto(Music music);
+
 }
