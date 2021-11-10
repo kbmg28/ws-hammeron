@@ -1,5 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.dto.event.EventSimpleDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
@@ -10,6 +12,7 @@ import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
+import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.MusicLinkService;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
 import br.com.kbmg.wsmusiccontrol.service.SingerService;
@@ -42,6 +45,9 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     @Autowired
     private UserAppService userAppService;
 
+    @Autowired
+    private EventMusicAssociationService eventMusicAssociationService;
+
     @Override
     public Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
@@ -61,14 +67,14 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public void updateStatusMusic(String spaceId, String idMusic, MusicStatusEnum newStatus) {
-        Music music = this.findBySpaceAndId(spaceId, idMusic);
+        Music music = this.findMusicValidatingSpace(spaceId, idMusic);
         music.setMusicStatus(newStatus);
         this.update(music);
     }
 
     @Override
     public void deleteMusic(String spaceId, String idMusic) {
-        Music music = this.findBySpaceAndId(spaceId, idMusic);
+        Music music = this.findMusicValidatingSpace(spaceId, idMusic);
 
         if (!music.getEventMusicList().isEmpty()) {
             throw new ServiceException(
@@ -114,7 +120,17 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public Music findBySpaceAndId(String spaceId, String idMusic) {
+    public MusicDto findBySpaceAndId(String spaceId, String idMusic, Boolean eventsFromTheLast3Months) {
+        Music music = findMusicValidatingSpace(spaceId, idMusic);
+        List<EventSimpleDto> events = eventMusicAssociationService.findEventsByMusic(music, eventsFromTheLast3Months);
+
+        MusicDto list = musicMapper.toMusicDto(music);
+        list.setEvents(events);
+
+        return list;
+    }
+
+    private Music findMusicValidatingSpace(String spaceId, String idMusic) {
         Space space = getSpaceValidatingIfUserCanAccess(spaceId);
         return findBySpaceAndIdValidated(idMusic, space);
     }

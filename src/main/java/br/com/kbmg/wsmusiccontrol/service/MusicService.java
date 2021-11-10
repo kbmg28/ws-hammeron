@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service;
 
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
@@ -20,5 +21,5 @@ public interface MusicService extends GenericService<Music>{
 
     List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId);
 
-    Music findBySpaceAndId(String spaceId, String idMusic);
+    MusicDto findBySpaceAndId(String spaceId, String idMusic, Boolean eventsFromTheLast3Months);
 }

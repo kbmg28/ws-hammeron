@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
@@ -63,12 +65,12 @@ public class MusicController extends GenericController {
 
     @GetMapping("/{id-music}")
     @Transactional
-    public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> findById(
+    public ResponseEntity<ResponseData<MusicDto>> findById(
             @PathVariable("space-id") String spaceId,
-            @PathVariable("id-music") String idMusic) {
-        Music entityData = musicService.findBySpaceAndId(spaceId, idMusic);
-        MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
-        return super.ok(viewData);
+            @PathVariable("id-music") String idMusic,
+            @RequestParam(required = true) Boolean eventsFromTheLast3Months) {
+        MusicDto data = musicService.findBySpaceAndId(spaceId, idMusic, eventsFromTheLast3Months);
+        return super.ok(data);
     }
 
     @GetMapping("/singers")
