@@ -9,6 +9,7 @@ import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
+import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -107,6 +108,12 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
             spaceUserAppAssociationService.createAssociationToParticipant(space, userAppToAddRole);
         }
 
+    }
+
+    @Override
+    public List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId) {
+        List<UserOnlyIdNameAndEmailProjection> list =  repository.findUsersAssociationForEventsBySpace(spaceId);
+        return list;
     }
 
     private void validateIfPermissionIsSysAdmin(PermissionEnum permissionEnum) {

@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.repository;
 
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
+import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,10 @@ public interface UserAppRepository extends JpaRepository<UserApp, String> {
     @Query("SELECT u from UserApp u where exists (" +
             "SELECT 1 from SpaceUserAppAssociation ass where ass.space = :space and u = ass.userApp)")
     List<UserApp> findAllBySpace(Space space);
+
+    @Query(value = "SELECT u.id AS \"userId\", u.name AS \"name\", u.email AS \"email\" " +
+            "FROM USER_APP u WHERE EXISTS ( " +
+            "   SELECT 1 FROM SPACE_USER_APP_ASSOCIATION ass " +
+            "       WHERE ass.space_id = :spaceId and u.id = ass.user_app_id)", nativeQuery = true)
+    List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId);
 }

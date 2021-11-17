@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.EventSpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.Space;
@@ -27,9 +27,9 @@ public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<
     private SpaceUserAppAssociationService spaceUserAppAssociationService;
 
     @Override
-    public Set<UserDto> findAllUserAppByEvent(Event event) {
+    public Set<UserOnlyIdNameAndEmailDto> findAllUserAppByEvent(Event event) {
         List<UserApp> list = repository.findAllUserAppByEvent(event);
-        return userAppMapper.toUserDtoListFromUserAppList(list);
+        return userAppMapper.toUserOnlyIdNameAndEmailDtoFromEntityList(list);
     }
 
     @Override

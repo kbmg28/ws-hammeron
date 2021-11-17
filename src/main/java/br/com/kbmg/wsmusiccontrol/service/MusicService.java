@@ -5,6 +5,7 @@ import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import br.com.kbmg.wsmusiccontrol.model.Music;
+import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public interface MusicService extends GenericService<Music>{
     List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId);
 
     MusicDto findBySpaceAndId(String spaceId, String idMusic, Boolean eventsFromTheLast3Months);
+
+    List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId);
 }

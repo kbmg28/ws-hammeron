@@ -12,6 +12,7 @@ import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
+import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.MusicLinkService;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
@@ -127,6 +128,12 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         MusicDto list = musicMapper.toMusicDto(music);
         list.setEvents(events);
 
+        return list;
+    }
+
+    @Override
+    public List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId) {
+        List<MusicOnlyIdAndMusicNameAndSingerNameProjection> list = repository.findMusicsAssociationForEventsBySpace(spaceId);
         return list;
     }
 

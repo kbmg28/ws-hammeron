@@ -2,8 +2,8 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
@@ -76,10 +76,10 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         eventWithMusicListDto.setDate(event.getDateEvent());
         eventWithMusicListDto.setTime(event.getTimeEvent());
         eventWithMusicListDto.setId(eventId);
-        Set<UserDto> userList = eventSpaceUserAppAssociationService.findAllUserAppByEvent(event);
+        Set<UserOnlyIdNameAndEmailDto> userList = eventSpaceUserAppAssociationService.findAllUserAppByEvent(event);
         eventWithMusicListDto.setUserList(userList);
 
-        Set<MusicWithSingerAndLinksDto> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
+        Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
 
         eventWithMusicListDto.setMusicList(musicList);
         return eventWithMusicListDto;
@@ -94,13 +94,14 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         event.setDateEvent(body.getDate());
         event.setTimeEvent(body.getTime());
         event.setSpace(space);
+        event.setName(body.getName());
 
         repository.save(event);
 
         Set<EventMusicAssociation> musicList = saveMusicListOfEvent(body, event);
         Set<EventSpaceUserAppAssociation> userList = saveUserListOfEvent(body, space, event);
 
-        boolean isUserLoggedIncluded = body.getUserList().stream().map(UserDto::getEmail).anyMatch(email -> userLogged.getEmail().equals(email));
+        boolean isUserLoggedIncluded = body.getUserList().stream().map(UserOnlyIdNameAndEmailDto::getEmail).anyMatch(email -> userLogged.getEmail().equals(email));
 
         return new EventDto(event.getId(), event.getDateEvent(), event.getName(), event.getTimeEvent(), musicList.size(), userList.size(), isUserLoggedIncluded);
     }
@@ -126,7 +127,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         Set<String> emailList = body
                 .getUserList()
                 .stream()
-                .map(UserDto::getEmail)
+                .map(UserOnlyIdNameAndEmailDto::getEmail)
                 .collect(Collectors.toSet());
 
         Set<EventSpaceUserAppAssociation> userListAssociation = eventSpaceUserAppAssociationService

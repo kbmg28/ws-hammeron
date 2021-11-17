@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.dto.event.EventSimpleDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
@@ -29,14 +29,14 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
     private MusicService musicService;
 
     @Override
-    public Set<MusicWithSingerAndLinksDto> findAllMusicByEvent(Event event) {
+    public Set<MusicOnlyIdAndMusicNameAndSingerNameDto> findAllMusicByEvent(Event event) {
         List<Music> list = repository.findAllMusicByEvent(event);
-        return musicMapper.toMusicWithSingerAndLinksDtoList(list);
+        return musicMapper.toMusicOnlyIdAndMusicNameAndSingerNameDtoList(list);
     }
 
     @Override
-    public Set<EventMusicAssociation> createAssociation(Event event, Set<MusicWithSingerAndLinksDto> musicList) {
-        Set<String> musicIdList = musicList.stream().map(MusicWithSingerAndLinksDto::getId).collect(Collectors.toSet());
+    public Set<EventMusicAssociation> createAssociation(Event event, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
+        Set<String> musicIdList = musicList.stream().map(MusicOnlyIdAndMusicNameAndSingerNameDto::getMusicId).collect(Collectors.toSet());
         List<Music> entityMusicList = musicService.findAllById(musicIdList);
 
         if (entityMusicList.size() != musicIdList.size()) {
