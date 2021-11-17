@@ -1,10 +1,12 @@
 package br.com.kbmg.wsmusiccontrol.util.mapper;
 
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
+import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,6 +22,7 @@ public interface UserAppMapper {
     String TO_USER_WITH_PERMISSION_DTO = "toUserWithPermissionDto";
     String TO_PERMISSION_ENUM = "toPermissionEnum";
     String TO_PERMISSION_ENUM_LIST = "toPermissionEnumList";
+    String TO_USER_ONLY_ID_AND_NAME_AND_EMAIL_FROM_ENTITY = "toUserOnlyIdNameAndEmailDtoFromEntity";
 
     @IterableMapping(elementTargetType = UserWithPermissionDto.class, qualifiedByName = TO_USER_WITH_PERMISSION_DTO)
     Set<UserWithPermissionDto> toUserWithPermissionDtoList(Collection<UserApp> userAppList);
@@ -46,7 +49,14 @@ public interface UserAppMapper {
     @Mapping(target = "cellPhone", source = "userApp.cellPhone")
     UserDto toUserDto(UserPermission userPermission);
 
-    @IterableMapping(elementTargetType = UserDto.class)
-    Set<UserDto> toUserDtoListFromUserAppList(List<UserApp> userAppList);
+    @Named(TO_USER_ONLY_ID_AND_NAME_AND_EMAIL_FROM_ENTITY)
+    @Mapping(target = "userId", source = "id")
+    UserOnlyIdNameAndEmailDto toUserOnlyIdNameAndEmailDtoFromEntity(UserApp userApp);
+
+    @IterableMapping(elementTargetType = UserOnlyIdNameAndEmailDto.class, qualifiedByName = TO_USER_ONLY_ID_AND_NAME_AND_EMAIL_FROM_ENTITY)
+    Set<UserOnlyIdNameAndEmailDto> toUserOnlyIdNameAndEmailDtoFromEntityList(List<UserApp> userAppList);
+
+    @IterableMapping(elementTargetType = UserOnlyIdNameAndEmailDto.class)
+    List<UserOnlyIdNameAndEmailDto> toUserOnlyIdNameAndEmailDto(List<UserOnlyIdNameAndEmailProjection> projectionList);
 
 }

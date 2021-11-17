@@ -3,12 +3,14 @@ package br.com.kbmg.wsmusiccontrol.controller;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
+import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
 import br.com.kbmg.wsmusiccontrol.service.SingerService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
@@ -60,6 +62,15 @@ public class MusicController extends GenericController {
     public ResponseEntity<ResponseData<List<MusicTopUsedDto>>> findTop10MusicMoreUsedInEvents(
             @PathVariable("space-id") String spaceId) {
         List<MusicTopUsedDto> viewData = musicService.findTop10MusicMoreUsedInEvents(spaceId);
+        return super.ok(viewData);
+    }
+
+    @GetMapping("/association-for-events")
+    public ResponseEntity<ResponseData<List<MusicOnlyIdAndMusicNameAndSingerNameDto>>> findMusicsAssociationForEventsBySpace(
+            @PathVariable("space-id") String spaceId
+    ) {
+        List<MusicOnlyIdAndMusicNameAndSingerNameProjection> projectionList = musicService.findMusicsAssociationForEventsBySpace(spaceId);
+        List<MusicOnlyIdAndMusicNameAndSingerNameDto> viewData = musicMapper.toMusicOnlyIdAndMusicNameAndSingerNameDto(projectionList);
         return super.ok(viewData);
     }
 

@@ -2,10 +2,12 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.UserPermission;
+import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.service.UserPermissionService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.UserAppMapper;
@@ -39,12 +41,21 @@ public class UserController extends GenericController {
     @Autowired
     private UserAppMapper userAppMapper;
 
-    @GetMapping("/all")
+    @GetMapping("")
     public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAllBySpace(
             @PathVariable("space-id") String spaceId
     ) {
         List<UserApp> entityData = userAppService.findAllBySpace(spaceId);
         Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(entityData);
+        return super.ok(viewData);
+    }
+
+    @GetMapping("/association-for-events")
+    public ResponseEntity<ResponseData<List<UserOnlyIdNameAndEmailDto>>> findUsersAssociationForEventsBySpace(
+            @PathVariable("space-id") String spaceId
+    ) {
+        List<UserOnlyIdNameAndEmailProjection> projectionList = userAppService.findUsersAssociationForEventsBySpace(spaceId);
+        List<UserOnlyIdNameAndEmailDto> viewData = userAppMapper.toUserOnlyIdNameAndEmailDto(projectionList);
         return super.ok(viewData);
     }
 

@@ -3,6 +3,7 @@ package br.com.kbmg.wsmusiccontrol.repository;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
+import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicTopUsedProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,4 +36,9 @@ public interface MusicRepository extends JpaRepository<Music, String> {
             "    LIMIT 10", nativeQuery = true)
     List<MusicTopUsedProjection> findAllBySpaceOrderByEventsCountDescLimit10(String spaceId, LocalDate startDate);
 
+    @Query(value = "SELECT m.id AS \"musicId\", m.name AS \"musicName\", s.name AS \"singerName\" " +
+            "FROM MUSIC m " +
+            "JOIN SINGER s ON s.id = m.singer_id " +
+            "WHERE m.space_id = :spaceId and m.music_status = 'ENABLED'", nativeQuery = true)
+    List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId);
 }

@@ -27,7 +27,7 @@ public class Event extends AbstractEntity {
 	@Column(nullable = false)
 	private LocalTime timeEvent;
 
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private String name;
 
 	@EqualsAndHashCode.Exclude
