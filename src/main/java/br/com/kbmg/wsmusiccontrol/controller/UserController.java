@@ -65,7 +65,7 @@ public class UserController extends GenericController {
             @PathVariable("permission-key") PermissionEnum permissionEnum
             ) {
         List<UserPermission> entityData = userPermissionService.findBySpaceAndPermission(spaceId, permissionEnum);
-        Set<UserDto> viewData = userAppMapper.toUserDtoList(entityData);
+        Set<UserDto> viewData = userAppMapper.toUserDtoFromUserPermissionList(entityData);
         return super.ok(viewData);
     }
 

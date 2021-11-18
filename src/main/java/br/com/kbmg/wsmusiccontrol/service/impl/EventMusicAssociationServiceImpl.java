@@ -10,7 +10,6 @@ import br.com.kbmg.wsmusiccontrol.repository.EventMusicAssociationRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.EventSimpleProjection;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
-import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,15 +22,12 @@ import java.util.stream.Collectors;
 public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMusicAssociation, EventMusicAssociationRepository> implements EventMusicAssociationService {
 
     @Autowired
-    private MusicMapper musicMapper;
-
-    @Autowired
     private MusicService musicService;
 
     @Override
-    public Set<MusicOnlyIdAndMusicNameAndSingerNameDto> findAllMusicByEvent(Event event) {
+    public List<Music> findAllMusicByEvent(Event event) {
         List<Music> list = repository.findAllMusicByEvent(event);
-        return musicMapper.toMusicOnlyIdAndMusicNameAndSingerNameDtoList(list);
+        return list;
     }
 
     @Override

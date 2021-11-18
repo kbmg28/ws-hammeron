@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service;
 
+import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
@@ -10,7 +11,7 @@ import java.util.List;
 public interface EventService extends GenericService<Event>{
     List<EventDto> findAllEventsBySpace(String spaceId, Boolean nextEvents, RangeDateFilterEnum rangeDateFilterEnum);
 
-    EventWithMusicListDto findBySpaceAndId(String spaceId, String idMusic);
+    EventDetailsDto findBySpaceAndId(String spaceId, String idMusic);
 
     EventDto createEvent(String spaceId, EventWithMusicListDto body);
 }

@@ -1,14 +1,18 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
 import br.com.kbmg.wsmusiccontrol.model.EventSpaceUserAppAssociation;
+import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.EventRepository;
@@ -18,6 +22,8 @@ import br.com.kbmg.wsmusiccontrol.service.EventService;
 import br.com.kbmg.wsmusiccontrol.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
+import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
+import br.com.kbmg.wsmusiccontrol.util.mapper.UserAppMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +48,12 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     @Autowired
     private EventMusicAssociationService eventMusicAssociationService;
 
+    @Autowired
+    private UserAppMapper userAppMapper;
+
+    @Autowired
+    private MusicMapper musicMapper;
+
     @Override
     public List<EventDto> findAllEventsBySpace(String spaceId, Boolean nextEvents, RangeDateFilterEnum rangeDateFilterEnum) {
         UserApp userLogged = userAppService.findUserLogged();
@@ -63,7 +75,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     }
 
     @Override
-    public EventWithMusicListDto findBySpaceAndId(String spaceId, String eventId) {
+    public EventDetailsDto findBySpaceAndId(String spaceId, String eventId) {
         UserApp userLogged = userAppService.findUserLogged();
         spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
 
@@ -71,18 +83,28 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                             .orElseThrow(() -> new ServiceException(
                                     messagesService.get("event.not.exist")
                             ));
-        EventWithMusicListDto eventWithMusicListDto = new EventWithMusicListDto();
+        EventDetailsDto eventDetails = new EventDetailsDto();
 
-        eventWithMusicListDto.setDate(event.getDateEvent());
-        eventWithMusicListDto.setTime(event.getTimeEvent());
-        eventWithMusicListDto.setId(eventId);
-        Set<UserOnlyIdNameAndEmailDto> userList = eventSpaceUserAppAssociationService.findAllUserAppByEvent(event);
-        eventWithMusicListDto.setUserList(userList);
+        eventDetails.setDate(event.getDateEvent());
+        eventDetails.setTime(event.getTimeEvent());
+        eventDetails.setId(eventId);
 
-        Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
+        findUserAssociation(event, eventDetails);
+        findMusicAssociation(event, eventDetails);
 
-        eventWithMusicListDto.setMusicList(musicList);
-        return eventWithMusicListDto;
+        return eventDetails;
+    }
+
+    private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {
+        List<Music> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
+        Set<MusicWithSingerAndLinksDto> dtoList = musicMapper.toMusicWithSingerAndLinksDtoList(musicList);
+        eventDetails.setMusicList(dtoList);
+    }
+
+    private void findUserAssociation(Event event, EventDetailsDto eventDetails) {
+        List<UserApp> userEntityList = eventSpaceUserAppAssociationService.findAllUserAppByEvent(event);
+        Set<UserDto> userList = userAppMapper.toUserDtoList(userEntityList);
+        eventDetails.setUserList(userList);
     }
 
     @Override
