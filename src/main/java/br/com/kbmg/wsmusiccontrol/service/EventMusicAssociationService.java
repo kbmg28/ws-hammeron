@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface EventMusicAssociationService extends GenericService<EventMusicAssociation>{
-    Set<MusicOnlyIdAndMusicNameAndSingerNameDto> findAllMusicByEvent(Event event);
+    List<Music> findAllMusicByEvent(Event event);
 
     Set<EventMusicAssociation> createAssociation(Event event, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList);
 

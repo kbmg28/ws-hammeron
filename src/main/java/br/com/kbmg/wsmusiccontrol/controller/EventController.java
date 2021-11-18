@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
+import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
@@ -44,10 +45,10 @@ public class EventController extends GenericController {
 
     @GetMapping("/{id-event}")
     @Transactional
-    public ResponseEntity<ResponseData<EventWithMusicListDto>> findById(
+    public ResponseEntity<ResponseData<EventDetailsDto>> findById(
             @PathVariable("space-id") String spaceId,
             @PathVariable("id-event") String idMusic) {
-        EventWithMusicListDto data = eventService.findBySpaceAndId(spaceId, idMusic);
+        EventDetailsDto data = eventService.findBySpaceAndId(spaceId, idMusic);
         return super.ok(data);
     }
 

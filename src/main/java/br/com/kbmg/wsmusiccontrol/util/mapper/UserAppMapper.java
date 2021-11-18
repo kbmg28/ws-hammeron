@@ -18,7 +18,7 @@ import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface UserAppMapper {
-    String TO_USER_DTO = "toUserDto";
+    String TO_USER_DTO_FROM_USER_PERMISSION = "toUserDtoFromUserPermission";
     String TO_USER_WITH_PERMISSION_DTO = "toUserWithPermissionDto";
     String TO_PERMISSION_ENUM = "toPermissionEnum";
     String TO_PERMISSION_ENUM_LIST = "toPermissionEnumList";
@@ -40,14 +40,17 @@ public interface UserAppMapper {
         return (userPermission == null) ? null : userPermission.getPermission();
     }
 
-    @IterableMapping(elementTargetType = UserDto.class, qualifiedByName = TO_USER_DTO)
-    Set<UserDto> toUserDtoList(List<UserPermission> userPermissionList);
+    @IterableMapping(elementTargetType = UserDto.class, qualifiedByName = TO_USER_DTO_FROM_USER_PERMISSION)
+    Set<UserDto> toUserDtoFromUserPermissionList(List<UserPermission> userPermissionList);
 
-    @Named(TO_USER_DTO)
+    @Named(TO_USER_DTO_FROM_USER_PERMISSION)
     @Mapping(target = "name", source = "userApp.name")
     @Mapping(target = "email", source = "userApp.email")
     @Mapping(target = "cellPhone", source = "userApp.cellPhone")
-    UserDto toUserDto(UserPermission userPermission);
+    UserDto toUserDtoFromUserPermission(UserPermission userPermission);
+
+    @IterableMapping(elementTargetType = UserDto.class)
+    Set<UserDto> toUserDtoList(List<UserApp> userAppList);
 
     @Named(TO_USER_ONLY_ID_AND_NAME_AND_EMAIL_FROM_ENTITY)
     @Mapping(target = "userId", source = "id")

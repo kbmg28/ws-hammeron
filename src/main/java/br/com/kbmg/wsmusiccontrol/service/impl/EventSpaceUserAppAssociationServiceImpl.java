@@ -21,15 +21,12 @@ import java.util.stream.Collectors;
 public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<EventSpaceUserAppAssociation, EventSpaceUserAppAssociationRepository> implements EventSpaceUserAppAssociationService {
 
     @Autowired
-    private UserAppMapper userAppMapper;
-
-    @Autowired
     private SpaceUserAppAssociationService spaceUserAppAssociationService;
 
     @Override
-    public Set<UserOnlyIdNameAndEmailDto> findAllUserAppByEvent(Event event) {
+    public List<UserApp> findAllUserAppByEvent(Event event) {
         List<UserApp> list = repository.findAllUserAppByEvent(event);
-        return userAppMapper.toUserOnlyIdNameAndEmailDtoFromEntityList(list);
+        return list;
     }
 
     @Override
