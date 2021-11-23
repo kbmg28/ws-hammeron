@@ -15,4 +15,6 @@ public interface EventMusicAssociationService extends GenericService<EventMusicA
     Set<EventMusicAssociation> createAssociation(Event event, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList);
 
     List<EventSimpleDto> findEventsByMusic(Music music, Boolean eventsFromTheLast3Months);
+
+    Set<EventMusicAssociation> updateAssociations(Event eventInDatabase, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList);
 }

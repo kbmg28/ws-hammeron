@@ -14,4 +14,6 @@ public interface EventService extends GenericService<Event>{
     EventDetailsDto findBySpaceAndId(String spaceId, String idMusic);
 
     EventDto createEvent(String spaceId, EventWithMusicListDto body);
+
+    EventDto editEvent(String spaceId, String idEvent, EventWithMusicListDto body);
 }

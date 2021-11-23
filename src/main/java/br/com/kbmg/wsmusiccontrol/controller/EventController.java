@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,7 +39,7 @@ public class EventController extends GenericController {
             @PathVariable("space-id") String spaceId,
             @RequestParam(name = "nextEvents", required = true) Boolean nextEvents,
             @RequestParam(name = "rangeDate", required = false) RangeDateFilterEnum rangeDate) {
-//        startFilter.
+
         List<EventDto> list = eventService.findAllEventsBySpace(spaceId, nextEvents, rangeDate);
         return super.ok(list);
     }
@@ -58,6 +59,16 @@ public class EventController extends GenericController {
             @PathVariable("space-id") String spaceId,
             @RequestBody @Valid EventWithMusicListDto body) {
         EventDto data = eventService.createEvent(spaceId, body);
+        return super.ok(data);
+    }
+
+    @PutMapping("/{id-event}")
+    @Transactional
+    public ResponseEntity<ResponseData<EventDto>> updateEvent(
+            @PathVariable("space-id") String spaceId,
+            @PathVariable("id-event") String idEvent,
+            @RequestBody @Valid EventWithMusicListDto body) {
+        EventDto data = eventService.editEvent(spaceId,idEvent, body);
         return super.ok(data);
     }
 
