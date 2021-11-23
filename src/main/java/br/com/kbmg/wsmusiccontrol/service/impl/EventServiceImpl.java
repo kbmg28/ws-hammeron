@@ -3,7 +3,6 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
@@ -85,9 +84,10 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                             ));
         EventDetailsDto eventDetails = new EventDetailsDto();
 
+        eventDetails.setId(eventId);
+        eventDetails.setName(event.getName());
         eventDetails.setDate(event.getDateEvent());
         eventDetails.setTime(event.getTimeEvent());
-        eventDetails.setId(eventId);
 
         findUserAssociation(event, eventDetails);
         findMusicAssociation(event, eventDetails);
@@ -123,9 +123,53 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         Set<EventMusicAssociation> musicList = saveMusicListOfEvent(body, event);
         Set<EventSpaceUserAppAssociation> userList = saveUserListOfEvent(body, space, event);
 
-        boolean isUserLoggedIncluded = body.getUserList().stream().map(UserOnlyIdNameAndEmailDto::getEmail).anyMatch(email -> userLogged.getEmail().equals(email));
+        boolean isUserLoggedIncluded = isUserLoggedIncluded(body, userLogged);
 
         return new EventDto(event.getId(), event.getDateEvent(), event.getName(), event.getTimeEvent(), musicList.size(), userList.size(), isUserLoggedIncluded);
+    }
+
+    @Override
+    public EventDto editEvent(String spaceId, String idEvent, EventWithMusicListDto body) {
+        UserApp userLogged = userAppService.findUserLogged();
+        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+        Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
+        updateEventFields(eventInDatabase, body);
+
+        Set<EventMusicAssociation> musicList =  eventMusicAssociationService.updateAssociations(eventInDatabase, body.getMusicList());
+        Set<EventSpaceUserAppAssociation> userList = eventSpaceUserAppAssociationService.updateAssociations(eventInDatabase, body.getUserList());
+
+        boolean isUserLoggedIncluded = isUserLoggedIncluded(body, userLogged);
+
+        return new EventDto(eventInDatabase.getId(),
+                eventInDatabase.getDateEvent(),
+                eventInDatabase.getName(),
+                eventInDatabase.getTimeEvent(),
+                musicList.size(),
+                userList.size(),
+                isUserLoggedIncluded);
+    }
+
+    private boolean isUserLoggedIncluded(EventWithMusicListDto body, UserApp userLogged) {
+        boolean isUserLoggedIncluded = body
+                .getUserList()
+                .stream()
+                .map(UserOnlyIdNameAndEmailDto::getEmail)
+                .anyMatch(email -> userLogged.getEmail().equals(email));
+        return isUserLoggedIncluded;
+    }
+
+    private void updateEventFields(Event eventInDatabase, EventWithMusicListDto body) {
+        eventInDatabase.setName(body.getName());
+        eventInDatabase.setDateEvent(body.getDate());
+        eventInDatabase.setTimeEvent(body.getTime());
+    }
+
+    private Event findByIdEventAndSpaceValidated(String idEvent, Space space) {
+        return repository.findBySpaceAndId(space, idEvent)
+                .orElseThrow(() ->
+                        new ServiceException(
+                                messagesService.get("event.not.exist.space")
+                        ));
     }
 
     private Space validateIfEventAlreadyExistAndGetSpace(String spaceId, UserApp userLogged, EventWithMusicListDto body) {

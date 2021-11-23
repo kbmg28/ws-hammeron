@@ -34,4 +34,6 @@ public interface EventRepository extends JpaRepository<Event, String> {
 
     @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and e.date_event >= :startDate", nativeQuery = true)
     List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateEventGreaterThanEqual(String spaceId, LocalDate startDate, String userId);
+
+    Optional<Event> findBySpaceAndId(Space space, String idEvent);
 }
