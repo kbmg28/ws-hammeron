@@ -3,6 +3,7 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
@@ -116,12 +117,15 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         return list;
     }
 
-    private void validateIfPermissionIsSysAdmin(PermissionEnum permissionEnum) {
-        if(PermissionEnum.SYS_ADMIN.equals(permissionEnum)) {
-            throw new ServiceException(
-                    messagesService.get("action.not.necessary")
-            );
-        }
+    @Override
+    public UserApp updateUserLogged(String spaceId, UserDto body) {
+        UserApp userLogged = this.findUserLogged();
+        spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+
+        userLogged.setName(body.getName());
+        userLogged.setCellPhone(body.getCellPhone());
+
+        return repository.save(userLogged);
     }
 
     @Override
@@ -144,6 +148,14 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @Override
     public Optional<UserApp> findByEmail(String email) {
         return repository.findByEmail(email);
+    }
+
+    private void validateIfPermissionIsSysAdmin(PermissionEnum permissionEnum) {
+        if(PermissionEnum.SYS_ADMIN.equals(permissionEnum)) {
+            throw new ServiceException(
+                    messagesService.get("action.not.necessary")
+            );
+        }
     }
 
 }

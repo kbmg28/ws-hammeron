@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +50,25 @@ public class UserController extends GenericController {
     ) {
         List<UserApp> entityData = userAppService.findAllBySpace(spaceId);
         Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(entityData);
+        return super.ok(viewData);
+    }
+
+    @PutMapping("/logged")
+    public ResponseEntity<ResponseData<UserWithPermissionDto>> updateUserLogged(
+            @PathVariable("space-id") String spaceId,
+            @Valid @RequestBody UserDto body
+    ) {
+        UserApp entityData = userAppService.updateUserLogged(spaceId, body);
+        UserWithPermissionDto viewData = userAppMapper.toUserWithPermissionDto(entityData);
+        return super.ok(viewData);
+    }
+
+    @GetMapping("/logged")
+    public ResponseEntity<ResponseData<UserWithPermissionDto>> findUserLogged(
+            @PathVariable("space-id") String spaceId
+    ) {
+        UserApp entityData = userAppService.findUserLogged();
+        UserWithPermissionDto viewData = userAppMapper.toUserWithPermissionDto(entityData);
         return super.ok(viewData);
     }
 

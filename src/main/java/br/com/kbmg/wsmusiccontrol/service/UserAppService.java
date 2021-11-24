@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.service;
 
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
@@ -26,4 +27,6 @@ public interface UserAppService extends GenericService<UserApp>{
     void addPermissionToUserInSpace(String emailUser, String spaceId, PermissionEnum permissionEnum);
 
     List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId);
+
+    UserApp updateUserLogged(String spaceId, UserDto body);
 }
