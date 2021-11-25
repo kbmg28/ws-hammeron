@@ -1,29 +1,30 @@
 package br.com.kbmg.wsmusiccontrol.enums;
 
-import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import lombok.Getter;
 
 import java.util.regex.Pattern;
 
 public enum MusicTypeLinkEnum {
-    YOUTUBE("^((?:https?:)?\\/\\/)?((?:www|m)\\.)?((?:youtube\\.com|youtu.be))(\\/(?:[\\w\\-]+\\?v=|embed\\/|v\\/)?)([\\w\\-]+)(\\S+)?$"),
-    SPOTIFY("^(https:\\/\\/open.spotify.com\\/)([a-zA-Z0-9]+)(.*)$"),
-    CHORD  ("^((?:https?:)?\\/\\/)?((?:www|m)\\.)?(cifraclub.com.br\\/)([a-zA-Z0-9]+)(.*)$");
+    YOUTUBE("YouTube", "^((?:https?:)?\\/\\/)?((?:www|m)\\.)?((?:youtube\\.com|youtu.be))(\\/(?:[\\w\\-]+\\?v=|embed\\/|v\\/)?)([\\w\\-]+)(\\S+)?$"),
+    SPOTIFY("Spotify", "^(https:\\/\\/open.spotify.com\\/)([a-zA-Z0-9]+)(.*)$"),
+    CHORD  ("Cifra Club", "^((?:https?:)?\\/\\/)?((?:www|m)\\.)?(cifraclub.com.br\\/)([a-zA-Z0-9]+)(.*)$");
 
     @Getter
     private final String regex;
 
-    MusicTypeLinkEnum(String regex) {
+    @Getter
+    private final String name;
+
+    MusicTypeLinkEnum(String name, String regex) {
+        this.name = name;
         this.regex = regex;
     }
 
-    public void validateUrl(String link) {
+    public boolean validateUrl(String link) {
         Pattern pattern = Pattern.compile(this.getRegex(), Pattern.CASE_INSENSITIVE);
         boolean isValid = pattern.asPredicate().test(link);
 
-        if (!isValid) {
-            throw new ServiceException("invalid link");
-        }
+        return !isValid;
     }
 
 }
