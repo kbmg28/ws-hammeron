@@ -45,6 +45,7 @@ public class SecurityController extends GenericController {
 
 
     @PostMapping("/token-login")
+    @Transactional
     public ResponseEntity<ResponseData<JwtTokenDto>> loginAndGetToken(
             @RequestBody @Valid LoginDto loginDto, @RequestParam(name="g-recaptcha-response") String recaptchaResponse) {
         recaptchaService.processResponse(recaptchaResponse, RecaptchaEnum.LOGIN_ACTION.getValue());
