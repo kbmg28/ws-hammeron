@@ -22,6 +22,8 @@ public abstract class KeyMessageConstants {
     public static final String USER_ALREADY_EXISTS = "user.already.exists";
     public static final String USER_EMAIL_NOT_EXISTS = "user.email.not.exists";
 
+    public static final String MUSIC_INVALID_LINK = "music.invalid.link";
+
     public static final String PUBLIC_SPACE = "space.public";
 
 }

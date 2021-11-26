@@ -7,6 +7,7 @@ import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import br.com.kbmg.wsmusiccontrol.service.SecurityService;
@@ -58,6 +59,15 @@ public class SecurityController extends GenericController {
             HttpServletRequest request) {
 
         securityService.passwordRecovery(activateUserAccountRefreshDto, request);
+
+        return super.ok();
+    }
+
+    @PostMapping("/password-recovery/change")
+    public ResponseEntity<ResponseData<Void>> passwordRecoveryChange(
+            @RequestBody @Valid UserChangePasswordDto userChangePasswordDto) {
+
+        securityService.passwordRecoveryChange(userChangePasswordDto);
 
         return super.ok();
     }

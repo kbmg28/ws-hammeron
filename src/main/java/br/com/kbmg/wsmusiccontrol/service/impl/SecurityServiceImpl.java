@@ -5,6 +5,7 @@ import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.event.producer.PasswordRecoveryProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.RegistrationProducer;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.DATA_INVALID;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.TOKEN_ACTIVATE_EXPIRED;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ACTIVATE_ACCOUNT;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_OR_PASSWORD_INCORRECT;
@@ -63,11 +65,7 @@ public class SecurityServiceImpl implements SecurityService {
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationException(email, error));
 
-        boolean isCorrectPassword = BCrypt.checkpw(loginDto.getPassword(), userApp.getPassword());
-
-        if (!isCorrectPassword) {
-            throw new AuthorizationException(email, error);
-        }
+        validatePassword(email, loginDto.getPassword(), userApp.getPassword(), error);
 
         if (!userApp.getEnabled()) {
             throw new AuthorizationException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
@@ -129,6 +127,25 @@ public class SecurityServiceImpl implements SecurityService {
     public void passwordRecovery(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
         userAppService.findByEmail(activateUserAccountRefreshDto.getEmail())
                 .ifPresent(userApp -> passwordRecoveryProducer.publishEvent(request, userApp));
+    }
+
+    @Override
+    public void passwordRecoveryChange(UserChangePasswordDto userChangePasswordDto) {
+        String defaultError = messagesService.get(DATA_INVALID);
+        String email = userChangePasswordDto.getEmail();
+        UserApp userApp = userAppService.findByEmail(email).orElseThrow(() -> new AuthorizationException(email, defaultError));
+
+        validatePassword(email, userChangePasswordDto.getTemporaryPassword(), userApp.getPassword(), defaultError);
+
+        userAppService.encodePasswordAndSave(userApp, userChangePasswordDto.getNewPassword());
+    }
+
+    private void validatePassword(String email, String plainTextPassword, String hashPassword, String error) {
+        boolean isCorrectPassword = BCrypt.checkpw(plainTextPassword, hashPassword);
+
+        if (!isCorrectPassword) {
+            throw new AuthorizationException(email, error);
+        }
     }
 
 }

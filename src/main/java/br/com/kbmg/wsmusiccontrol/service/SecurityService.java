@@ -3,6 +3,7 @@ package br.com.kbmg.wsmusiccontrol.service;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
@@ -22,4 +23,5 @@ public interface SecurityService {
 
     void passwordRecovery(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request);
 
+    void passwordRecoveryChange(UserChangePasswordDto userChangePasswordDto);
 }

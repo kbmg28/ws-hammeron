@@ -1,7 +1,9 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicLinkDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicTypeLinkEnum;
+import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.MusicLink;
 import br.com.kbmg.wsmusiccontrol.repository.MusicLinkRepository;
@@ -61,7 +63,7 @@ public class MusicLinkServiceImpl extends GenericServiceImpl<MusicLink, MusicLin
                     musicInDatabase.getMusicLinkList().add(newMusicLink);
                 }
                 else if (!musicLinkEntity.getLink().equals(newLink)) {
-                    linkDto.getTypeLink().validateUrl(newLink);
+                    validateLinkByType(linkDto, newLink);
                     musicLinkEntity.setLink(newLink);
                 }
             }
@@ -72,8 +74,19 @@ public class MusicLinkServiceImpl extends GenericServiceImpl<MusicLink, MusicLin
         });
     }
 
+    private void validateLinkByType(MusicLinkDto linkDto, String newLink) {
+        MusicTypeLinkEnum typeLink = linkDto.getTypeLink();
+        boolean isInvalidLink = typeLink.validateUrl(newLink);
+
+        if (isInvalidLink) {
+            String template = this.messagesService.get(KeyMessageConstants.MUSIC_INVALID_LINK);
+            String messageError = String.format(template, typeLink.getName());
+            throw new ServiceException(messageError);
+        }
+    }
+
     private MusicLink createMusicLinkCheckingPattern(Music music, MusicLinkDto linkDto) {
-        linkDto.getTypeLink().validateUrl(linkDto.getLink());
+        validateLinkByType(linkDto, linkDto.getLink());
         MusicLink musicLink = musicMapper.toMusicLink(linkDto);
         musicLink.setMusic(music);
         return repository.save(musicLink);
