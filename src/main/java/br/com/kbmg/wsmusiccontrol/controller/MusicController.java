@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
@@ -34,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/spaces/{space-id}/musics")
+@RequestMapping("/api/musics")
 @CrossOrigin(origins = "*")
 @SecuredAnyUserAuth
 public class MusicController extends GenericController {
@@ -50,8 +51,8 @@ public class MusicController extends GenericController {
 
     @GetMapping
     @Transactional
-    public ResponseEntity<ResponseData<Set<MusicWithSingerAndLinksDto>>> findAllMusic(
-            @PathVariable("space-id") String spaceId) {
+    public ResponseEntity<ResponseData<Set<MusicWithSingerAndLinksDto>>> findAllMusic() {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<Music> entityData = musicService.findAllBySpace(spaceId);
         Set<MusicWithSingerAndLinksDto> viewData = musicMapper.toMusicWithSingerAndLinksDtoList(entityData);
         return super.ok(viewData);
@@ -59,16 +60,16 @@ public class MusicController extends GenericController {
 
     @GetMapping("/events")
     @Transactional
-    public ResponseEntity<ResponseData<List<MusicTopUsedDto>>> findTop10MusicMoreUsedInEvents(
-            @PathVariable("space-id") String spaceId) {
+    public ResponseEntity<ResponseData<List<MusicTopUsedDto>>> findTop10MusicMoreUsedInEvents() {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<MusicTopUsedDto> viewData = musicService.findTop10MusicMoreUsedInEvents(spaceId);
         return super.ok(viewData);
     }
 
     @GetMapping("/association-for-events")
-    public ResponseEntity<ResponseData<List<MusicOnlyIdAndMusicNameAndSingerNameDto>>> findMusicsAssociationForEventsBySpace(
-            @PathVariable("space-id") String spaceId
-    ) {
+    public ResponseEntity<ResponseData<List<MusicOnlyIdAndMusicNameAndSingerNameDto>>>
+            findMusicsAssociationForEventsBySpace() {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<MusicOnlyIdAndMusicNameAndSingerNameProjection> projectionList = musicService.findMusicsAssociationForEventsBySpace(spaceId);
         List<MusicOnlyIdAndMusicNameAndSingerNameDto> viewData = musicMapper.toMusicOnlyIdAndMusicNameAndSingerNameDto(projectionList);
         return super.ok(viewData);
@@ -77,18 +78,17 @@ public class MusicController extends GenericController {
     @GetMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<MusicDto>> findById(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("id-music") String idMusic,
             @RequestParam(required = true) Boolean eventsFromTheLast3Months) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         MusicDto data = musicService.findBySpaceAndId(spaceId, idMusic, eventsFromTheLast3Months);
         return super.ok(data);
     }
 
     @GetMapping("/singers")
     @Transactional
-    public ResponseEntity<ResponseData<Set<SingerDto>>> findAllSinger(
-            @PathVariable("space-id") String spaceId) {
-
+    public ResponseEntity<ResponseData<Set<SingerDto>>> findAllSinger() {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<Singer> entityData = singerService.findAllBySpace(spaceId);
         Set<SingerDto> viewData = musicMapper.toSingerDtoList(entityData);
         return super.ok(viewData);
@@ -97,9 +97,9 @@ public class MusicController extends GenericController {
     @PostMapping
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> createMusic(
-            @PathVariable("space-id") String spaceId,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
 
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         Music entityData = musicService.createMusic(spaceId, musicWithSingerAndLinksDto);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
 
@@ -109,9 +109,9 @@ public class MusicController extends GenericController {
     @PutMapping("/{id-music}")
     @Transactional
     public ResponseEntity<ResponseData<MusicWithSingerAndLinksDto>> updateMusic(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("id-music") String idMusic,
             @RequestBody @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         Music entityData = musicService.updateMusic(spaceId, idMusic, musicWithSingerAndLinksDto);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
         return super.ok(viewData);
@@ -120,9 +120,9 @@ public class MusicController extends GenericController {
     @PutMapping("/{id-music}/status/{new-status}")
     @Transactional
     public ResponseEntity<ResponseData<Void>> updateStatusMusic(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("id-music") String idMusic,
             @PathVariable("new-status") MusicStatusEnum newStatus) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         musicService.updateStatusMusic(spaceId, idMusic, newStatus);
         return super.ok();
     }
@@ -131,8 +131,8 @@ public class MusicController extends GenericController {
     @Transactional
     @SecuredSpaceOwner
     public ResponseEntity<ResponseData<Void>> deleteMusic(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("id-music") String idMusic) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         musicService.deleteMusic(spaceId, idMusic);
         return super.ok();
     }

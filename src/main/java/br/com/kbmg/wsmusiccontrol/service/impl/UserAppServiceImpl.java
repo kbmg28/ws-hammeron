@@ -4,25 +4,26 @@ import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.service.UserPermissionService;
+import br.com.kbmg.wsmusiccontrol.util.mapper.UserAppMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ALREADY_EXISTS;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_EMAIL_NOT_EXISTS;
@@ -38,6 +39,9 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Autowired
     private SpaceUserAppAssociationService spaceUserAppAssociationService;
+
+    @Autowired
+    private UserAppMapper userAppMapper;
 
     @Override
     public UserApp registerNewUserAccount(RegisterDto userDto) {
@@ -57,6 +61,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
             newUserApp.setName(userDto.getName());
             newUserApp.setCellPhone(userDto.getCellPhone());
             newUserApp.setEnabled(false);
+            newUserApp.setIsSysAdmin(false);
             repository.save(newUserApp);
 
             userAppAtomicReference.set(newUserApp);
@@ -80,8 +85,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public List<UserApp> findAllSysAdmin() {
-        List<UserPermission> userPermissionList = userPermissionService.findAllSysAdmin();
-        return userPermissionList.stream().map(UserPermission::getUserApp).collect(Collectors.toList());
+        return repository.findByIsSysAdminTrue();
     }
 
     @Override
@@ -90,18 +94,19 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public List<UserApp> findAllBySpace(String spaceId) {
-        UserApp userLogged = this.findUserLogged();
-        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
-        return repository.findAllBySpace(space);
+    public Set<UserWithPermissionDto> findAllBySpace(String spaceId) {
+        Space space = spaceService.findByIdValidated(spaceId);
+        List<UserApp> allBySpace = repository.findAllBySpace(space);
+        Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(allBySpace);
+        userPermissionService.checkPermissionsOfUsers(space, viewData);
+
+        return viewData;
     }
 
     @Override
     public void addPermissionToUserInSpace(String emailUser, String spaceId, PermissionEnum permissionEnum) {
-        validateIfPermissionIsSysAdmin(permissionEnum);
         UserApp userAppToAddRole = this.findByEmailValidated(emailUser);
-        UserApp userLogged = this.findUserLogged();
-        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+        Space space = spaceService.findByIdValidated(spaceId);
 
         if (PermissionEnum.SPACE_OWNER.equals(permissionEnum)) {
             spaceUserAppAssociationService.createAssociationToSpaceOwner(space, userAppToAddRole);
@@ -118,10 +123,8 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public UserApp updateUserLogged(String spaceId, UserDto body) {
+    public UserApp updateUserLogged(UserDto body) {
         UserApp userLogged = this.findUserLogged();
-        spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
-
         userLogged.setName(body.getName());
         userLogged.setCellPhone(body.getCellPhone());
 
@@ -148,14 +151,6 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @Override
     public Optional<UserApp> findByEmail(String email) {
         return repository.findByEmail(email);
-    }
-
-    private void validateIfPermissionIsSysAdmin(PermissionEnum permissionEnum) {
-        if(PermissionEnum.SYS_ADMIN.equals(permissionEnum)) {
-            throw new ServiceException(
-                    messagesService.get("action.not.necessary")
-            );
-        }
     }
 
 }

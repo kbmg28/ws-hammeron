@@ -10,7 +10,6 @@ import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.MusicLink;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
-import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
@@ -51,7 +50,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
         Singer singer = singerService.findByNameOrCreateIfNotExist(musicWithSingerAndLinksDto.getSinger().getName());
         Music music = musicMapper.toMusic(musicWithSingerAndLinksDto);
 
@@ -90,7 +89,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public Music updateMusic(String spaceId, String idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
         Music musicInDatabase = findBySpaceAndIdValidated(idMusic, space);
         Music musicUpdated = musicMapper.toMusic(musicWithSingerAndLinksDto);
 
@@ -106,15 +105,13 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public List<Music> findAllBySpace(String spaceId) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
 
         return repository.findAllBySpace(space);
     }
 
     @Override
     public List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId) {
-        getSpaceValidatingIfUserCanAccess(spaceId);
-
         return repository.findAllBySpaceOrderByEventsCountDescLimit10(spaceId, LocalDate.now()).stream()
                 .map(proj -> new MusicTopUsedDto(proj.getMusicId(), proj.getMusicName(), proj.getSingerName(), proj.getAmountUsedInEvents()))
                 .collect(Collectors.toList());
@@ -138,7 +135,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     private Music findMusicValidatingSpace(String spaceId, String idMusic) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
         return findBySpaceAndIdValidated(idMusic, space);
     }
 
@@ -159,11 +156,6 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
                 });
 
         music.setSinger(singer);
-    }
-
-    private Space getSpaceValidatingIfUserCanAccess(String spaceId) {
-        UserApp userLogged = userAppService.findUserLogged();
-        return spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
     }
 
 }

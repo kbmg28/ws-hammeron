@@ -80,11 +80,11 @@ public class SpaceController extends GenericController {
     }
 
     @PutMapping("/{id-space}/change-view")
-    public ResponseEntity<ResponseData<MySpace>> changeViewSpaceUser(
-            @PathVariable("id-space") String idSpace) {
-        Space space = spaceService.changeViewSpaceUser(idSpace);
-
-        return super.ok(spaceMapper.toMySpaceDto(space));
+    public ResponseEntity<ResponseData<String>> changeViewSpaceUser(
+            @PathVariable("id-space") String idSpace,
+            HttpServletRequest request) {
+        String tokenUpdated = spaceService.changeViewSpaceUser(idSpace, request);
+        return super.ok(tokenUpdated);
     }
 
 }

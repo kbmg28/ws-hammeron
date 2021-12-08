@@ -14,12 +14,12 @@ import java.util.Set;
 public interface SpaceUserAppAssociationRepository extends
         JpaRepository<SpaceUserAppAssociation, String> {
 
-    Optional<SpaceUserAppAssociation> findBySpaceAndUserAppAndIsOwner(Space space, UserApp userApp, Boolean isOwner);
-
     SpaceUserAppAssociation findByUserAppAndLastAccessedSpaceTrue(UserApp userApp);
 
     @Query("SELECT su from SpaceUserAppAssociation su " +
             "join su.userApp u " +
             "where su.space = :space AND u.email IN :userEmailList")
     Set<SpaceUserAppAssociation> findBySpaceAndEmailUserList(Space space, Set<String> userEmailList);
+
+    Optional<SpaceUserAppAssociation> findBySpaceAndUserApp(Space space, UserApp userApp);
 }

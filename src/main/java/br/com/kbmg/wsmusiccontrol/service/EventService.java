@@ -11,7 +11,7 @@ import java.util.List;
 public interface EventService extends GenericService<Event>{
     List<EventDto> findAllEventsBySpace(String spaceId, Boolean nextEvents, RangeDateFilterEnum rangeDateFilterEnum);
 
-    EventDetailsDto findBySpaceAndId(String spaceId, String idMusic);
+    EventDetailsDto findByIdValidated(String idMusic);
 
     EventDto createEvent(String spaceId, EventWithMusicListDto body);
 

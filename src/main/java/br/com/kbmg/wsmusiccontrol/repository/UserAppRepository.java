@@ -24,4 +24,6 @@ public interface UserAppRepository extends JpaRepository<UserApp, String> {
             "   SELECT 1 FROM SPACE_USER_APP_ASSOCIATION ass " +
             "       WHERE ass.space_id = :spaceId and u.id = ass.user_app_id)", nativeQuery = true)
     List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId);
+
+    List<UserApp> findByIsSysAdminTrue();
 }

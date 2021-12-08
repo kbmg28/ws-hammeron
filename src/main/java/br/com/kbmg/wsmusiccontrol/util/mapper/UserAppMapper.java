@@ -3,9 +3,7 @@ package br.com.kbmg.wsmusiccontrol.util.mapper;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
-import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
@@ -28,36 +26,11 @@ public interface UserAppMapper {
     Set<UserWithPermissionDto> toUserWithPermissionDtoList(Collection<UserApp> userAppList);
 
     @Named(TO_USER_WITH_PERMISSION_DTO)
-    @Mapping(target = "permissionList", source = "userPermissionList", qualifiedByName = TO_PERMISSION_ENUM_LIST)
+    @Mapping(target = "permissionList", ignore = true)
     UserWithPermissionDto toUserWithPermissionDto(UserApp userApp);
-
-    @Named(TO_PERMISSION_ENUM_LIST)
-    @IterableMapping(elementTargetType = PermissionEnum.class, qualifiedByName = TO_PERMISSION_ENUM)
-    Set<PermissionEnum> toPermissionEnumList(Set<UserPermission> userPermissionList);
-
-    @Named(TO_PERMISSION_ENUM)
-    static PermissionEnum toPermissionEnum(UserPermission userPermission){
-        return (userPermission == null) ? null : userPermission.getPermission();
-    }
-
-    @IterableMapping(elementTargetType = UserDto.class, qualifiedByName = TO_USER_DTO_FROM_USER_PERMISSION)
-    Set<UserDto> toUserDtoFromUserPermissionList(List<UserPermission> userPermissionList);
-
-    @Named(TO_USER_DTO_FROM_USER_PERMISSION)
-    @Mapping(target = "name", source = "userApp.name")
-    @Mapping(target = "email", source = "userApp.email")
-    @Mapping(target = "cellPhone", source = "userApp.cellPhone")
-    UserDto toUserDtoFromUserPermission(UserPermission userPermission);
 
     @IterableMapping(elementTargetType = UserDto.class)
     Set<UserDto> toUserDtoList(List<UserApp> userAppList);
-
-    @Named(TO_USER_ONLY_ID_AND_NAME_AND_EMAIL_FROM_ENTITY)
-    @Mapping(target = "userId", source = "id")
-    UserOnlyIdNameAndEmailDto toUserOnlyIdNameAndEmailDtoFromEntity(UserApp userApp);
-
-    @IterableMapping(elementTargetType = UserOnlyIdNameAndEmailDto.class, qualifiedByName = TO_USER_ONLY_ID_AND_NAME_AND_EMAIL_FROM_ENTITY)
-    Set<UserOnlyIdNameAndEmailDto> toUserOnlyIdNameAndEmailDtoFromEntityList(List<UserApp> userAppList);
 
     @IterableMapping(elementTargetType = UserOnlyIdNameAndEmailDto.class)
     List<UserOnlyIdNameAndEmailDto> toUserOnlyIdNameAndEmailDto(List<UserOnlyIdNameAndEmailProjection> projectionList);
