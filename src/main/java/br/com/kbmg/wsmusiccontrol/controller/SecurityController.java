@@ -2,7 +2,7 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.AbstractCaptchaService;
 import br.com.kbmg.wsmusiccontrol.config.recaptcha.v3.RecaptchaEnum;
-import br.com.kbmg.wsmusiccontrol.dto.JwtTokenDto;
+import br.com.kbmg.wsmusiccontrol.dto.auth.JwtTokenDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;

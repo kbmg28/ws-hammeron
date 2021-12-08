@@ -4,7 +4,6 @@ import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
-import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.SingerRepository;
 import br.com.kbmg.wsmusiccontrol.service.SingerService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerRepository> implements SingerService {
@@ -66,8 +64,7 @@ public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerReposito
 
     @Override
     public List<Singer> findAllBySpace(String spaceId) {
-        UserApp userLogged = userAppService.findUserLogged();
-        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+        Space space = spaceService.findByIdValidated(spaceId);
         return repository.findAllBySpace(space);
     }
 }

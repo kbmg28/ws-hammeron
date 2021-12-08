@@ -1,7 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
-import br.com.kbmg.wsmusiccontrol.constants.JwtConstants;
 import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
@@ -11,6 +10,7 @@ import br.com.kbmg.wsmusiccontrol.event.producer.PasswordRecoveryProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.RegistrationProducer;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
+import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
 import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
@@ -70,10 +70,10 @@ public class SecurityServiceImpl implements SecurityService {
         if (!userApp.getEnabled()) {
             throw new AuthorizationException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
         }
+        SpaceUserAppAssociation lastAccessedSpace = spaceUserAppAssociationService.findLastAccessedSpace(userApp);
+        String token = jwtService.generateToken(loginDto, userApp, lastAccessedSpace.getSpace());
 
-        String token = jwtService.generateToken(loginDto, userApp);
-
-        return String.format("%s%s", JwtConstants.BEARER, token);
+        return token;
     }
 
     @Override
@@ -133,7 +133,9 @@ public class SecurityServiceImpl implements SecurityService {
     public void passwordRecoveryChange(UserChangePasswordDto userChangePasswordDto) {
         String defaultError = messagesService.get(DATA_INVALID);
         String email = userChangePasswordDto.getEmail();
-        UserApp userApp = userAppService.findByEmail(email).orElseThrow(() -> new AuthorizationException(email, defaultError));
+        UserApp userApp = userAppService
+                .findByEmail(email)
+                .orElseThrow(() -> new AuthorizationException(email, defaultError));
 
         validatePassword(email, userChangePasswordDto.getTemporaryPassword(), userApp.getPassword(), defaultError);
 

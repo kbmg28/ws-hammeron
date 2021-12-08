@@ -1,6 +1,5 @@
-package br.com.kbmg.wsmusiccontrol.dto;
+package br.com.kbmg.wsmusiccontrol.dto.auth;
 
-import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
-import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
@@ -78,21 +78,23 @@ public class SpaceUserAppAssociationServiceImpl
         return repository.findByUserAppAndLastAccessedSpaceTrue(userApp);
     }
 
-    private SpaceUserAppAssociation createAssociation(Space space, UserApp userApp, Boolean isOwner) {
-        repository.findBySpaceAndUserAppAndIsOwner(space, userApp, isOwner).ifPresent(ass -> {
-            throw new ServiceException(
-                    messagesService.get("space.user.already.exists")
-            );
+    private SpaceUserAppAssociation createAssociation(Space space, UserApp userApp, Boolean isSpaceOwner) {
+        PermissionEnum newPermission = isSpaceOwner ? PermissionEnum.SPACE_OWNER : PermissionEnum.PARTICIPANT;
+
+        SpaceUserAppAssociation association = repository.findBySpaceAndUserApp(space, userApp).orElseGet(() -> {
+            SpaceUserAppAssociation newAssociation = new SpaceUserAppAssociation();
+            newAssociation.setUserApp(userApp);
+            newAssociation.setSpace(space);
+
+            Boolean isDefaultSpace =  AppConstants.DEFAULT_SPACE.equals(space.getName());
+
+            newAssociation.setLastAccessedSpace(isDefaultSpace);
+
+            return repository.save(newAssociation);
         });
 
-        userPermissionService.addPermissionToUser(userApp, isOwner ? PermissionEnum.SPACE_OWNER : PermissionEnum.PARTICIPANT);
-        SpaceUserAppAssociation spaceUserAppAssociation = new SpaceUserAppAssociation();
-        spaceUserAppAssociation.setUserApp(userApp);
-        spaceUserAppAssociation.setSpace(space);
-        spaceUserAppAssociation.setIsOwner(isOwner);
+        userPermissionService.addPermissionToUser(association, newPermission);
 
-        spaceUserAppAssociation.setLastAccessedSpace(KeyMessageConstants.PUBLIC_SPACE.equals(space.getName()));
-
-        return repository.save(spaceUserAppAssociation);
+        return association;
     }
 }

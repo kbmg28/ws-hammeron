@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
@@ -24,7 +25,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/spaces/{space-id}/events")
+@RequestMapping("/api/events")
 @CrossOrigin(origins = "*")
 @SecuredAnyUserAuth
 public class EventController extends GenericController {
@@ -36,10 +37,9 @@ public class EventController extends GenericController {
     @GetMapping
     @Transactional
     public ResponseEntity<ResponseData<List<EventDto>>> findAllEvents(
-            @PathVariable("space-id") String spaceId,
             @RequestParam(name = "nextEvents", required = true) Boolean nextEvents,
             @RequestParam(name = "rangeDate", required = false) RangeDateFilterEnum rangeDate) {
-
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<EventDto> list = eventService.findAllEventsBySpace(spaceId, nextEvents, rangeDate);
         return super.ok(list);
     }
@@ -47,17 +47,16 @@ public class EventController extends GenericController {
     @GetMapping("/{id-event}")
     @Transactional
     public ResponseEntity<ResponseData<EventDetailsDto>> findById(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("id-event") String idMusic) {
-        EventDetailsDto data = eventService.findBySpaceAndId(spaceId, idMusic);
+        EventDetailsDto data = eventService.findByIdValidated( idMusic);
         return super.ok(data);
     }
 
     @PostMapping
     @Transactional
     public ResponseEntity<ResponseData<EventDto>> createEvent(
-            @PathVariable("space-id") String spaceId,
             @RequestBody @Valid EventWithMusicListDto body) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         EventDto data = eventService.createEvent(spaceId, body);
         return super.ok(data);
     }
@@ -65,9 +64,9 @@ public class EventController extends GenericController {
     @PutMapping("/{id-event}")
     @Transactional
     public ResponseEntity<ResponseData<EventDto>> updateEvent(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("id-event") String idEvent,
             @RequestBody @Valid EventWithMusicListDto body) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         EventDto data = eventService.editEvent(spaceId,idEvent, body);
         return super.ok(data);
     }

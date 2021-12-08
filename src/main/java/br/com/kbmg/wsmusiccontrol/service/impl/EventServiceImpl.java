@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
@@ -56,7 +57,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     @Override
     public List<EventDto> findAllEventsBySpace(String spaceId, Boolean nextEvents, RangeDateFilterEnum rangeDateFilterEnum) {
         UserApp userLogged = userAppService.findUserLogged();
-        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+        Space space = spaceService.findByIdValidated(spaceId);
 
         List<EventWithTotalAssociationsProjection> eventList = nextEvents ? findNextEvents(space, userLogged) : findOldEvents(space, rangeDateFilterEnum, userLogged);
 
@@ -67,17 +68,8 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 .collect(Collectors.toList());
     }
 
-    private Comparator<EventDto> getSort(Boolean nextEvents) {
-        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
-
-        return nextEvents ? eventListASC : eventListASC.reversed();
-    }
-
     @Override
-    public EventDetailsDto findBySpaceAndId(String spaceId, String eventId) {
-        UserApp userLogged = userAppService.findUserLogged();
-        spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
-
+    public EventDetailsDto findByIdValidated(String eventId) {
         Event event = repository.findById(eventId)
                             .orElseThrow(() -> new ServiceException(
                                     messagesService.get("event.not.exist")
@@ -95,22 +87,9 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         return eventDetails;
     }
 
-    private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {
-        List<Music> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
-        Set<MusicWithSingerAndLinksDto> dtoList = musicMapper.toMusicWithSingerAndLinksDtoList(musicList);
-        eventDetails.setMusicList(dtoList);
-    }
-
-    private void findUserAssociation(Event event, EventDetailsDto eventDetails) {
-        List<UserApp> userEntityList = eventSpaceUserAppAssociationService.findAllUserAppByEvent(event);
-        Set<UserDto> userList = userAppMapper.toUserDtoList(userEntityList);
-        eventDetails.setUserList(userList);
-    }
-
     @Override
     public EventDto createEvent(String spaceId, EventWithMusicListDto body) {
-        UserApp userLogged = userAppService.findUserLogged();
-        Space space = validateIfEventAlreadyExistAndGetSpace(spaceId, userLogged, body);
+        Space space = validateIfEventAlreadyExistAndGetSpace(spaceId, body);
 
         Event event = new Event();
         event.setDateEvent(body.getDate());
@@ -123,22 +102,21 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         Set<EventMusicAssociation> musicList = saveMusicListOfEvent(body, event);
         Set<EventSpaceUserAppAssociation> userList = saveUserListOfEvent(body, space, event);
 
-        boolean isUserLoggedIncluded = isUserLoggedIncluded(body, userLogged);
+        boolean isUserLoggedIncluded = isUserLoggedIncluded(body);
 
         return new EventDto(event.getId(), event.getDateEvent(), event.getName(), event.getTimeEvent(), musicList.size(), userList.size(), isUserLoggedIncluded);
     }
 
     @Override
     public EventDto editEvent(String spaceId, String idEvent, EventWithMusicListDto body) {
-        UserApp userLogged = userAppService.findUserLogged();
-        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+        Space space = spaceService.findByIdValidated(spaceId);
         Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
         updateEventFields(eventInDatabase, body);
 
         Set<EventMusicAssociation> musicList =  eventMusicAssociationService.updateAssociations(eventInDatabase, body.getMusicList());
         Set<EventSpaceUserAppAssociation> userList = eventSpaceUserAppAssociationService.updateAssociations(eventInDatabase, body.getUserList());
 
-        boolean isUserLoggedIncluded = isUserLoggedIncluded(body, userLogged);
+        boolean isUserLoggedIncluded = isUserLoggedIncluded(body);
 
         return new EventDto(eventInDatabase.getId(),
                 eventInDatabase.getDateEvent(),
@@ -149,13 +127,31 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 isUserLoggedIncluded);
     }
 
-    private boolean isUserLoggedIncluded(EventWithMusicListDto body, UserApp userLogged) {
-        boolean isUserLoggedIncluded = body
+    private Comparator<EventDto> getSort(Boolean nextEvents) {
+        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
+
+        return nextEvents ? eventListASC : eventListASC.reversed();
+    }
+
+    private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {
+        List<Music> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
+        Set<MusicWithSingerAndLinksDto> dtoList = musicMapper.toMusicWithSingerAndLinksDtoList(musicList);
+        eventDetails.setMusicList(dtoList);
+    }
+
+    private void findUserAssociation(Event event, EventDetailsDto eventDetails) {
+        List<UserApp> userEntityList = eventSpaceUserAppAssociationService.findAllUserAppByEvent(event);
+        Set<UserDto> userList = userAppMapper.toUserDtoList(userEntityList);
+        eventDetails.setUserList(userList);
+    }
+
+    private boolean isUserLoggedIncluded(EventWithMusicListDto body) {
+        String emailOfUserLogged = SpringSecurityUtil.getEmail();
+        return body
                 .getUserList()
                 .stream()
                 .map(UserOnlyIdNameAndEmailDto::getEmail)
-                .anyMatch(email -> userLogged.getEmail().equals(email));
-        return isUserLoggedIncluded;
+                .anyMatch(emailOfUserLogged::equals);
     }
 
     private void updateEventFields(Event eventInDatabase, EventWithMusicListDto body) {
@@ -172,8 +168,8 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                         ));
     }
 
-    private Space validateIfEventAlreadyExistAndGetSpace(String spaceId, UserApp userLogged, EventWithMusicListDto body) {
-        Space space = spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
+    private Space validateIfEventAlreadyExistAndGetSpace(String spaceId, EventWithMusicListDto body) {
+        Space space = spaceService.findByIdValidated(spaceId);
         repository.findBySpaceAndDateEventAndTimeEvent(space, body.getDate(), body.getTime())
                 .ifPresent(event -> {
                     throw new ServiceException(messagesService.get("event.already.exist"));

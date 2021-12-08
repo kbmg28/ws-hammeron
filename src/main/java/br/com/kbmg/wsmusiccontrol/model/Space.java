@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
-import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -63,6 +63,6 @@ public class Space extends AbstractEntity {
 	private Set<SpaceUserAppAssociation> spaceUserAppAssociationList = new HashSet<>();
 
 	public boolean isApproved() {
-		return this.approvedBy != null || name.equals(KeyMessageConstants.PUBLIC_SPACE);
+		return this.approvedBy != null || name.equals(AppConstants.DEFAULT_SPACE);
 	}
 }

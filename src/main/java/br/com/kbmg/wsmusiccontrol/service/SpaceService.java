@@ -12,6 +12,8 @@ public interface SpaceService extends GenericService<Space>{
 
     void requestNewSpaceForUser(SpaceRequestDto spaceRequestDto, HttpServletRequest request);
 
+    Space findByIdValidated(String spaceId);
+
     Space findByIdAndUserAppValidated(String spaceId, UserApp userApp);
 
     void approveNewSpaceForUser(String idSpace, HttpServletRequest request);
@@ -20,7 +22,7 @@ public interface SpaceService extends GenericService<Space>{
 
     List<Space> findAllSpacesByUserApp();
 
-    Space changeViewSpaceUser(String idSpace);
+    String changeViewSpaceUser(String idSpace, HttpServletRequest request);
 
     Space findLastAccessedSpace();
 }

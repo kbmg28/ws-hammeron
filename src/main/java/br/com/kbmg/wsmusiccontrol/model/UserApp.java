@@ -1,6 +1,5 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
-import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -40,18 +39,8 @@ public class UserApp extends AbstractEntity {
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
-	private Set<UserPermission> userPermissionList = new HashSet<>();
-
-	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
-	@OneToMany(mappedBy = "userApp", fetch = FetchType.LAZY)
 	private Set<SpaceUserAppAssociation> spaceUserAppAssociationList = new HashSet<>();
 
-	public boolean isSysAdmin(){
-		return this.userPermissionList.
-				stream()
-				.anyMatch(up ->
-					PermissionEnum.SYS_ADMIN.equals(up.getPermission())
-				);
-	}
+	@Column(nullable = false)
+	private Boolean isSysAdmin;
 }

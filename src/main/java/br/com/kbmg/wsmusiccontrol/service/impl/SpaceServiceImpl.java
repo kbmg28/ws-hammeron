@@ -1,6 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
-import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceApproveProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceRequestProducer;
@@ -10,6 +10,7 @@ import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
+import br.com.kbmg.wsmusiccontrol.service.JwtService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -38,12 +39,15 @@ public class SpaceServiceImpl
     @Autowired
     private SpaceApproveProducer spaceApproveProducer;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Override
     public Space findOrCreatePublicSpace() {
-        return this.repository.findByName(KeyMessageConstants.PUBLIC_SPACE).orElseGet(() -> {
+        return this.repository.findByName(AppConstants.DEFAULT_SPACE).orElseGet(() -> {
             Space publicSpace = new Space();
-            publicSpace.setName(KeyMessageConstants.PUBLIC_SPACE);
-            publicSpace.setJustification("Default");
+            publicSpace.setName(AppConstants.DEFAULT_SPACE);
+            publicSpace.setJustification(AppConstants.DEFAULT_SPACE);
 
             return repository.save(publicSpace);
         });
@@ -71,12 +75,17 @@ public class SpaceServiceImpl
     }
 
     @Override
+    public Space findByIdValidated(String spaceId) {
+        return repository.findById(spaceId)
+                .orElseThrow(() -> new ServiceException(
+                        messagesService.get("space.not.exist")
+                ));
+    }
+
+    @Override
     public Space findByIdAndUserAppValidated(String spaceId, UserApp userApp) {
-        if(userApp.isSysAdmin()) {
-            return repository.findById(spaceId)
-                    .orElseThrow(() -> new ServiceException(
-                            messagesService.get("space.not.exist")
-                    ));
+        if(userApp.getIsSysAdmin()) {
+            return findByIdValidated(spaceId);
         }
 
         return repository.findByIdAndUserApp(spaceId, userApp)
@@ -120,7 +129,7 @@ public class SpaceServiceImpl
     public List<Space> findAllSpacesByUserApp() {
         UserApp userLogged = userAppService.findUserLogged();
 
-        if(userLogged.isSysAdmin()) {
+        if(userLogged.getIsSysAdmin()) {
             return this.findAll();
         }
 
@@ -131,22 +140,21 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public Space changeViewSpaceUser(String idSpace) {
+    public String changeViewSpaceUser(String idSpace, HttpServletRequest request) {
         UserApp userLogged = userAppService.findUserLogged();
         Space space = findByIdAndUserAppValidated(idSpace, userLogged);
-
-        if(!userLogged.isSysAdmin()) {
+        if(!userLogged.getIsSysAdmin()) {
             spaceUserAppAssociationService.updateLastAccessedSpace(userLogged, space);
         }
-
-        return space;
+        String tokenUpdated = jwtService.updateSpaceOnToken(request, space);
+        return tokenUpdated;
     }
 
     @Override
     public Space findLastAccessedSpace() {
         UserApp userLogged = userAppService.findUserLogged();
 
-        if (userLogged.isSysAdmin()) {
+        if (userLogged.getIsSysAdmin()) {
             return this.findOrCreatePublicSpace();
         } else {
             SpaceUserAppAssociation ass = spaceUserAppAssociationService.findLastAccessedSpace(userLogged);

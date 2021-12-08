@@ -1,12 +1,13 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
+import br.com.kbmg.wsmusiccontrol.config.security.UserCredentialsSecurity;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.model.UserPermission;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.service.UserPermissionService;
@@ -27,9 +28,10 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/spaces/{space-id}/users")
+@RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 @SecuredAnyUserAuth
 @Transactional
@@ -45,58 +47,45 @@ public class UserController extends GenericController {
     private UserAppMapper userAppMapper;
 
     @GetMapping("")
-    public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAllBySpace(
-            @PathVariable("space-id") String spaceId
-    ) {
-        List<UserApp> entityData = userAppService.findAllBySpace(spaceId);
-        Set<UserWithPermissionDto> viewData = userAppMapper.toUserWithPermissionDtoList(entityData);
-        return super.ok(viewData);
+    public ResponseEntity<ResponseData<Set<UserWithPermissionDto>>> findAllBySpace() {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
+        Set<UserWithPermissionDto> entityData = userAppService.findAllBySpace(spaceId);
+        return super.ok(entityData);
     }
 
     @PutMapping("/logged")
     public ResponseEntity<ResponseData<UserWithPermissionDto>> updateUserLogged(
-            @PathVariable("space-id") String spaceId,
             @Valid @RequestBody UserDto body
     ) {
-        UserApp entityData = userAppService.updateUserLogged(spaceId, body);
+        UserCredentialsSecurity credentials = SpringSecurityUtil.getCredentials();
+        UserApp entityData = userAppService.updateUserLogged(body);
         UserWithPermissionDto viewData = userAppMapper.toUserWithPermissionDto(entityData);
+        viewData.setPermissionList(credentials.getRoles().stream().map(PermissionEnum::valueOf).collect(Collectors.toSet()));
         return super.ok(viewData);
     }
 
     @GetMapping("/logged")
-    public ResponseEntity<ResponseData<UserWithPermissionDto>> findUserLogged(
-            @PathVariable("space-id") String spaceId
-    ) {
+    public ResponseEntity<ResponseData<UserWithPermissionDto>> findUserLogged() {
         UserApp entityData = userAppService.findUserLogged();
         UserWithPermissionDto viewData = userAppMapper.toUserWithPermissionDto(entityData);
+        viewData.setPermissionList(SpringSecurityUtil.getCredentials().getRoles().stream().map(PermissionEnum::valueOf).collect(Collectors.toSet()));
         return super.ok(viewData);
     }
 
     @GetMapping("/association-for-events")
-    public ResponseEntity<ResponseData<List<UserOnlyIdNameAndEmailDto>>> findUsersAssociationForEventsBySpace(
-            @PathVariable("space-id") String spaceId
-    ) {
+    public ResponseEntity<ResponseData<List<UserOnlyIdNameAndEmailDto>>> findUsersAssociationForEventsBySpace() {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<UserOnlyIdNameAndEmailProjection> projectionList = userAppService.findUsersAssociationForEventsBySpace(spaceId);
         List<UserOnlyIdNameAndEmailDto> viewData = userAppMapper.toUserOnlyIdNameAndEmailDto(projectionList);
         return super.ok(viewData);
     }
 
-    @GetMapping("/permissions/{permission-key}")
-    public ResponseEntity<ResponseData<Set<UserDto>>> findAllByPermission(
-            @PathVariable("space-id") String spaceId,
-            @PathVariable("permission-key") PermissionEnum permissionEnum
-            ) {
-        List<UserPermission> entityData = userPermissionService.findBySpaceAndPermission(spaceId, permissionEnum);
-        Set<UserDto> viewData = userAppMapper.toUserDtoFromUserPermissionList(entityData);
-        return super.ok(viewData);
-    }
-
     @PostMapping("/{email-user}/permissions/{permission-key}")
     public ResponseEntity<ResponseData<Void>> addPermission(
-            @PathVariable("space-id") String spaceId,
             @PathVariable("email-user") String emailUser,
             @PathVariable("permission-key") PermissionEnum permissionEnum
             ) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         userAppService.addPermissionToUserInSpace(emailUser, spaceId, permissionEnum);
         return super.ok();
     }
