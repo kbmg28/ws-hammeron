@@ -5,6 +5,7 @@ import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicTopUsedProjection;
+import br.com.kbmg.wsmusiccontrol.repository.projection.OverviewProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -41,4 +42,10 @@ public interface MusicRepository extends JpaRepository<Music, String> {
             "JOIN SINGER s ON s.id = m.singer_id " +
             "WHERE m.space_id = :spaceId and m.music_status = 'ENABLED'", nativeQuery = true)
     List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId);
+
+    @Query(value = "SELECT m.music_status AS \"groupName\", COUNT(m.ID) AS \"total\" " +
+            " FROM MUSIC m " +
+            " WHERE m.space_id = :spaceId " +
+            " GROUP BY m.music_status", nativeQuery = true)
+    List<OverviewProjection> findMusicOverviewBySpace(String spaceId);
 }

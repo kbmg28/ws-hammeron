@@ -1,7 +1,12 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.EventOverviewDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.SpaceOverviewDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.UserOverviewDto;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceApproveProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceRequestProducer;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
@@ -10,7 +15,9 @@ import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
+import br.com.kbmg.wsmusiccontrol.service.EventService;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
+import br.com.kbmg.wsmusiccontrol.service.MusicService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -20,6 +27,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +49,12 @@ public class SpaceServiceImpl
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private MusicService musicService;
+
+    @Autowired
+    private EventService eventService;
 
     @Override
     public Space findOrCreatePublicSpace() {
@@ -160,6 +174,28 @@ public class SpaceServiceImpl
 
             return ass.getSpace();
         }
+    }
+
+    @Override
+    public SpaceOverviewDto findSpaceOverview() {
+        Space space = this.findByIdValidated(SpringSecurityUtil.getSpaceId());
+        AtomicReference<String> createdBy = new AtomicReference<>(space.getCreatedByEmail());
+        userAppService.findByEmail(createdBy.get()).ifPresent(user -> {
+            String template = "%s (%s)";
+            createdBy.set(String.format(template, user.getName(), user.getEmail()));
+        });
+
+        List<UserOverviewDto> userOverviewDtoList = spaceUserAppAssociationService.findUserOverviewBySpace(space);
+        List<MusicOverviewDto> musicOverviewDtoList = musicService.findMusicOverview(space);
+        List<EventOverviewDto> eventOverviewDtoList = eventService.findEventOverviewBySpace(space);
+        return new SpaceOverviewDto(
+                space.getId(),
+                space.getName(),
+                createdBy.get(),
+                userOverviewDtoList,
+                musicOverviewDtoList,
+                eventOverviewDtoList
+        );
     }
 
 }

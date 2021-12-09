@@ -5,8 +5,10 @@ import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.EventOverviewDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
+import br.com.kbmg.wsmusiccontrol.enums.EventTypeEnum;
 import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
@@ -17,19 +19,23 @@ import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.EventRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.EventWithTotalAssociationsProjection;
+import br.com.kbmg.wsmusiccontrol.repository.projection.OverviewProjection;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.EventService;
 import br.com.kbmg.wsmusiccontrol.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
+import br.com.kbmg.wsmusiccontrol.util.mapper.OverviewMapper;
 import br.com.kbmg.wsmusiccontrol.util.mapper.UserAppMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,6 +59,9 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     @Autowired
     private MusicMapper musicMapper;
+
+    @Autowired
+    private OverviewMapper overviewMapper;
 
     @Override
     public List<EventDto> findAllEventsBySpace(String spaceId, Boolean nextEvents, RangeDateFilterEnum rangeDateFilterEnum) {
@@ -125,6 +134,21 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 musicList.size(),
                 userList.size(),
                 isUserLoggedIncluded);
+    }
+
+    @Override
+    public List<EventOverviewDto> findEventOverviewBySpace(Space space) {
+        List<OverviewProjection> list = repository.findEventOverviewBySpace(space.getId());
+
+        List<EventOverviewDto> eventOverviewDtoList = overviewMapper.toEventOverviewDtoList(list);
+        Map<String, List<EventOverviewDto>> eventOverviewMap = eventOverviewDtoList.stream().collect(Collectors.groupingBy(EventOverviewDto::getEventType));
+        Arrays.asList(EventTypeEnum.values()).forEach(type -> {
+            String typeEvent = type.name();
+            if(!eventOverviewMap.containsKey(typeEvent)) {
+                eventOverviewDtoList.add(new EventOverviewDto(typeEvent, 0L));
+            }
+        });
+        return eventOverviewDtoList;
     }
 
     private Comparator<EventDto> getSort(Boolean nextEvents) {
