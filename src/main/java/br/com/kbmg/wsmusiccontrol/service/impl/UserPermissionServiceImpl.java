@@ -6,7 +6,6 @@ import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithSinglePermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
-import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
@@ -63,9 +62,6 @@ public class UserPermissionServiceImpl
             repository.save(newUserPermission);
 
             userPermissionList.add(newUserPermission);
-        } else {
-            String errorMessage = messagesService.get("space.user.already.exists");
-            throw new ServiceException(errorMessage);
         }
     }
 

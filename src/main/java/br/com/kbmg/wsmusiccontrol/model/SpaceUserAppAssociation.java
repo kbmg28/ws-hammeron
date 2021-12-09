@@ -35,6 +35,9 @@ public class SpaceUserAppAssociation extends AbstractEntity {
 	@Column(nullable = false)
 	private Boolean lastAccessedSpace;
 
+	@Column(nullable = false)
+	private Boolean active;
+
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	@OneToMany(mappedBy = "spaceUserAppAssociation", fetch = FetchType.LAZY)

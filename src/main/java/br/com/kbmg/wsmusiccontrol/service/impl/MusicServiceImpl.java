@@ -4,6 +4,7 @@ import br.com.kbmg.wsmusiccontrol.dto.event.EventSimpleDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Music;
@@ -12,6 +13,7 @@ import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
+import br.com.kbmg.wsmusiccontrol.repository.projection.OverviewProjection;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.MusicLinkService;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
@@ -19,11 +21,14 @@ import br.com.kbmg.wsmusiccontrol.service.SingerService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
+import br.com.kbmg.wsmusiccontrol.util.mapper.OverviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +52,9 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Autowired
     private EventMusicAssociationService eventMusicAssociationService;
+
+    @Autowired
+    private OverviewMapper overviewMapper;
 
     @Override
     public Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
@@ -132,6 +140,22 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     public List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId) {
         List<MusicOnlyIdAndMusicNameAndSingerNameProjection> list = repository.findMusicsAssociationForEventsBySpace(spaceId);
         return list;
+    }
+
+    @Override
+    public List<MusicOverviewDto> findMusicOverview(Space space) {
+        List<OverviewProjection> list = repository.findMusicOverviewBySpace(space.getId());
+        List<MusicOverviewDto> musicOverviewDtoList = overviewMapper.toMusicOverviewDtoList(list);
+
+        Map<String, List<MusicOverviewDto>> musicOverviewMap = musicOverviewDtoList.stream().collect(Collectors.groupingBy(MusicOverviewDto::getStatusName));
+        Arrays.asList(MusicStatusEnum.values()).forEach(type -> {
+            String typeMusic = type.name();
+            if(!musicOverviewMap.containsKey(typeMusic)) {
+                musicOverviewDtoList.add(new MusicOverviewDto(typeMusic, 0L));
+            }
+        });
+
+        return musicOverviewDtoList;
     }
 
     private Music findMusicValidatingSpace(String spaceId, String idMusic) {

@@ -3,6 +3,7 @@ package br.com.kbmg.wsmusiccontrol.repository;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.repository.projection.EventWithTotalAssociationsProjection;
+import br.com.kbmg.wsmusiccontrol.repository.projection.OverviewProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -36,4 +37,16 @@ public interface EventRepository extends JpaRepository<Event, String> {
     List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateEventGreaterThanEqual(String spaceId, LocalDate startDate, String userId);
 
     Optional<Event> findBySpaceAndId(Space space, String idEvent);
+
+    @Query(value = "SELECT " +
+            "   (CASE " +
+            "       WHEN e.DATE_EVENT < current_date " +
+            "           THEN 'OLD' " +
+            "       ELSE 'NEXT' " +
+            "    END)  AS \"groupName\", " +
+            "   COUNT(e.id) AS \"total\"" +
+            "FROM EVENT e " +
+            "WHERE e.space_id = :spaceId " +
+            "GROUP BY \"groupName\"", nativeQuery = true)
+    List<OverviewProjection> findEventOverviewBySpace(String spaceId);
 }
