@@ -113,7 +113,6 @@ public class SpaceServiceImpl
             space.setApprovedByDate(LocalDateTime.now());
             repository.save(space);
 
-            spaceUserAppAssociationService.createAssociationToParticipant(space, requestedBy);
             spaceUserAppAssociationService.createAssociationToSpaceOwner(space, requestedBy);
 
             spaceApproveProducer.publishEvent(request, space);

@@ -89,10 +89,11 @@ public class SpaceUserAppAssociationServiceImpl
             Boolean isDefaultSpace =  AppConstants.DEFAULT_SPACE.equals(space.getName());
 
             newAssociation.setLastAccessedSpace(isDefaultSpace);
-
-            return repository.save(newAssociation);
+            return newAssociation;
         });
 
+        association.setActive(true);
+        repository.save(association);
         userPermissionService.addPermissionToUser(association, newPermission);
 
         return association;
