@@ -28,6 +28,7 @@ import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
 import br.com.kbmg.wsmusiccontrol.util.mapper.OverviewMapper;
 import br.com.kbmg.wsmusiccontrol.util.mapper.UserAppMapper;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.EVENT_IS_NOT_EDITABLE;
 
 @Service
 public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository> implements EventService {
@@ -120,6 +123,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     public EventDto editEvent(String spaceId, String idEvent, EventWithMusicListDto body) {
         Space space = spaceService.findByIdValidated(spaceId);
         Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
+        validateIfEventCanBeEdited(eventInDatabase);
         updateEventFields(eventInDatabase, body);
 
         Set<EventMusicAssociation> musicList =  eventMusicAssociationService.updateAssociations(eventInDatabase, body.getMusicList());
@@ -136,6 +140,15 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 isUserLoggedIncluded);
     }
 
+    private void validateIfEventCanBeEdited(Event eventInDatabase) {
+        LocalDate today = LocalDate.now();
+        LocalDate currentDateOfEvent = eventInDatabase.getDateEvent();
+        if(today.isAfter(currentDateOfEvent)){
+            throw new ServiceException(messagesService.get(EVENT_IS_NOT_EDITABLE));
+        }
+
+    }
+
     @Override
     public List<EventOverviewDto> findEventOverviewBySpace(Space space) {
         List<OverviewProjection> list = repository.findEventOverviewBySpace(space.getId());
@@ -149,6 +162,49 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
             }
         });
         return eventOverviewDtoList;
+    }
+
+    @Override
+    public void deleteEvent(String spaceId, String idEvent) {
+        Space space = spaceService.findByIdValidated(spaceId);
+        Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
+        validateIfEventCanBeEdited(eventInDatabase);
+
+        Set<EventMusicAssociation> eventMusicList = eventInDatabase.getEventMusicList();
+        Set<EventSpaceUserAppAssociation> spaceUserAppAssociationList = eventInDatabase.getSpaceUserAppAssociationList();
+
+        logInfoMusicDelete("START", eventInDatabase, eventMusicList.size());
+        eventMusicAssociationService.deleteInBatch(eventMusicList);
+        logInfoMusicDelete("END", eventInDatabase, eventMusicList.size());
+
+
+        logInfoUserAssociationDelete("START", eventInDatabase, spaceUserAppAssociationList.size());
+        eventSpaceUserAppAssociationService.deleteInBatch(spaceUserAppAssociationList);
+        logInfoUserAssociationDelete("END", eventInDatabase, spaceUserAppAssociationList.size());
+
+        repository.delete(eventInDatabase);
+    }
+
+    private void logInfoMusicDelete(String type, Event eventInDatabase, int size) {
+        logService.logMessage(Level.INFO, String.format(
+                "[%s] Delete %d music associations of event: '%s' (%s)",
+                    type,
+                    size,
+                    eventInDatabase.getName(),
+                    eventInDatabase.getId()
+                )
+        );
+    }
+
+    private void logInfoUserAssociationDelete(String type, Event eventInDatabase, int size) {
+        logService.logMessage(Level.INFO, String.format(
+                "[%s] Delete %d user associations of event: '%s' (%s)",
+                    type,
+                    size,
+                    eventInDatabase.getName(),
+                    eventInDatabase.getId()
+                )
+        );
     }
 
     private Comparator<EventDto> getSort(Boolean nextEvents) {

@@ -1,11 +1,14 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventSimpleDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
+import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
+import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.MusicLink;
@@ -31,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.MUSIC_CANNOT_CHANGE_STATUS;
 
 @Service
 public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository> implements MusicService {
@@ -100,7 +105,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         Space space = spaceService.findByIdValidated(spaceId);
         Music musicInDatabase = findBySpaceAndIdValidated(idMusic, space);
         Music musicUpdated = musicMapper.toMusic(musicWithSingerAndLinksDto);
-
+        checkIfUserCanChangeMusicStatus(musicInDatabase, musicUpdated);
         Singer singer = singerService.findByNameOrCreateIfNotExistToUpdate(musicInDatabase, musicWithSingerAndLinksDto);
 
         repository.findByNameIgnoreCaseAndSingerAndSpace(musicUpdated.getName(), singer, space)
@@ -109,6 +114,15 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
         musicLinkService.updateMusicLink(musicInDatabase, musicWithSingerAndLinksDto.getLinks());
         return musicMapper.updateMusic(musicInDatabase, musicUpdated);
+    }
+
+    private void checkIfUserCanChangeMusicStatus(Music musicInDatabase, Music musicUpdated) {
+        boolean statusInDatabaseIsRejected = MusicStatusEnum.REJECTED.equals(musicInDatabase.getMusicStatus());
+        boolean newStatusIsRejected = MusicStatusEnum.REJECTED.equals(musicUpdated.getMusicStatus());
+        boolean isNotSpaceOwner = SpringSecurityUtil.getAllPermissions().stream().noneMatch(p -> PermissionEnum.SPACE_OWNER.name().equals(p));
+        if ((statusInDatabaseIsRejected || newStatusIsRejected) && isNotSpaceOwner) {
+            throw new ForbiddenException(messagesService.get(MUSIC_CANNOT_CHANGE_STATUS));
+        }
     }
 
     @Override
