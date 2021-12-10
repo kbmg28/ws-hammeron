@@ -12,6 +12,7 @@ import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,7 +34,6 @@ public class EventController extends GenericController {
 
     @Autowired
     private EventService eventService;
-
 
     @GetMapping
     @Transactional
@@ -71,6 +71,16 @@ public class EventController extends GenericController {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         EventDto data = eventService.editEvent(spaceId,idEvent, body);
         return super.ok(data);
+    }
+
+    @DeleteMapping("/{id-event}")
+    @Transactional
+    @SecuredSpaceOwner
+    public ResponseEntity<ResponseData<Void>> deleteEvent(
+            @PathVariable("id-event") String idEvent) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
+        eventService.deleteEvent(spaceId, idEvent);
+        return super.ok();
     }
 
 }

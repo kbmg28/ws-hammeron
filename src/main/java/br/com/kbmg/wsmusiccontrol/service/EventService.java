@@ -20,4 +20,6 @@ public interface EventService extends GenericService<Event>{
     EventDto editEvent(String spaceId, String idEvent, EventWithMusicListDto body);
 
     List<EventOverviewDto> findEventOverviewBySpace(Space space);
+
+    void deleteEvent(String spaceId, String idEvent);
 }

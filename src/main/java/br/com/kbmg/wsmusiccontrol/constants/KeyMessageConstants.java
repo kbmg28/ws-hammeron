@@ -24,4 +24,6 @@ public abstract class KeyMessageConstants {
 
     public static final String MUSIC_INVALID_LINK = "music.invalid.link";
     public static final String MUSIC_CANNOT_CHANGE_STATUS = "music.cannot.change.status";
+
+    public static final String EVENT_IS_NOT_EDITABLE = "event.not.editable";
 }
