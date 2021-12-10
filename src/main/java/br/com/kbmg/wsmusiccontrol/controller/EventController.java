@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSpaceOwner;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
@@ -54,6 +55,7 @@ public class EventController extends GenericController {
 
     @PostMapping
     @Transactional
+    @SecuredSpaceOwner
     public ResponseEntity<ResponseData<EventDto>> createEvent(
             @RequestBody @Valid EventWithMusicListDto body) {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
