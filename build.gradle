@@ -66,6 +66,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
 	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
+
+	implementation 'net.sf.biweekly:biweekly:0.6.4'
 }
 
 tasks.register("unitTest", Test) {

@@ -1,6 +1,11 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
+import br.com.kbmg.wsmusiccontrol.enums.DatabaseOperationEnum;
+import br.com.kbmg.wsmusiccontrol.event.producer.UserOfEventOperationProducer;
+import br.com.kbmg.wsmusiccontrol.event.view.UserOfEventOperation;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.EventSpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.Space;
@@ -12,6 +17,7 @@ import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -21,10 +27,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<EventSpaceUserAppAssociation, EventSpaceUserAppAssociationRepository> implements EventSpaceUserAppAssociationService {
+public class EventSpaceUserAppAssociationServiceImpl
+        extends GenericServiceImpl<EventSpaceUserAppAssociation, EventSpaceUserAppAssociationRepository>
+        implements EventSpaceUserAppAssociationService {
 
     @Autowired
     private SpaceUserAppAssociationService spaceUserAppAssociationService;
+
+    @Autowired
+    private UserOfEventOperationProducer userOfEventOperationProducer;
+
+    @Autowired
+    private HttpServletRequest request;
 
     @Override
     public List<UserApp> findAllUserAppByEvent(Event event) {
@@ -33,15 +47,26 @@ public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<
     }
 
     @Override
-    public Set<EventSpaceUserAppAssociation> createAssociation(Space space, Event event, Set<String> userEmailList) {
+    public Set<EventSpaceUserAppAssociation> createAssociation(Space space,
+                                                               Event event,
+                                                               Set<String> userEmailList,
+                                                               Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
         Set<SpaceUserAppAssociation> spaceUserList = spaceUserAppAssociationService
                 .findAllBySpaceAndEmailList(space, userEmailList);
 
-        return createAssociationInDatabase(event, spaceUserList);
+        Set<EventSpaceUserAppAssociation> newAssociations = createAssociationInDatabase(event, spaceUserList);
+
+        sendMailNotification(new EventMainDataDto(event, musicList),
+                getUserAppList(newAssociations),
+                DatabaseOperationEnum.INSERT);
+
+        return newAssociations;
     }
 
     @Override
-    public Set<EventSpaceUserAppAssociation> updateAssociations(Event eventInDatabase, Set<UserOnlyIdNameAndEmailDto> userList) {
+    public Set<EventSpaceUserAppAssociation> updateAssociations(Event eventInDatabase,
+                                                                Set<UserOnlyIdNameAndEmailDto> userList,
+                                                                Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
         Set<EventSpaceUserAppAssociation> userListInDatabase = eventInDatabase.getSpaceUserAppAssociationList();
         Map<String, EventSpaceUserAppAssociation> spaceUserInDatabaseMap = userListInDatabase
                 .stream()
@@ -61,16 +86,51 @@ public class EventSpaceUserAppAssociationServiceImpl extends GenericServiceImpl<
             spaceUserInDatabaseMap.remove(spaceUserToUpdate.getId());
         });
 
-        if (spaceUserInDatabaseMap.size() > 0) {
-            Collection<EventSpaceUserAppAssociation> eventUserAssociationList = spaceUserInDatabaseMap.values();
-            userListInDatabase.removeAll(eventUserAssociationList);
-            repository.deleteAllInBatch(eventUserAssociationList);
-        }
+        removeAssociationsOfUsersNotRelatedOnUpdate(eventInDatabase, userListInDatabase, spaceUserInDatabaseMap);
 
         Set<EventSpaceUserAppAssociation> newAssociations = createAssociationInDatabase(eventInDatabase, spaceUserToCreateAssociationList);
         userListInDatabase.addAll(newAssociations);
 
+        sendMailNotification(new EventMainDataDto(eventInDatabase, musicList),
+                getUserAppList(userListInDatabase),
+                DatabaseOperationEnum.UPDATE);
+
         return userListInDatabase;
+    }
+
+    @Override
+    public void sendMailNotification(EventMainDataDto eventMainDataDto,
+                                     Set<UserApp> userList,
+                                     DatabaseOperationEnum operation) {
+
+        userOfEventOperationProducer.publishEvent(request, new UserOfEventOperation(
+                eventMainDataDto,
+                userList,
+                operation));
+    }
+
+    private Set<UserApp> getUserAppList(Collection<EventSpaceUserAppAssociation> eventUserAssociationList) {
+        return eventUserAssociationList
+                .stream()
+                .map(eua -> eua.getSpaceUserAppAssociation().getUserApp())
+                .collect(Collectors.toSet());
+    }
+
+    private void removeAssociationsOfUsersNotRelatedOnUpdate(
+            Event event,
+            Set<EventSpaceUserAppAssociation> userListInDatabase,
+            Map<String, EventSpaceUserAppAssociation> spaceUserInDatabaseMap) {
+
+        if (spaceUserInDatabaseMap.size() > 0) {
+            Collection<EventSpaceUserAppAssociation> eventUserAssociationList = spaceUserInDatabaseMap.values();
+
+            sendMailNotification(new EventMainDataDto(event, null),
+                    getUserAppList(eventUserAssociationList),
+                    DatabaseOperationEnum.DELETE);
+
+            userListInDatabase.removeAll(eventUserAssociationList);
+            repository.deleteAllInBatch(eventUserAssociationList);
+        }
     }
 
     private Set<SpaceUserAppAssociation> getSpaceUserUpdatedList(Event eventInDatabase, Set<UserOnlyIdNameAndEmailDto> userList) {

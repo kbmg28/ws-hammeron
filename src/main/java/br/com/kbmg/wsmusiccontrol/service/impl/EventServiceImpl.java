@@ -3,11 +3,13 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
+import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.EventOverviewDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
+import br.com.kbmg.wsmusiccontrol.enums.DatabaseOperationEnum;
 import br.com.kbmg.wsmusiccontrol.enums.EventTypeEnum;
 import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
@@ -127,7 +129,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         updateEventFields(eventInDatabase, body);
 
         Set<EventMusicAssociation> musicList =  eventMusicAssociationService.updateAssociations(eventInDatabase, body.getMusicList());
-        Set<EventSpaceUserAppAssociation> userList = eventSpaceUserAppAssociationService.updateAssociations(eventInDatabase, body.getUserList());
+        Set<EventSpaceUserAppAssociation> userList = eventSpaceUserAppAssociationService.updateAssociations(eventInDatabase, body.getUserList(), body.getMusicList());
 
         boolean isUserLoggedIncluded = isUserLoggedIncluded(body);
 
@@ -138,15 +140,6 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 musicList.size(),
                 userList.size(),
                 isUserLoggedIncluded);
-    }
-
-    private void validateIfEventCanBeEdited(Event eventInDatabase) {
-        LocalDate today = LocalDate.now();
-        LocalDate currentDateOfEvent = eventInDatabase.getDateEvent();
-        if(today.isAfter(currentDateOfEvent)){
-            throw new ServiceException(messagesService.get(EVENT_IS_NOT_EDITABLE));
-        }
-
     }
 
     @Override
@@ -170,8 +163,15 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
         validateIfEventCanBeEdited(eventInDatabase);
 
+        EventMainDataDto eventMainDataDto = new EventMainDataDto(eventInDatabase, null);
+
         Set<EventMusicAssociation> eventMusicList = eventInDatabase.getEventMusicList();
         Set<EventSpaceUserAppAssociation> spaceUserAppAssociationList = eventInDatabase.getSpaceUserAppAssociationList();
+
+        Set<UserApp> userList = spaceUserAppAssociationList
+                .stream()
+                .map(esu -> esu.getSpaceUserAppAssociation().getUserApp())
+                .collect(Collectors.toSet());
 
         logInfoMusicDelete("START", eventInDatabase, eventMusicList.size());
         eventMusicAssociationService.deleteInBatch(eventMusicList);
@@ -183,6 +183,19 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         logInfoUserAssociationDelete("END", eventInDatabase, spaceUserAppAssociationList.size());
 
         repository.delete(eventInDatabase);
+
+        eventSpaceUserAppAssociationService.sendMailNotification(eventMainDataDto,
+                userList,
+                DatabaseOperationEnum.DELETE);
+    }
+
+    private void validateIfEventCanBeEdited(Event eventInDatabase) {
+        LocalDate today = LocalDate.now();
+        LocalDate currentDateOfEvent = eventInDatabase.getDateEvent();
+        if(today.isAfter(currentDateOfEvent)){
+            throw new ServiceException(messagesService.get(EVENT_IS_NOT_EDITABLE));
+        }
+
     }
 
     private void logInfoMusicDelete(String type, Event eventInDatabase, int size) {
@@ -273,7 +286,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 .collect(Collectors.toSet());
 
         Set<EventSpaceUserAppAssociation> userListAssociation = eventSpaceUserAppAssociationService
-                .createAssociation(space, event, emailList);
+                .createAssociation(space, event, emailList, body.getMusicList());
 
         event.setSpaceUserAppAssociationList(userListAssociation);
         return userListAssociation;
