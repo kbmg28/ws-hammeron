@@ -76,9 +76,8 @@ public class EventMailServiceImpl implements EventMailService {
                 attendeeList.add(new Attendee(userApp.getName(), userApp.getEmail()));
                 addressList.add(new InternetAddress(userApp.getEmail()));
             }
-            String description = (Method.REQUEST.equals(type)) ? getDescription(event, userList) : null;
 
-            final MimeMessage mimeMessage = createEvent(event, description, organizer, attendeeList, null, type);
+            final MimeMessage mimeMessage = createEvent(event, null, organizer, attendeeList, null, type);
 
             final InternetAddress fromAddress = new InternetAddress(mailNoReply, APP_NAME);
 
@@ -94,7 +93,7 @@ public class EventMailServiceImpl implements EventMailService {
 
     private String getDescription(EventMainDataDto event, Set<UserApp> userList) {
         Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList = event.getMusicList();
-        DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM");
         String formattedDate = event.getDateEvent().format(formatterDate);
 
         DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("hh:mm");

@@ -184,7 +184,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
         repository.delete(eventInDatabase);
 
-        eventSpaceUserAppAssociationService.sendMailNotification(eventMainDataDto,
+        eventSpaceUserAppAssociationService.sendNotificationToAssociations(eventMainDataDto,
                 userList,
                 DatabaseOperationEnum.DELETE);
     }

@@ -42,7 +42,7 @@ public abstract class UserBuilder {
             UserPermission userPermission = new UserPermission();
 
             userPermission.setPermission(pe);
-            userPermission.setUserApp(userApp);
+//            userPermission.setUserApp(userApp);
 
             return userPermission;
         }).collect(Collectors.toSet());

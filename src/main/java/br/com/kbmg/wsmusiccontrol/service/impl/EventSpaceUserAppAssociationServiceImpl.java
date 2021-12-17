@@ -16,6 +16,7 @@ import br.com.kbmg.wsmusiccontrol.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
@@ -56,9 +57,7 @@ public class EventSpaceUserAppAssociationServiceImpl
 
         Set<EventSpaceUserAppAssociation> newAssociations = createAssociationInDatabase(event, spaceUserList);
 
-        sendMailNotification(new EventMainDataDto(event, musicList),
-                getUserAppList(newAssociations),
-                DatabaseOperationEnum.INSERT);
+        sendNotificationToAssociations(new EventMainDataDto(event, musicList), getUserAppList(newAssociations), DatabaseOperationEnum.INSERT);
 
         return newAssociations;
     }
@@ -91,22 +90,21 @@ public class EventSpaceUserAppAssociationServiceImpl
         Set<EventSpaceUserAppAssociation> newAssociations = createAssociationInDatabase(eventInDatabase, spaceUserToCreateAssociationList);
         userListInDatabase.addAll(newAssociations);
 
-        sendMailNotification(new EventMainDataDto(eventInDatabase, musicList),
-                getUserAppList(userListInDatabase),
-                DatabaseOperationEnum.UPDATE);
+        sendNotificationToAssociations(new EventMainDataDto(eventInDatabase, musicList), getUserAppList(newAssociations), DatabaseOperationEnum.UPDATE);
 
         return userListInDatabase;
     }
 
     @Override
-    public void sendMailNotification(EventMainDataDto eventMainDataDto,
-                                     Set<UserApp> userList,
-                                     DatabaseOperationEnum operation) {
-
-        userOfEventOperationProducer.publishEvent(request, new UserOfEventOperation(
-                eventMainDataDto,
-                userList,
-                operation));
+    public void sendNotificationToAssociations(EventMainDataDto eventMainDataDto,
+                                               Set<UserApp> userList,
+                                               DatabaseOperationEnum operation) {
+        if (!CollectionUtils.isEmpty(userList)) {
+            userOfEventOperationProducer.publishEvent(request, new UserOfEventOperation(
+                    eventMainDataDto,
+                    userList,
+                    operation));
+        }
     }
 
     private Set<UserApp> getUserAppList(Collection<EventSpaceUserAppAssociation> eventUserAssociationList) {
@@ -124,9 +122,7 @@ public class EventSpaceUserAppAssociationServiceImpl
         if (spaceUserInDatabaseMap.size() > 0) {
             Collection<EventSpaceUserAppAssociation> eventUserAssociationList = spaceUserInDatabaseMap.values();
 
-            sendMailNotification(new EventMainDataDto(event, null),
-                    getUserAppList(eventUserAssociationList),
-                    DatabaseOperationEnum.DELETE);
+            sendNotificationToAssociations(new EventMainDataDto(event, null), getUserAppList(eventUserAssociationList), DatabaseOperationEnum.DELETE);
 
             userListInDatabase.removeAll(eventUserAssociationList);
             repository.deleteAllInBatch(eventUserAssociationList);

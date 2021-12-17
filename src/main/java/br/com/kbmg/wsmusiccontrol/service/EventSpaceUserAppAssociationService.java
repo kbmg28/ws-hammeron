@@ -19,7 +19,7 @@ public interface EventSpaceUserAppAssociationService extends GenericService<Even
 
     Set<EventSpaceUserAppAssociation> updateAssociations(Event eventInDatabase, Set<UserOnlyIdNameAndEmailDto> userList, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList);
 
-    void sendMailNotification(EventMainDataDto eventMainDataDto,
-                              Set<UserApp> userList,
-                              DatabaseOperationEnum operation);
+    void sendNotificationToAssociations(EventMainDataDto eventMainDataDto,
+                                        Set<UserApp> userList,
+                                        DatabaseOperationEnum operation);
 }
