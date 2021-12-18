@@ -9,5 +9,5 @@ public interface SmsService {
 
     void sendNewOrUpdateSmsEvent(EventMainDataDto event, Set<UserApp> userList);
     void sendCancelSmsEvent(EventMainDataDto event, Set<UserApp> userList);
-
+    void sendNotificationRememberEvent(EventMainDataDto eventInfo, Set<UserApp> userList, String description);
 }

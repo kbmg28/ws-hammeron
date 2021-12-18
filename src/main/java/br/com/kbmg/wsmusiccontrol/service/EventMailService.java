@@ -10,4 +10,5 @@ public interface EventMailService {
     void sendNewOrUpdateCalendarEvent(EventMainDataDto event, Set<UserApp> userList);
     void sendCancelCalendarEvent(EventMainDataDto event, Set<UserApp> userList);
 
+    String sendNotificationRememberEvent(EventMainDataDto eventInfo, Set<UserApp> userList);
 }

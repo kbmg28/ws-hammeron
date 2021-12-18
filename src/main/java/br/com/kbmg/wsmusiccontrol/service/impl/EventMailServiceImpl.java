@@ -58,15 +58,22 @@ public class EventMailServiceImpl implements EventMailService {
 
     @Override
     public void sendNewOrUpdateCalendarEvent(EventMainDataDto event, Set<UserApp> userList) {
-        sendCalendarEvent(event, userList, Method.REQUEST);
+        sendCalendarEvent(event, userList, Method.REQUEST, null);
     }
 
     @Override
     public void sendCancelCalendarEvent(EventMainDataDto event, Set<UserApp> userList) {
-        sendCalendarEvent(event, userList, Method.CANCEL);
+        sendCalendarEvent(event, userList, Method.CANCEL, null);
     }
 
-    private void sendCalendarEvent(EventMainDataDto event, Set<UserApp> userList, String type) {
+    @Override
+    public String sendNotificationRememberEvent(EventMainDataDto eventInfo, Set<UserApp> userList) {
+        String description = getDescription(eventInfo, userList);
+        sendCalendarEvent(eventInfo, userList, Method.REQUEST, description);
+        return description;
+    }
+
+    private void sendCalendarEvent(EventMainDataDto event, Set<UserApp> userList, String type, String description) {
         Organizer organizer = new Organizer(APP_NAME, mailNoReply);
         List<Attendee> attendeeList = new ArrayList<>();
         List<InternetAddress> addressList = new ArrayList<>();
@@ -77,7 +84,7 @@ public class EventMailServiceImpl implements EventMailService {
                 addressList.add(new InternetAddress(userApp.getEmail()));
             }
 
-            final MimeMessage mimeMessage = createEvent(event, null, organizer, attendeeList, null, type);
+            final MimeMessage mimeMessage = createEvent(event, description, organizer, attendeeList, null, type);
 
             final InternetAddress fromAddress = new InternetAddress(mailNoReply, APP_NAME);
 
@@ -116,7 +123,7 @@ public class EventMailServiceImpl implements EventMailService {
                     .collect(Collectors.joining(delimiter));
         }
 
-        String template = "%s\n %s - %s\n\n%s\n%s\n\n%s\n%s";
+        String template = "%s (%s - %s)\n\n%s\n%s\n\n%s\n%s";
 
         return String.format(template,
                 event.getNameEvent(),

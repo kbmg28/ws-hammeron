@@ -49,4 +49,6 @@ public interface EventRepository extends JpaRepository<Event, String> {
             "WHERE e.space_id = :spaceId " +
             "GROUP BY \"groupName\"", nativeQuery = true)
     List<OverviewProjection> findEventOverviewBySpace(String spaceId);
+
+    List<Event> findAllEventsByDateEvent(LocalDate localDate);
 }

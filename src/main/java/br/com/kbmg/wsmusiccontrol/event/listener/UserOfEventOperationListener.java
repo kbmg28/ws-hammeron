@@ -19,6 +19,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.kbmg.wsmusiccontrol.constants.AppConstants.isRunningProdProfile;
+
 @Component
 @Slf4j
 public class UserOfEventOperationListener
@@ -68,7 +70,7 @@ public class UserOfEventOperationListener
     private Set<UserApp> getUserListValidated(UserOfEventOperation data) {
         Set<UserApp> userList = data.getUserList();
 
-        if("heroku".equals(profile)) {
+        if(isRunningProdProfile(profile)) {
             return userList;
         }
 

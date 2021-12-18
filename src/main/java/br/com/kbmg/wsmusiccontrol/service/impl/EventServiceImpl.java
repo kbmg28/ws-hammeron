@@ -189,6 +189,11 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 DatabaseOperationEnum.DELETE);
     }
 
+    @Override
+    public List<Event> findAllEventsByDateEvent(LocalDate today) {
+        return repository.findAllEventsByDateEvent(today);
+    }
+
     private void validateIfEventCanBeEdited(Event eventInDatabase) {
         LocalDate today = LocalDate.now();
         LocalDate currentDateOfEvent = eventInDatabase.getDateEvent();

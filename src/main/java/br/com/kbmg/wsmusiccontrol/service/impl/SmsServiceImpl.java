@@ -44,7 +44,7 @@ public class SmsServiceImpl implements SmsService {
 
     @Override
     public void sendNewOrUpdateSmsEvent(EventMainDataDto event, Set<UserApp> userList) {
-        Set<String> cellPhoneList = userList.stream().map(UserApp::getCellPhone).collect(Collectors.toSet());
+        Set<String> cellPhoneList = getCellPhoneList(userList);
         String nameDateTimeEvent = getNameAndDateAndTimeFormatted(event);
         String description = String.format(messagesService.get("event.sms.new.association"), nameDateTimeEvent);
         String messageText = String.format("[hammerOn]: %s", description);
@@ -54,13 +54,26 @@ public class SmsServiceImpl implements SmsService {
 
     @Override
     public void sendCancelSmsEvent(EventMainDataDto event, Set<UserApp> userList) {
-        Set<String> cellPhoneList = userList.stream().map(UserApp::getCellPhone).collect(Collectors.toSet());
+        Set<String> cellPhoneList = getCellPhoneList(userList);
 
         String nameDateTimeEvent = getNameAndDateAndTimeFormatted(event);
         String description = String.format(messagesService.get("event.sms.remove.association"), nameDateTimeEvent);
         String messageText = String.format("[hammerOn]: %s", description);
 
         sendSms(cellPhoneList, messageText);
+    }
+
+    @Override
+    public void sendNotificationRememberEvent(EventMainDataDto eventInfo, Set<UserApp> userList, String description) {
+        Set<String> cellPhoneList = getCellPhoneList(userList);
+
+        String messageText = String.format("[hammerOn]: %s", description);
+
+        sendSms(cellPhoneList, messageText);
+    }
+
+    private Set<String> getCellPhoneList(Set<UserApp> userList) {
+        return userList.stream().map(UserApp::getCellPhone).collect(Collectors.toSet());
     }
 
     private String getNameAndDateAndTimeFormatted(EventMainDataDto event) {
