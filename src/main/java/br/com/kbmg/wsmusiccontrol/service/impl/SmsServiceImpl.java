@@ -33,9 +33,6 @@ public class SmsServiceImpl implements SmsService {
     @Value("${apiKeySms}")
     private String apiKeySms;
 
-    @Value("${urlFront}")
-    private String urlFront;
-
     @Autowired
     public MessagesService messagesService;
 
