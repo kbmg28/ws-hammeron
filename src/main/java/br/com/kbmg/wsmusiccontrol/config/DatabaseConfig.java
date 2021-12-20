@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import javax.sql.DataSource;
 
 @Configuration
-@Profile("heroku")
+@Profile({"heroku-hml", "heroku-prd"})
 public class DatabaseConfig {
 
     @Value("${spring.datasource.url}")

@@ -1,7 +1,9 @@
 package br.com.kbmg.wsmusiccontrol.config.security;
 
+import br.com.kbmg.wsmusiccontrol.dto.auth.AuthInfoDto;
+import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.model.UserPermission;
+import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.UserPermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -22,22 +23,18 @@ public class UserSpringSecurityServiceImpl implements UserSpringSecurityService 
     @Autowired
     private UserPermissionService userPermissionService;
 
+    @Autowired
+    private SpaceService spaceService;
+
     @Override
     public UserDetails loadUserByUsername(String email) {
-        UserApp userApp = new UserApp();
-        return loadUser(userApp);
+        return null;
     }
 
     @Override
-    @Transactional
-    public UserDetails loadUser(UserApp userApp) {
-        return this.generateUserDetails(userApp.getEmail(), this.loadPermissions(userApp));
-    }
-
-    @Override
-    public UserCredentialsSecurity loadSpringSecurityInContext(UserApp userApp, HttpServletRequest request) {
-        UserDetails userDetails = this.loadUser(userApp);
-        UserCredentialsSecurity userCredentialsSecurity = new UserCredentialsSecurity(userDetails, request);
+    public UserCredentialsSecurity loadSpringSecurityInContext(AuthInfoDto authInfoDto, HttpServletRequest request) {
+        UserDetails userDetails = this.loadUser(authInfoDto);
+        UserCredentialsSecurity userCredentialsSecurity = new UserCredentialsSecurity(authInfoDto.getSpaceId(), authInfoDto.getSpaceName(), userDetails, request);
 
         UsernamePasswordAuthenticationToken userToken =
             new UsernamePasswordAuthenticationToken(userDetails, userCredentialsSecurity, userDetails.getAuthorities());
@@ -53,14 +50,12 @@ public class UserSpringSecurityServiceImpl implements UserSpringSecurityService 
         return org.springframework.security.core.userdetails.User.builder().username(email).roles(roles).password("").build();
     }
 
-    private String[] loadPermissions(UserApp userApp) {
-        List<UserPermission> permissionList = userPermissionService.findAllByUserApp(userApp);
-        return permissionList
-                .stream()
-                .map(userPermission ->
-                        userPermission.getPermission().toString())
-                .distinct()
-                .toArray(String[]::new);
+    private UserDetails loadUser(AuthInfoDto authInfoDto) {
+        UserApp userApp = authInfoDto.getUserApp();
+        Space space = spaceService.findByIdAndUserAppValidated(authInfoDto.getSpaceId(), userApp);
+        List<String> userPermissionList = userPermissionService.findAllBySpaceAndUserApp(space, userApp);
+
+        return this.generateUserDetails(userApp.getEmail(), userPermissionList.toArray(String[]::new));
     }
 
 }

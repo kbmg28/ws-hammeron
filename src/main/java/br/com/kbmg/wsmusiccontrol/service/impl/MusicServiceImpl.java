@@ -1,18 +1,22 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventSimpleDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
+import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
+import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.MusicLink;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
 import br.com.kbmg.wsmusiccontrol.model.Space;
-import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.MusicRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
+import br.com.kbmg.wsmusiccontrol.repository.projection.OverviewProjection;
 import br.com.kbmg.wsmusiccontrol.service.EventMusicAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.MusicLinkService;
 import br.com.kbmg.wsmusiccontrol.service.MusicService;
@@ -20,13 +24,18 @@ import br.com.kbmg.wsmusiccontrol.service.SingerService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.MusicMapper;
+import br.com.kbmg.wsmusiccontrol.util.mapper.OverviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.MUSIC_CANNOT_CHANGE_STATUS;
 
 @Service
 public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository> implements MusicService {
@@ -49,9 +58,12 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     @Autowired
     private EventMusicAssociationService eventMusicAssociationService;
 
+    @Autowired
+    private OverviewMapper overviewMapper;
+
     @Override
     public Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
         Singer singer = singerService.findByNameOrCreateIfNotExist(musicWithSingerAndLinksDto.getSinger().getName());
         Music music = musicMapper.toMusic(musicWithSingerAndLinksDto);
 
@@ -90,10 +102,10 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public Music updateMusic(String spaceId, String idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
         Music musicInDatabase = findBySpaceAndIdValidated(idMusic, space);
         Music musicUpdated = musicMapper.toMusic(musicWithSingerAndLinksDto);
-
+        checkIfUserCanChangeMusicStatus(musicInDatabase, musicUpdated);
         Singer singer = singerService.findByNameOrCreateIfNotExistToUpdate(musicInDatabase, musicWithSingerAndLinksDto);
 
         repository.findByNameIgnoreCaseAndSingerAndSpace(musicUpdated.getName(), singer, space)
@@ -104,17 +116,24 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         return musicMapper.updateMusic(musicInDatabase, musicUpdated);
     }
 
+    private void checkIfUserCanChangeMusicStatus(Music musicInDatabase, Music musicUpdated) {
+        boolean statusInDatabaseIsRejected = MusicStatusEnum.REJECTED.equals(musicInDatabase.getMusicStatus());
+        boolean newStatusIsRejected = MusicStatusEnum.REJECTED.equals(musicUpdated.getMusicStatus());
+        boolean isNotSpaceOwner = SpringSecurityUtil.getAllPermissions().stream().noneMatch(p -> PermissionEnum.SPACE_OWNER.name().equals(p));
+        if ((statusInDatabaseIsRejected || newStatusIsRejected) && isNotSpaceOwner) {
+            throw new ForbiddenException(messagesService.get(MUSIC_CANNOT_CHANGE_STATUS));
+        }
+    }
+
     @Override
     public List<Music> findAllBySpace(String spaceId) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
 
         return repository.findAllBySpace(space);
     }
 
     @Override
     public List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId) {
-        getSpaceValidatingIfUserCanAccess(spaceId);
-
         return repository.findAllBySpaceOrderByEventsCountDescLimit10(spaceId, LocalDate.now()).stream()
                 .map(proj -> new MusicTopUsedDto(proj.getMusicId(), proj.getMusicName(), proj.getSingerName(), proj.getAmountUsedInEvents()))
                 .collect(Collectors.toList());
@@ -137,8 +156,24 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         return list;
     }
 
+    @Override
+    public List<MusicOverviewDto> findMusicOverview(Space space) {
+        List<OverviewProjection> list = repository.findMusicOverviewBySpace(space.getId());
+        List<MusicOverviewDto> musicOverviewDtoList = overviewMapper.toMusicOverviewDtoList(list);
+
+        Map<String, List<MusicOverviewDto>> musicOverviewMap = musicOverviewDtoList.stream().collect(Collectors.groupingBy(MusicOverviewDto::getStatusName));
+        Arrays.asList(MusicStatusEnum.values()).forEach(type -> {
+            String typeMusic = type.name();
+            if(!musicOverviewMap.containsKey(typeMusic)) {
+                musicOverviewDtoList.add(new MusicOverviewDto(typeMusic, 0L));
+            }
+        });
+
+        return musicOverviewDtoList;
+    }
+
     private Music findMusicValidatingSpace(String spaceId, String idMusic) {
-        Space space = getSpaceValidatingIfUserCanAccess(spaceId);
+        Space space = spaceService.findByIdValidated(spaceId);
         return findBySpaceAndIdValidated(idMusic, space);
     }
 
@@ -159,11 +194,6 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
                 });
 
         music.setSinger(singer);
-    }
-
-    private Space getSpaceValidatingIfUserCanAccess(String spaceId) {
-        UserApp userLogged = userAppService.findUserLogged();
-        return spaceService.findByIdAndUserAppValidated(spaceId, userLogged);
     }
 
 }

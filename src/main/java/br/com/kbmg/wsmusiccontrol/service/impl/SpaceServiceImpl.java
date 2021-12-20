@@ -1,7 +1,12 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
-import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
+import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
+import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.EventOverviewDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.SpaceOverviewDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.UserOverviewDto;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceApproveProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceRequestProducer;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
@@ -10,6 +15,9 @@ import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.SpaceRepository;
+import br.com.kbmg.wsmusiccontrol.service.EventService;
+import br.com.kbmg.wsmusiccontrol.service.JwtService;
+import br.com.kbmg.wsmusiccontrol.service.MusicService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -19,6 +27,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,12 +47,21 @@ public class SpaceServiceImpl
     @Autowired
     private SpaceApproveProducer spaceApproveProducer;
 
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private MusicService musicService;
+
+    @Autowired
+    private EventService eventService;
+
     @Override
     public Space findOrCreatePublicSpace() {
-        return this.repository.findByName(KeyMessageConstants.PUBLIC_SPACE).orElseGet(() -> {
+        return this.repository.findByName(AppConstants.DEFAULT_SPACE).orElseGet(() -> {
             Space publicSpace = new Space();
-            publicSpace.setName(KeyMessageConstants.PUBLIC_SPACE);
-            publicSpace.setJustification("Default");
+            publicSpace.setName(AppConstants.DEFAULT_SPACE);
+            publicSpace.setJustification(AppConstants.DEFAULT_SPACE);
 
             return repository.save(publicSpace);
         });
@@ -71,12 +89,17 @@ public class SpaceServiceImpl
     }
 
     @Override
+    public Space findByIdValidated(String spaceId) {
+        return repository.findById(spaceId)
+                .orElseThrow(() -> new ServiceException(
+                        messagesService.get("space.not.exist")
+                ));
+    }
+
+    @Override
     public Space findByIdAndUserAppValidated(String spaceId, UserApp userApp) {
-        if(userApp.isSysAdmin()) {
-            return repository.findById(spaceId)
-                    .orElseThrow(() -> new ServiceException(
-                            messagesService.get("space.not.exist")
-                    ));
+        if(userApp.getIsSysAdmin()) {
+            return findByIdValidated(spaceId);
         }
 
         return repository.findByIdAndUserApp(spaceId, userApp)
@@ -104,7 +127,6 @@ public class SpaceServiceImpl
             space.setApprovedByDate(LocalDateTime.now());
             repository.save(space);
 
-            spaceUserAppAssociationService.createAssociationToParticipant(space, requestedBy);
             spaceUserAppAssociationService.createAssociationToSpaceOwner(space, requestedBy);
 
             spaceApproveProducer.publishEvent(request, space);
@@ -120,7 +142,7 @@ public class SpaceServiceImpl
     public List<Space> findAllSpacesByUserApp() {
         UserApp userLogged = userAppService.findUserLogged();
 
-        if(userLogged.isSysAdmin()) {
+        if(userLogged.getIsSysAdmin()) {
             return this.findAll();
         }
 
@@ -131,28 +153,49 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public Space changeViewSpaceUser(String idSpace) {
+    public String changeViewSpaceUser(String idSpace, HttpServletRequest request) {
         UserApp userLogged = userAppService.findUserLogged();
         Space space = findByIdAndUserAppValidated(idSpace, userLogged);
-
-        if(!userLogged.isSysAdmin()) {
+        if(!userLogged.getIsSysAdmin()) {
             spaceUserAppAssociationService.updateLastAccessedSpace(userLogged, space);
         }
-
-        return space;
+        String tokenUpdated = jwtService.updateSpaceOnToken(request, space);
+        return tokenUpdated;
     }
 
     @Override
     public Space findLastAccessedSpace() {
         UserApp userLogged = userAppService.findUserLogged();
 
-        if (userLogged.isSysAdmin()) {
+        if (userLogged.getIsSysAdmin()) {
             return this.findOrCreatePublicSpace();
         } else {
             SpaceUserAppAssociation ass = spaceUserAppAssociationService.findLastAccessedSpace(userLogged);
 
             return ass.getSpace();
         }
+    }
+
+    @Override
+    public SpaceOverviewDto findSpaceOverview() {
+        Space space = this.findByIdValidated(SpringSecurityUtil.getSpaceId());
+        AtomicReference<String> createdBy = new AtomicReference<>(space.getCreatedByEmail());
+        userAppService.findByEmail(createdBy.get()).ifPresent(user -> {
+            String template = "%s (%s)";
+            createdBy.set(String.format(template, user.getName(), user.getEmail()));
+        });
+
+        List<UserOverviewDto> userOverviewDtoList = spaceUserAppAssociationService.findUserOverviewBySpace(space);
+        List<MusicOverviewDto> musicOverviewDtoList = musicService.findMusicOverview(space);
+        List<EventOverviewDto> eventOverviewDtoList = eventService.findEventOverviewBySpace(space);
+        return new SpaceOverviewDto(
+                space.getId(),
+                space.getName(),
+                createdBy.get(),
+                userOverviewDtoList,
+                musicOverviewDtoList,
+                eventOverviewDtoList
+        );
     }
 
 }

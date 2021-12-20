@@ -23,7 +23,13 @@ public abstract class SpringSecurityUtil {
     }
 
     public static String getEmail() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        UserCredentialsSecurity credentials = getCredentials();
+        return  (credentials != null) ? credentials.getEmail() : null;
+    }
+
+    public static String getSpaceId() {
+        UserCredentialsSecurity credentials = getCredentials();
+        return  (credentials != null) ? credentials.getSpaceId() : null;
     }
 
     public static Set<String> getAllPermissions() {

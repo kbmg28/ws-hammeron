@@ -5,6 +5,7 @@ import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSysAdmin;
 import br.com.kbmg.wsmusiccontrol.dto.space.MySpace;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.SpaceOverviewDto;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.SpaceMapper;
@@ -79,12 +80,19 @@ public class SpaceController extends GenericController {
         return super.ok(new MySpace(space.getId(), space.getName(), true));
     }
 
-    @PutMapping("/{id-space}/change-view")
-    public ResponseEntity<ResponseData<MySpace>> changeViewSpaceUser(
-            @PathVariable("id-space") String idSpace) {
-        Space space = spaceService.changeViewSpaceUser(idSpace);
+    @GetMapping("/overview")
+    public ResponseEntity<ResponseData<SpaceOverviewDto>> findSpaceOverview() {
+        SpaceOverviewDto spaceOverview = spaceService.findSpaceOverview();
 
-        return super.ok(spaceMapper.toMySpaceDto(space));
+        return super.ok(spaceOverview);
+    }
+
+    @PutMapping("/{id-space}/change-view")
+    public ResponseEntity<ResponseData<String>> changeViewSpaceUser(
+            @PathVariable("id-space") String idSpace,
+            HttpServletRequest request) {
+        String tokenUpdated = spaceService.changeViewSpaceUser(idSpace, request);
+        return super.ok(tokenUpdated);
     }
 
 }

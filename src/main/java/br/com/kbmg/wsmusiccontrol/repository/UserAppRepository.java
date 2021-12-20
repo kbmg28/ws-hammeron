@@ -16,12 +16,14 @@ public interface UserAppRepository extends JpaRepository<UserApp, String> {
     Optional<UserApp> findByEmail(String email);
 
     @Query("SELECT u from UserApp u where exists (" +
-            "SELECT 1 from SpaceUserAppAssociation ass where ass.space = :space and u = ass.userApp)")
+            "SELECT 1 from SpaceUserAppAssociation ass where ass.space = :space and ass.active = '1' and u = ass.userApp)")
     List<UserApp> findAllBySpace(Space space);
 
     @Query(value = "SELECT u.id AS \"userId\", u.name AS \"name\", u.email AS \"email\" " +
             "FROM USER_APP u WHERE u.ENABLED = '1' AND EXISTS ( " +
             "   SELECT 1 FROM SPACE_USER_APP_ASSOCIATION ass " +
-            "       WHERE ass.space_id = :spaceId and u.id = ass.user_app_id)", nativeQuery = true)
+            "       WHERE ass.space_id = :spaceId and ass.active = '1' and u.id = ass.user_app_id)", nativeQuery = true)
     List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId);
+
+    List<UserApp> findByIsSysAdminTrue();
 }

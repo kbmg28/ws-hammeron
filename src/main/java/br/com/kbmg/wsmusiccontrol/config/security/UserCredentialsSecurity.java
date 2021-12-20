@@ -16,11 +16,15 @@ import java.util.stream.Collectors;
 public class UserCredentialsSecurity {
 
     private final String requestId = UUID.randomUUID().toString();
+    private final String spaceId;
+    private final String spaceName;
     private final String requestURI;
     private final String email;
     private final List<String> roles;
 
-    public UserCredentialsSecurity(UserDetails userDetails, HttpServletRequest requestURI) {
+    public UserCredentialsSecurity(String spaceId, String spaceName, UserDetails userDetails, HttpServletRequest requestURI) {
+        this.spaceId = spaceId;
+        this.spaceName = spaceName;
         this.email = userDetails.getUsername();
         this.requestURI = requestURI.getRequestURI();
         this.roles = userDetails
@@ -32,6 +36,8 @@ public class UserCredentialsSecurity {
 
     public UserCredentialsSecurity(String email) {
         this.email = email;
+        this.spaceId = null;
+        this.spaceName = null;
         this.requestURI = null;
         this.roles = null;
     }

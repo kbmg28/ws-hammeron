@@ -30,6 +30,6 @@ public class UserPermission extends AbstractEntity {
 	@ManyToOne
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
-	private UserApp userApp;
+	private SpaceUserAppAssociation spaceUserAppAssociation;
 
 }

@@ -3,8 +3,10 @@ package br.com.kbmg.wsmusiccontrol.service;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
 import br.com.kbmg.wsmusiccontrol.model.Music;
+import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
 
 import java.util.List;
@@ -25,4 +27,6 @@ public interface MusicService extends GenericService<Music>{
     MusicDto findBySpaceAndId(String spaceId, String idMusic, Boolean eventsFromTheLast3Months);
 
     List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId);
+
+    List<MusicOverviewDto> findMusicOverview(Space space);
 }

@@ -25,7 +25,6 @@ public abstract class SpaceBuilder {
 
         spaceUserAppAssociation.setSpace(space);
         spaceUserAppAssociation.setUserApp(userApp);
-        spaceUserAppAssociation.setIsOwner(isOwner);
         space.getSpaceUserAppAssociationList().add(spaceUserAppAssociation);
 
         spaceUserAppAssociation.setLastAccessedSpace(true);

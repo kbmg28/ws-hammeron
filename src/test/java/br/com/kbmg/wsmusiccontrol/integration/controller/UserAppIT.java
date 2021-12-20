@@ -48,7 +48,7 @@ class UserAppIT extends BaseEntityIntegrationTests {
 
     @Test
     public void findAllBySpace_shouldReturnToSysAdminUserWithPermissionDtoList() throws Exception {
-        givenUserAuthenticatedWithPermission(PermissionEnum.SYS_ADMIN);
+//        givenUserAuthenticatedWithPermission(PermissionEnum.SYS_ADMIN);
         givenSpaceInDatabase();
         whenRequestGetFindAllBySpace();
         thenShouldReturnUserWithPermissionDtoList();
@@ -56,7 +56,7 @@ class UserAppIT extends BaseEntityIntegrationTests {
 
     @Test
     public void findAllBySpace_shouldReturnToSysAdminErrorIfSpaceNotExist() throws Exception {
-        givenUserAuthenticatedWithPermission(PermissionEnum.SYS_ADMIN);
+//        givenUserAuthenticatedWithPermission(PermissionEnum.SYS_ADMIN);
         whenRequestGetFindAllBySpace();
         thenReturnHttpError400_BadRequest(perform, messagesService.get("space.not.exist"));
     }
