@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'br.com.kbmg'
-version = '0.0.7'
+version = '0.0.8'
 sourceCompatibility = '11'
 
 configurations {
@@ -66,6 +66,8 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
 	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
+
+	implementation 'net.sf.biweekly:biweekly:0.6.4'
 }
 
 tasks.register("unitTest", Test) {

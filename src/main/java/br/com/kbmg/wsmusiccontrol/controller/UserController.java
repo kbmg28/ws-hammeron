@@ -1,11 +1,11 @@
 package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
-import br.com.kbmg.wsmusiccontrol.config.security.UserCredentialsSecurity;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
+import br.com.kbmg.wsmusiccontrol.dto.user.UserWithoutPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
@@ -28,7 +28,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -54,22 +53,17 @@ public class UserController extends GenericController {
     }
 
     @PutMapping("/logged")
-    public ResponseEntity<ResponseData<UserWithPermissionDto>> updateUserLogged(
+    public ResponseEntity<ResponseData<UserWithoutPermissionDto>> updateUserLogged(
             @Valid @RequestBody UserDto body
     ) {
-        UserCredentialsSecurity credentials = SpringSecurityUtil.getCredentials();
         UserApp entityData = userAppService.updateUserLogged(body);
-        UserWithPermissionDto viewData = userAppMapper.toUserWithPermissionDto(entityData);
-        viewData.setPermissionList(credentials.getRoles().stream().map(PermissionEnum::valueOf).collect(Collectors.toSet()));
-        return super.ok(viewData);
+        return super.ok(new UserWithoutPermissionDto(entityData));
     }
 
     @GetMapping("/logged")
-    public ResponseEntity<ResponseData<UserWithPermissionDto>> findUserLogged() {
+    public ResponseEntity<ResponseData<UserWithoutPermissionDto>> findUserLogged() {
         UserApp entityData = userAppService.findUserLogged();
-        UserWithPermissionDto viewData = userAppMapper.toUserWithPermissionDto(entityData);
-        viewData.setPermissionList(SpringSecurityUtil.getCredentials().getRoles().stream().map(PermissionEnum::valueOf).collect(Collectors.toSet()));
-        return super.ok(viewData);
+        return super.ok(new UserWithoutPermissionDto(entityData));
     }
 
     @GetMapping("/association-for-events")

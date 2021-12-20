@@ -8,13 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public interface SingerRepository extends JpaRepository<Singer, String> {
 
     Optional<Singer> findByNameIgnoreCase(String name);
 
-    @Query("SELECT s FROM Singer s where exists (SELECT 1 from Music m where m.space = :space)")
+    @Query("SELECT s FROM Singer s where exists (SELECT 1 from Music m where m.space = :space and m.singer = s)")
     List<Singer> findAllBySpace(Space space);
 }

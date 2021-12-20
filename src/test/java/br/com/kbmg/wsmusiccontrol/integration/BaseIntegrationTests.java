@@ -132,9 +132,9 @@ public abstract class BaseIntegrationTests {
 
     protected void deleteUserAndAssociations(UserApp userInDatabase) {
         if (userInDatabase != null) {
-            if(!isEmpty(userInDatabase.getUserPermissionList())) {
-                userPermissionRepository.deleteAll(userInDatabase.getUserPermissionList());
-            }
+//            if(!isEmpty(userInDatabase.getUserPermissionList())) {
+//                userPermissionRepository.deleteAll(userInDatabase.getUserPermissionList());
+//            }
 
             if(!isEmpty(userInDatabase.getSpaceUserAppAssociationList())) {
                 spaceUserAppAssociationRepository.deleteAll(userInDatabase.getSpaceUserAppAssociationList());
@@ -170,7 +170,7 @@ public abstract class BaseIntegrationTests {
 
         if(!isEmpty(userPermissions)) {
             userPermissionRepository.saveAll(userPermissions);
-            userAppLoggedTest.setUserPermissionList(userPermissions);
+//            userAppLoggedTest.setUserPermissionList(userPermissions);
         }
     }
 

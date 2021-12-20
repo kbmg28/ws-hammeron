@@ -15,7 +15,7 @@ public abstract class AbstractProducer<O, T extends AbstractEvent<O>> {
     public abstract void publishEvent(HttpServletRequest request, O eventObject);
 
     protected String getCurrentBaseUrl(HttpServletRequest request) {
-        return ServletUriComponentsBuilder
+        return (request == null) ? null : ServletUriComponentsBuilder
                 .fromRequestUri(request)
                 .replacePath(null)
                 .build()

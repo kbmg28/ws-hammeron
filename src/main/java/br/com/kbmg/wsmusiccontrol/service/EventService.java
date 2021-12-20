@@ -8,6 +8,7 @@ import br.com.kbmg.wsmusiccontrol.enums.RangeDateFilterEnum;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface EventService extends GenericService<Event>{
@@ -22,4 +23,6 @@ public interface EventService extends GenericService<Event>{
     List<EventOverviewDto> findEventOverviewBySpace(Space space);
 
     void deleteEvent(String spaceId, String idEvent);
+
+    List<Event> findAllEventsByDateEvent(LocalDate today);
 }
