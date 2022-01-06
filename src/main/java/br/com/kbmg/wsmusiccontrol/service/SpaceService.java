@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.service;
 
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.SpaceOverviewDto;
+import br.com.kbmg.wsmusiccontrol.enums.SpaceStatusEnum;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 
@@ -17,9 +18,9 @@ public interface SpaceService extends GenericService<Space>{
 
     Space findByIdAndUserAppValidated(String spaceId, UserApp userApp);
 
-    void approveNewSpaceForUser(String idSpace, HttpServletRequest request);
+    void approveNewSpaceForUser(String idSpace, SpaceStatusEnum spaceStatusEnum,  HttpServletRequest request);
 
-    List<Space> findAllSpaceToApprove();
+    List<Space> findAllSpaceByStatus(SpaceStatusEnum spaceStatusEnum);
 
     List<Space> findAllSpacesByUserApp();
 
