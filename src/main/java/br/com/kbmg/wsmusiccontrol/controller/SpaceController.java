@@ -3,9 +3,11 @@ package br.com.kbmg.wsmusiccontrol.controller;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSysAdmin;
 import br.com.kbmg.wsmusiccontrol.dto.space.MySpace;
+import br.com.kbmg.wsmusiccontrol.dto.space.SpaceApproveDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.SpaceRequestDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.SpaceOverviewDto;
+import br.com.kbmg.wsmusiccontrol.enums.SpaceStatusEnum;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.util.mapper.SpaceMapper;
@@ -52,16 +54,19 @@ public class SpaceController extends GenericController {
     @SecuredSysAdmin
     public ResponseEntity<ResponseData<Void>> approveNewSpaceForUser(
             @PathVariable("id-space") String idSpace,
+            @RequestBody SpaceApproveDto spaceApproveDto,
             HttpServletRequest request) {
-        spaceService.approveNewSpaceForUser(idSpace, request);
+        spaceService.approveNewSpaceForUser(idSpace, spaceApproveDto.getSpaceStatusEnum(), request);
 
         return super.ok();
     }
 
-    @GetMapping("/approve")
+    @GetMapping("/status/{space-status}")
     @SecuredSysAdmin
-    public ResponseEntity<ResponseData<List<SpaceDto>>> findAllSpaceToApprove() {
-        List<Space> spaceList = spaceService.findAllSpaceToApprove();
+    public ResponseEntity<ResponseData<List<SpaceDto>>> findAllSpaceToApprove(
+            @PathVariable("space-status") SpaceStatusEnum spaceStatusEnum
+    ) {
+        List<Space> spaceList = spaceService.findAllSpaceByStatus(spaceStatusEnum);
 
         return super.ok(spaceMapper.toSpaceDtoList(spaceList));
     }
