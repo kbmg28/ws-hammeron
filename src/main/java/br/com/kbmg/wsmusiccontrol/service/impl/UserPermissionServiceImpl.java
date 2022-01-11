@@ -46,23 +46,18 @@ public class UserPermissionServiceImpl
             allPermissionsOfUser.add(AppConstants.SYS_ADMIN);
         }
 
-        boolean hasNoPermission = hasNoPermission(permissionEnum.toString(), allPermissionsOfUser);
+        verifyIfUserLoggedCanExecuteTheAction(permissionEnum.toString());
 
-        if(hasNoPermission) {
-            UserApp userLogged = userAppService.findUserLogged();
-
-            if (userLogged != null) {
-                verifyIfUserLoggedCanExecuteTheAction(userLogged, permissionEnum.toString());
-            }
-
+        UserPermission userPermission = userPermissionList.stream().findFirst().orElseGet(() -> {
             UserPermission newUserPermission = new UserPermission();
-            newUserPermission.setPermission(permissionEnum);
             newUserPermission.setSpaceUserAppAssociation(spaceUserAppAssociation);
 
-            repository.save(newUserPermission);
-
             userPermissionList.add(newUserPermission);
-        }
+            return newUserPermission;
+        });
+
+        userPermission.setPermission(permissionEnum);
+        repository.save(userPermission);
     }
 
     @Override
@@ -112,17 +107,21 @@ public class UserPermissionServiceImpl
         }
     }
 
-    private void verifyIfUserLoggedCanExecuteTheAction(UserApp userLogged, String permission) {
-        Set<String> allPermissions = SpringSecurityUtil.getAllPermissions();
+    private void verifyIfUserLoggedCanExecuteTheAction(String permission) {
+        UserApp userLogged = userAppService.findUserLogged();
 
-        verifyIfUserLoggedIsSuperUserAndArgumentIsSuperUser(permission, allPermissions);
+        if (userLogged != null) {
+            Set<String> allPermissions = SpringSecurityUtil.getAllPermissions();
 
-        boolean isNotSysAdmin = hasNoPermission(AppConstants.SYS_ADMIN, allPermissions);
-        boolean isNotSpaceOwner = hasNoPermission(PermissionEnum.SPACE_OWNER.toString(), allPermissions);
+            verifyIfUserLoggedIsSuperUserAndArgumentIsSuperUser(permission, allPermissions);
 
-        if (isNotSysAdmin && isNotSpaceOwner) {
-            throw new ForbiddenException(
-                    messagesService.get("user.without.permission.to.action"));
+            boolean isNotSysAdmin = hasNoPermission(AppConstants.SYS_ADMIN, allPermissions);
+            boolean isNotSpaceOwner = hasNoPermission(PermissionEnum.SPACE_OWNER.toString(), allPermissions);
+
+            if (isNotSysAdmin && isNotSpaceOwner) {
+                throw new ForbiddenException(
+                        messagesService.get("user.without.permission.to.action"));
+            }
         }
     }
 }

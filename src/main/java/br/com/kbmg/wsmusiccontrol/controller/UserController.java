@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,8 +73,8 @@ public class UserController extends GenericController {
         return super.ok(viewData);
     }
 
-    @PostMapping("/{email-user}/permissions/{permission-key}")
-    public ResponseEntity<ResponseData<Void>> addPermission(
+    @PutMapping("/{email-user}/permissions/{permission-key}")
+    public ResponseEntity<ResponseData<Void>> updatePermission(
             @PathVariable("email-user") String emailUser,
             @PathVariable("permission-key") PermissionEnum permissionEnum
             ) {
