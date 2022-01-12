@@ -59,7 +59,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public String validateLoginAndGetToken(LoginDto loginDto) {
-        String email = loginDto.getEmail();
+        String email = loginDto.getEmail().toLowerCase();
         String error = messagesService.get(USER_OR_PASSWORD_INCORRECT);
         UserApp userApp = userAppService
                 .findByEmail(email)
@@ -86,7 +86,7 @@ public class SecurityServiceImpl implements SecurityService {
     @Override
     public void activateUserAccount(UserTokenHashDto userTokenHashDto) {
         String errorMessage = messagesService.get(TOKEN_ACTIVATE_EXPIRED);
-        UserApp userApp = userAppService.findByEmail(userTokenHashDto.getEmail())
+        UserApp userApp = userAppService.findByEmail(userTokenHashDto.getEmail().toLowerCase())
                 .orElseThrow( () -> new ServiceException(errorMessage));
 
         if (userApp.getEnabled()) {
@@ -112,7 +112,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public void resendMailToken(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
-        userAppService.findByEmail(activateUserAccountRefreshDto.getEmail()).ifPresent(userApp -> {
+        userAppService.findByEmail(activateUserAccountRefreshDto.getEmail().toLowerCase()).ifPresent(userApp -> {
             if (userApp.getEnabled()) {
                 return;
             }
@@ -125,14 +125,14 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public void passwordRecovery(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
-        userAppService.findByEmail(activateUserAccountRefreshDto.getEmail())
+        userAppService.findByEmail(activateUserAccountRefreshDto.getEmail().toLowerCase())
                 .ifPresent(userApp -> passwordRecoveryProducer.publishEvent(request, userApp));
     }
 
     @Override
     public void passwordRecoveryChange(UserChangePasswordDto userChangePasswordDto) {
         String defaultError = messagesService.get(DATA_INVALID);
-        String email = userChangePasswordDto.getEmail();
+        String email = userChangePasswordDto.getEmail().toLowerCase();
         UserApp userApp = userAppService
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationException(email, defaultError));

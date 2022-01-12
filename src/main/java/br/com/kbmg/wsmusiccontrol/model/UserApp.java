@@ -21,7 +21,7 @@ import java.util.Set;
 @ToString(callSuper = true)
 public class UserApp extends AbstractEntity {
 
-	@Column(nullable = false)
+	@Column
 	private String name;
 
 	@Column(nullable = false, unique = true)
@@ -30,7 +30,7 @@ public class UserApp extends AbstractEntity {
 	@Column
 	private String password;
 
-	@Column(nullable = false)
+	@Column
 	private String cellPhone;
 
 	@Column(nullable = false)

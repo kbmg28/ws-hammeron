@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ALREADY_EXISTS;
-import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_EMAIL_NOT_EXISTS;
 
 @Service
 public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepository> implements UserAppService {
@@ -46,8 +45,9 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @Override
     public UserApp registerNewUserAccount(RegisterDto userDto) {
         AtomicReference<UserApp> userAppAtomicReference = new AtomicReference<>(null);
+        String email = userDto.getEmail().toLowerCase();
 
-        repository.findByEmail(userDto.getEmail()).ifPresent(userAppInDatabase -> {
+        repository.findByEmail(email).ifPresent(userAppInDatabase -> {
             if (userAppInDatabase.getEnabled()) {
                 throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
             }
@@ -57,7 +57,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         if (userAppAtomicReference.get() == null) {
             UserApp newUserApp = new UserApp();
 
-            newUserApp.setEmail(userDto.getEmail());
+            newUserApp.setEmail(email);
             newUserApp.setName(userDto.getName());
             newUserApp.setCellPhone(userDto.getCellPhone());
             newUserApp.setEnabled(false);
@@ -72,7 +72,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
-        this.findByEmail(registerPasswordDto.getEmail()).ifPresent(user -> this.encodePasswordAndSave(user, registerPasswordDto.getPassword()));
+        this.findByEmail(registerPasswordDto.getEmail().toLowerCase()).ifPresent(user -> this.encodePasswordAndSave(user, registerPasswordDto.getPassword()));
     }
 
     @Override
@@ -105,7 +105,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public void addPermissionToUserInSpace(String emailUser, String spaceId, PermissionEnum permissionEnum) {
-        UserApp userAppToAddRole = this.findByEmailValidated(emailUser);
+        UserApp userAppToAddRole = this.findByEmailOrCreateIfNotExists(emailUser);
         Space space = spaceService.findByIdValidated(spaceId);
 
         if (PermissionEnum.SPACE_OWNER.equals(permissionEnum)) {
@@ -118,8 +118,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId) {
-        List<UserOnlyIdNameAndEmailProjection> list =  repository.findUsersAssociationForEventsBySpace(spaceId);
-        return list;
+        return repository.findUsersAssociationForEventsBySpace(spaceId);
     }
 
     @Override
@@ -139,13 +138,17 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
 
     @Override
-    public UserApp findByEmailValidated(String email) {
+    public UserApp findByEmailOrCreateIfNotExists(String email) {
         return repository
                 .findByEmail(email)
-                .orElseThrow(() ->
-                        new ServiceException(
-                                messagesService.get(String.format(USER_EMAIL_NOT_EXISTS, email))
-                        ));
+                .orElseGet(() -> {
+                    UserApp newUserApp = new UserApp();
+                    newUserApp.setEmail(email);
+                    newUserApp.setEnabled(false);
+                    newUserApp.setIsSysAdmin(false);
+
+                    return repository.save(newUserApp);
+                });
     }
 
     @Override

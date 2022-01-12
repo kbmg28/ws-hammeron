@@ -1,6 +1,5 @@
 package br.com.kbmg.wsmusiccontrol.model;
 
-import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -48,11 +47,4 @@ public class SpaceUserAppAssociation extends AbstractEntity {
 	@OneToMany(mappedBy = "spaceUserAppAssociation", fetch = FetchType.LAZY)
 	private Set<UserPermission> userPermissionList = new HashSet<>();
 
-	public boolean isSpaceOwner(){
-		return this.userPermissionList.
-				stream()
-				.anyMatch(up ->
-						PermissionEnum.SPACE_OWNER.equals(up.getPermission())
-				);
-	}
 }

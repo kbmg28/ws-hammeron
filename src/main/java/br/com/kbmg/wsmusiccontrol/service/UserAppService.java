@@ -15,7 +15,7 @@ import java.util.Set;
 public interface UserAppService extends GenericService<UserApp>{
     UserApp registerNewUserAccount(RegisterDto userDto);
     void saveUserEnabled(UserApp userApp);
-    UserApp findByEmailValidated(String email);
+    UserApp findByEmailOrCreateIfNotExists(String email);
     Optional<UserApp> findByEmail(String email);
     void registerUserPassword(RegisterPasswordDto registerPasswordDto);
     void encodePasswordAndSave(UserApp userApp, String password);

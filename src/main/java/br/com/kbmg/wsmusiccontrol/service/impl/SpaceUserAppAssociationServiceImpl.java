@@ -117,11 +117,26 @@ public class SpaceUserAppAssociationServiceImpl
             newAssociation.setLastAccessedSpace(isDefaultSpace);
             return newAssociation;
         });
-
+        validateIfAssociationWithPermissionAlreadyExists(association, newPermission);
         association.setActive(true);
         repository.save(association);
         userPermissionService.addPermissionToUser(association, newPermission);
 
         return association;
+    }
+
+    private void validateIfAssociationWithPermissionAlreadyExists(SpaceUserAppAssociation association, PermissionEnum newPermission) {
+        if (association.getId() == null) {
+            return;
+        }
+        association.getUserPermissionList()
+                .stream()
+                .filter(up -> newPermission.equals(up.getPermission()))
+                .findFirst()
+                .ifPresent(userPermission -> {
+                    throw new ServiceException(
+                            messagesService.get("space.user.email.permission.already.exists")
+                    );
+                });
     }
 }
