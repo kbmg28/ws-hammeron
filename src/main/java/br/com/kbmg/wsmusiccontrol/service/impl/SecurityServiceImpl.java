@@ -65,11 +65,10 @@ public class SecurityServiceImpl implements SecurityService {
                 .findByEmail(email)
                 .orElseThrow(() -> new AuthorizationException(email, error));
 
-        validatePassword(email, loginDto.getPassword(), userApp.getPassword(), error);
-
         if (!userApp.getEnabled()) {
             throw new AuthorizationException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
         }
+        validatePassword(email, loginDto.getPassword(), userApp.getPassword(), error);
         SpaceUserAppAssociation lastAccessedSpace = spaceUserAppAssociationService.findLastAccessedSpace(userApp);
         String token = jwtService.generateToken(loginDto, userApp, lastAccessedSpace.getSpace());
 

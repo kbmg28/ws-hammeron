@@ -58,16 +58,17 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
             UserApp newUserApp = new UserApp();
 
             newUserApp.setEmail(email);
-            newUserApp.setName(userDto.getName());
-            newUserApp.setCellPhone(userDto.getCellPhone());
             newUserApp.setEnabled(false);
             newUserApp.setIsSysAdmin(false);
-            repository.save(newUserApp);
 
             userAppAtomicReference.set(newUserApp);
         }
 
-        return userAppAtomicReference.get();
+        UserApp userAppRegistered = userAppAtomicReference.get();
+        userAppRegistered.setName(userDto.getName());
+        userAppRegistered.setCellPhone(userDto.getCellPhone());
+
+        return repository.save(userAppRegistered);
     }
 
     @Override
