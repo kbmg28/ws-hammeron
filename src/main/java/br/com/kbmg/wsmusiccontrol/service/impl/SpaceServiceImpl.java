@@ -125,7 +125,7 @@ public class SpaceServiceImpl
 
             spaceUserAppAssociationService.createAssociationToSpaceOwner(space, requestedBy);
 
-          //  spaceApproveProducer.publishEvent(request, space);
+            spaceApproveProducer.publishEvent(request, space);
         });
     }
 
