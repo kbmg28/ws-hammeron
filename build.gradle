@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'br.com.kbmg'
-version = '0.1.0'
+version = '0.1.1'
 sourceCompatibility = '11'
 
 configurations {
@@ -74,8 +74,11 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
 	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
-
 	implementation 'net.sf.biweekly:biweekly:0.6.4'
+
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-freemarker
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-freemarker', version: '2.6.2'
+
 }
 
 tasks.register("unitTest", Test) {
