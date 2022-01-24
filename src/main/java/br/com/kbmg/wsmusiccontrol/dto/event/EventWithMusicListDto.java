@@ -12,6 +12,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,8 +23,13 @@ public class EventWithMusicListDto {
 
     private String id;
 
-    @NotNull
     private LocalDate date;
+
+    @NotNull
+    private OffsetDateTime utcDateTime;
+
+    @NotBlank
+    private String timeZoneName;
 
     @NotBlank
     private String name;

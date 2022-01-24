@@ -106,10 +106,9 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         Space space = validateIfEventAlreadyExistAndGetSpace(spaceId, body);
 
         Event event = new Event();
-        event.setDateEvent(body.getDate());
-        event.setTimeEvent(body.getTime());
         event.setSpace(space);
-        event.setName(body.getName());
+        event.setTimeZoneName(body.getTimeZoneName());
+        updateEventFields(event, body);
 
         repository.save(event);
 
@@ -254,8 +253,8 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     private void updateEventFields(Event eventInDatabase, EventWithMusicListDto body) {
         eventInDatabase.setName(body.getName());
-        eventInDatabase.setDateEvent(body.getDate());
-        eventInDatabase.setTimeEvent(body.getTime());
+        eventInDatabase.setDateEvent(body.getUtcDateTime().toLocalDate());
+        eventInDatabase.setTimeEvent(body.getUtcDateTime().toLocalTime());
     }
 
     private Event findByIdEventAndSpaceValidated(String idEvent, Space space) {
@@ -268,7 +267,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     private Space validateIfEventAlreadyExistAndGetSpace(String spaceId, EventWithMusicListDto body) {
         Space space = spaceService.findByIdValidated(spaceId);
-        repository.findBySpaceAndDateEventAndTimeEvent(space, body.getDate(), body.getTime())
+        repository.findBySpaceAndDateEventAndTimeEvent(space, body.getUtcDateTime().toLocalDate(), body.getUtcDateTime().toLocalTime())
                 .ifPresent(event -> {
                     throw new ServiceException(messagesService.get("event.already.exist"));
                 });
