@@ -18,6 +18,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Set;
@@ -75,10 +79,13 @@ public class SmsServiceImpl implements SmsService {
 
     private String getNameAndDateAndTimeFormatted(EventMainDataDto event) {
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM");
-        String formattedDate = event.getDateEvent().format(formatterDate);
+        DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm");
 
-        DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("hh:mm");
-        String formattedTime = event.getTimeEvent().format(formatterTime);
+        OffsetDateTime off = OffsetDateTime.of(event.getDateEvent(), event.getTimeEvent(), ZoneOffset.UTC);
+        ZonedDateTime zoned = off.atZoneSameInstant(ZoneId.of(event.getTimeZoneName()));
+
+        String formattedDate = zoned.format(formatterDate);
+        String formattedTime = zoned.format(formatterTime);
 
         return String.format("%s (%s - %s)", event.getNameEvent(), formattedDate, formattedTime);
     }
