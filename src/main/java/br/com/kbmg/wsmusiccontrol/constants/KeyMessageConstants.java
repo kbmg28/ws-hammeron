@@ -18,6 +18,7 @@ public abstract class KeyMessageConstants {
     public static final String TOKEN_ACTIVATE_FAILED_SEND = "token.activate.failed.send";
 
     public static final String USER_OR_PASSWORD_INCORRECT = "user.password.incorrect";
+    public static final String USER_PASSWORD_EXPIRED = "user.password.expired";
     public static final String USER_ACTIVATE_ACCOUNT = "user.activate.account";
     public static final String USER_ALREADY_EXISTS = "user.already.exists";
     public static final String USER_EMAIL_NOT_EXISTS = "user.email.not.exists";

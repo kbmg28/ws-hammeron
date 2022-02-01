@@ -126,7 +126,7 @@ public abstract class BaseIntegrationTests {
     }
 
     protected void checkIfEmailAlreadyExistAndDeleteIfPresent(){
-        userAppRepository.findByEmail(generateRandomEmail())
+        userAppRepository.findByEmailIgnoreCase(generateRandomEmail())
                 .ifPresent(this::deleteUserAndAssociations);
     }
 
