@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserAppRepository extends JpaRepository<UserApp, String> {
 
-    Optional<UserApp> findByEmail(String email);
+    Optional<UserApp> findByEmailIgnoreCase(String email);
 
     @Query("SELECT u from UserApp u where exists (" +
             "SELECT 1 from SpaceUserAppAssociation ass where ass.space = :space and ass.active = '1' and u = ass.userApp)")

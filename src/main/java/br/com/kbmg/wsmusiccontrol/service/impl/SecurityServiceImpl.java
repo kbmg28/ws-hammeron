@@ -8,7 +8,7 @@ import br.com.kbmg.wsmusiccontrol.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
 import br.com.kbmg.wsmusiccontrol.event.producer.PasswordRecoveryProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.RegistrationProducer;
-import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
+import br.com.kbmg.wsmusiccontrol.exception.BadUserInfoException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
@@ -24,11 +24,13 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.DATA_INVALID;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.TOKEN_ACTIVATE_EXPIRED;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ACTIVATE_ACCOUNT;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_OR_PASSWORD_INCORRECT;
+import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_PASSWORD_EXPIRED;
 
 @Service
 public class SecurityServiceImpl implements SecurityService {
@@ -63,10 +65,14 @@ public class SecurityServiceImpl implements SecurityService {
         String error = messagesService.get(USER_OR_PASSWORD_INCORRECT);
         UserApp userApp = userAppService
                 .findByEmail(email)
-                .orElseThrow(() -> new AuthorizationException(email, error));
+                .orElseThrow(() -> new BadUserInfoException(email, error));
 
         if (!userApp.getEnabled()) {
-            throw new AuthorizationException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
+            throw new BadUserInfoException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
+        }
+
+        if (userApp.isExpiredPassword()) {
+            throw new BadUserInfoException(email, messagesService.get(USER_PASSWORD_EXPIRED));
         }
         validatePassword(email, loginDto.getPassword(), userApp.getPassword(), error);
         SpaceUserAppAssociation lastAccessedSpace = spaceUserAppAssociationService.findLastAccessedSpace(userApp);
@@ -134,18 +140,18 @@ public class SecurityServiceImpl implements SecurityService {
         String email = userChangePasswordDto.getEmail().toLowerCase();
         UserApp userApp = userAppService
                 .findByEmail(email)
-                .orElseThrow(() -> new AuthorizationException(email, defaultError));
+                .orElseThrow(() -> new BadUserInfoException(email, defaultError));
 
         validatePassword(email, userChangePasswordDto.getTemporaryPassword(), userApp.getPassword(), defaultError);
-
-        userAppService.encodePasswordAndSave(userApp, userChangePasswordDto.getNewPassword());
+        LocalDateTime expireDate = LocalDateTime.now().plusYears(1);
+        userAppService.encodePasswordAndSave(userApp, userChangePasswordDto.getNewPassword(), expireDate);
     }
 
     private void validatePassword(String email, String plainTextPassword, String hashPassword, String error) {
         boolean isCorrectPassword = BCrypt.checkpw(plainTextPassword, hashPassword);
 
         if (!isCorrectPassword) {
-            throw new AuthorizationException(email, error);
+            throw new BadUserInfoException(email, error);
         }
     }
 
