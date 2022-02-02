@@ -225,9 +225,11 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     }
 
     private Comparator<EventDto> getSort(Boolean nextEvents) {
-        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
 
-        return nextEvents ? eventListASC : eventListASC.reversed();
+        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
+        Comparator<EventDto> eventListTimeASC = Comparator.comparing(EventDto::getTime);
+
+        return nextEvents ? eventListASC.thenComparing(eventListTimeASC) : eventListASC.reversed().thenComparing(eventListTimeASC.reversed());
     }
 
     private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {

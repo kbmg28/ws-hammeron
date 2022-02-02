@@ -45,7 +45,7 @@ public class UserApp extends AbstractEntity {
 	@Column(nullable = false)
 	private Boolean isSysAdmin;
 
-	@Column(nullable = false)
+	@Column
 	private LocalDateTime passwordExpireDate;
 
 	public boolean isExpiredPassword() {
