@@ -13,6 +13,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +42,9 @@ public class PasswordRecoveryListener extends AbstractEmailListener implements
         String subject = messagesService.get("user.email.password.recovery.subject");
 
         String temporaryPassword = generateTemporaryPassword();
+        LocalDateTime expireDate = LocalDateTime.now().plusMinutes(5);
 
-        userAppService.encodePasswordAndSave(userApp, temporaryPassword);
+        userAppService.encodePasswordAndSave(userApp, temporaryPassword, expireDate);
 
         Map<String, String> map = new HashMap<>();
         map.put("userName", userApp.getName());

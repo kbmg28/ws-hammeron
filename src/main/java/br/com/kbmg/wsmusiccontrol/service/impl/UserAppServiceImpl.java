@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         AtomicReference<UserApp> userAppAtomicReference = new AtomicReference<>(null);
         String email = userDto.getEmail().toLowerCase();
 
-        repository.findByEmail(email).ifPresent(userAppInDatabase -> {
+        repository.findByEmailIgnoreCase(email).ifPresent(userAppInDatabase -> {
             if (userAppInDatabase.getEnabled()) {
                 throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
             }
@@ -73,14 +74,18 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
-        this.findByEmail(registerPasswordDto.getEmail().toLowerCase()).ifPresent(user -> this.encodePasswordAndSave(user, registerPasswordDto.getPassword()));
+        this.findByEmail(registerPasswordDto.getEmail().toLowerCase())
+                .ifPresent(user -> {
+                    LocalDateTime expireDate = LocalDateTime.now().plusYears(1);
+                    this.encodePasswordAndSave(user, registerPasswordDto.getPassword(), expireDate);
+                });
     }
 
     @Override
-    public void encodePasswordAndSave(UserApp userApp, String password) {
+    public void encodePasswordAndSave(UserApp userApp, String password, LocalDateTime expireDate) {
         String hashpw = BCrypt.hashpw(password, BCrypt.gensalt());
         userApp.setPassword(hashpw);
-
+        userApp.setPasswordExpireDate(expireDate);
         repository.save(userApp);
     }
 
@@ -91,7 +96,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public UserApp findUserLogged() {
-        return repository.findByEmail(SpringSecurityUtil.getEmail()).orElse(null);
+        return repository.findByEmailIgnoreCase(SpringSecurityUtil.getEmail()).orElse(null);
     }
 
     @Override
@@ -141,7 +146,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @Override
     public UserApp findByEmailOrCreateIfNotExists(String email) {
         return repository
-                .findByEmail(email)
+                .findByEmailIgnoreCase(email)
                 .orElseGet(() -> {
                     UserApp newUserApp = new UserApp();
                     newUserApp.setEmail(email);
@@ -154,7 +159,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public Optional<UserApp> findByEmail(String email) {
-        return repository.findByEmail(email);
+        return repository.findByEmailIgnoreCase(email);
     }
 
 }
