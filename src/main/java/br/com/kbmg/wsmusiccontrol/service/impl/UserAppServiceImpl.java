@@ -149,7 +149,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
                 .findByEmailIgnoreCase(email)
                 .orElseGet(() -> {
                     UserApp newUserApp = new UserApp();
-                    newUserApp.setEmail(email);
+                    newUserApp.setEmail(email.toLowerCase());
                     newUserApp.setEnabled(false);
                     newUserApp.setIsSysAdmin(false);
 

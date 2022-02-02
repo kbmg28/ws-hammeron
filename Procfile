@@ -1,1 +1,1 @@
-web: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/ws-music-control-0.1.3.jar
+web: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/ws-music-control-0.1.4.jar
