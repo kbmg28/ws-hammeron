@@ -30,7 +30,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
 
     Optional<Event> findBySpaceAndDateEventAndTimeEvent(Space space, LocalDate date, LocalTime time);
 
-    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and (e.date_event >= :startDate and e.date_event < :endDate) ", nativeQuery = true)
+    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and (e.date_event >= :startDate and e.date_event <= :endDate) ", nativeQuery = true)
     List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateEventRange(String spaceId, LocalDate startDate, LocalDate endDate, String userId);
 
     @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and e.date_event >= :startDate", nativeQuery = true)

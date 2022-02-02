@@ -1,13 +1,12 @@
 package br.com.kbmg.wsmusiccontrol.enums;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
 
 public enum RangeDateFilterEnum {
-    CURRENT_MONTH {
+    LAST_THIRTY_DAYS {
         @Override
         public LocalDate getStartOfRangeDateEvent() {
-            return YearMonth.now().atDay(1);
+            return LocalDate.now().minusMonths(1);
         }
     },
     LAST_THREE_MONTHS {
