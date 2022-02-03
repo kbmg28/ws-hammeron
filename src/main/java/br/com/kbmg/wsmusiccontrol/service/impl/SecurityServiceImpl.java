@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.DATA_INVALID;
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.TOKEN_ACTIVATE_EXPIRED;
@@ -106,7 +107,14 @@ public class SecurityServiceImpl implements SecurityService {
             throw new ServiceException(errorMessage);
         }
 
-        spaceUserAppAssociationService.createAssociationWithPublicSpace(userApp);
+        Set<SpaceUserAppAssociation> spaceUserAppAssociationList = userApp.getSpaceUserAppAssociationList();
+
+        if (spaceUserAppAssociationList.isEmpty()) {
+            spaceUserAppAssociationService.createAssociationWithPublicSpace(userApp);
+        } else {
+            SpaceUserAppAssociation spaceUserAppAssociation = spaceUserAppAssociationList.stream().findFirst().orElseThrow();
+            spaceUserAppAssociationService.updateLastAccessedSpace(userApp, spaceUserAppAssociation.getSpace());
+        }
     }
 
     @Override

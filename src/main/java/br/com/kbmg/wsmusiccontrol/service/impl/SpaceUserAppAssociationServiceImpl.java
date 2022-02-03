@@ -65,10 +65,12 @@ public class SpaceUserAppAssociationServiceImpl
                 .findFirst()
                 .orElseThrow();
 
-        associationOld.setLastAccessedSpace(false);
-        associationLast.setLastAccessedSpace(true);
+        if(associationOld != null) {
+            associationOld.setLastAccessedSpace(false);
+            repository.save(associationOld);
+        }
 
-        repository.save(associationOld);
+        associationLast.setLastAccessedSpace(true);
         repository.save(associationLast);
     }
 
