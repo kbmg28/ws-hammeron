@@ -23,10 +23,12 @@ import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -139,13 +141,14 @@ public class SpaceServiceImpl
         UserApp userLogged = userAppService.findUserLogged();
 
         if(userLogged.getIsSysAdmin()) {
-            return this.findAll();
+            return this.findAll(Sort.by("name"));
         }
 
         return userLogged.getSpaceUserAppAssociationList()
                 .stream()
                 .map(SpaceUserAppAssociation::getSpace)
                 .filter(space -> SpaceStatusEnum.APPROVED.equals(space.getSpaceStatus()))
+                .sorted(Comparator.comparing(Space::getName))
                 .collect(Collectors.toList());
     }
 
