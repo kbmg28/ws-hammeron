@@ -30,8 +30,11 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import javax.mail.util.ByteArrayDataSource;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -94,6 +97,7 @@ public class EventMailServiceImpl implements EventMailService {
 
             mailSender.send(mimeMessage);
         } catch (Exception exception) {
+            exception.printStackTrace();
             logService.logUnexpectedException(exception);
         }
     }
@@ -199,7 +203,10 @@ public class EventMailServiceImpl implements EventMailService {
         event.setUid(eventHammerOn.getId());
 
         LocalDateTime localDateTime = LocalDateTime.of(eventHammerOn.getDateEvent(), eventHammerOn.getTimeEvent());
-        Date date = Timestamp.valueOf(localDateTime);
+
+        OffsetDateTime off = OffsetDateTime.of(eventHammerOn.getDateEvent(), eventHammerOn.getTimeEvent(), ZoneOffset.UTC);
+        ZonedDateTime zoned = off.atZoneSameInstant(ZoneId.of(eventHammerOn.getTimeZoneName()));
+        Date date = java.util.Date.from(zoned.toInstant());
 
         event.setDateStart(date);
         event.setDuration(new Duration.Builder().hours(1).build());

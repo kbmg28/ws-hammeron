@@ -10,6 +10,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ import java.util.Set;
 @ToString(callSuper = true)
 public class UserApp extends AbstractEntity {
 
-	@Column(nullable = false)
+	@Column
 	private String name;
 
 	@Column(nullable = false, unique = true)
@@ -30,7 +31,7 @@ public class UserApp extends AbstractEntity {
 	@Column
 	private String password;
 
-	@Column(nullable = false)
+	@Column
 	private String cellPhone;
 
 	@Column(nullable = false)
@@ -43,4 +44,12 @@ public class UserApp extends AbstractEntity {
 
 	@Column(nullable = false)
 	private Boolean isSysAdmin;
+
+	@Column
+	private LocalDateTime passwordExpireDate;
+
+	public boolean isExpiredPassword() {
+		LocalDateTime now = LocalDateTime.now();
+		return now.isAfter(passwordExpireDate);
+	}
 }

@@ -9,12 +9,20 @@ plugins {
 }
 
 group = 'br.com.kbmg'
-version = '0.0.8'
+version = '0.1.6'
 sourceCompatibility = '11'
 
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
+	}
+}
+
+configurations.all {
+	resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+		if (details.requested.group == 'org.apache.logging.log4j') {
+			details.useVersion '2.17.1'
+		}
 	}
 }
 
@@ -66,8 +74,11 @@ dependencies {
 	// https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
 	implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
 
-
 	implementation 'net.sf.biweekly:biweekly:0.6.4'
+
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-freemarker
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-freemarker', version: '2.6.2'
+
 }
 
 tasks.register("unitTest", Test) {

@@ -35,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -106,10 +108,9 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         Space space = validateIfEventAlreadyExistAndGetSpace(spaceId, body);
 
         Event event = new Event();
-        event.setDateEvent(body.getDate());
-        event.setTimeEvent(body.getTime());
         event.setSpace(space);
-        event.setName(body.getName());
+        event.setTimeZoneName(body.getTimeZoneName());
+        updateEventFields(event, body);
 
         repository.save(event);
 
@@ -226,9 +227,11 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     }
 
     private Comparator<EventDto> getSort(Boolean nextEvents) {
-        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
 
-        return nextEvents ? eventListASC : eventListASC.reversed();
+        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
+        Comparator<EventDto> eventListTimeASC = Comparator.comparing(EventDto::getTime);
+
+        return nextEvents ? eventListASC.thenComparing(eventListTimeASC) : eventListASC.reversed().thenComparing(eventListTimeASC.reversed());
     }
 
     private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {
@@ -254,8 +257,8 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     private void updateEventFields(Event eventInDatabase, EventWithMusicListDto body) {
         eventInDatabase.setName(body.getName());
-        eventInDatabase.setDateEvent(body.getDate());
-        eventInDatabase.setTimeEvent(body.getTime());
+        eventInDatabase.setDateEvent(body.getUtcDateTime().toLocalDate());
+        eventInDatabase.setTimeEvent(body.getUtcDateTime().toLocalTime());
     }
 
     private Event findByIdEventAndSpaceValidated(String idEvent, Space space) {
@@ -268,7 +271,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     private Space validateIfEventAlreadyExistAndGetSpace(String spaceId, EventWithMusicListDto body) {
         Space space = spaceService.findByIdValidated(spaceId);
-        repository.findBySpaceAndDateEventAndTimeEvent(space, body.getDate(), body.getTime())
+        repository.findBySpaceAndDateEventAndTimeEvent(space, body.getUtcDateTime().toLocalDate(), body.getUtcDateTime().toLocalTime())
                 .ifPresent(event -> {
                     throw new ServiceException(messagesService.get("event.already.exist"));
                 });
@@ -313,16 +316,45 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         if(rangeDateFilterEnum == null) {
             throw new ServiceException(messagesService.get("event.dateRange.required"));
         }
-        LocalDate startDate = rangeDateFilterEnum.getStartOfRangeDateEvent();
-        LocalDate endDate = LocalDate.now();
+        LocalDateTime ldt = LocalDateTime.now();
+        LocalDate today = ldt.toLocalDate();
+        LocalTime rangeTwoHoursFromNow = ldt.toLocalTime().minusHours(2);
 
-        return repository.findAllBySpaceAndDateEventRange(space.getId(), startDate, endDate, userLogged.getId());
+        LocalDate startDate = rangeDateFilterEnum.getStartOfRangeDateEvent();
+
+        List<EventWithTotalAssociationsProjection> list = repository.findAllBySpaceAndDateEventRange(space.getId(), startDate, today, userLogged.getId());
+
+        return list.stream()
+                .filter(event -> {
+                    LocalDate dateEvent = event.getDateEvent();
+                    boolean belongToRange = true;
+
+                    if(dateEvent.isEqual(startDate)) {
+                        belongToRange = event.getTimeEvent().isAfter(rangeTwoHoursFromNow);
+                    } else if(dateEvent.isEqual(today)) {
+                        belongToRange = event.getTimeEvent().isBefore(rangeTwoHoursFromNow);
+                    }
+
+                    return belongToRange;
+                })
+                .collect(Collectors.toList());
     }
 
     private List<EventWithTotalAssociationsProjection> findNextEvents(Space space, UserApp userLogged) {
-        LocalDate today = LocalDate.now();
+        LocalDateTime ldt = LocalDateTime.now();
+        LocalDate today = ldt.toLocalDate();
+        LocalTime rangeTwoHoursFromNow = ldt.toLocalTime().minusHours(2);
 
-        return repository.findAllBySpaceAndDateEventGreaterThanEqual(space.getId(), today, userLogged.getId());
+        List<EventWithTotalAssociationsProjection> list = repository.findAllBySpaceAndDateEventGreaterThanEqual(space.getId(), today, userLogged.getId());
+
+        return list.stream()
+                .filter(event -> {
+                    if(event.getDateEvent().isEqual(today)) {
+                        return event.getTimeEvent().isAfter(rangeTwoHoursFromNow);
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
     }
 
 }

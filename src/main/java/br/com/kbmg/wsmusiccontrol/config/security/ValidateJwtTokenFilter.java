@@ -1,8 +1,10 @@
 package br.com.kbmg.wsmusiccontrol.config.security;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants;
 import br.com.kbmg.wsmusiccontrol.dto.auth.AuthInfoDto;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
+import br.com.kbmg.wsmusiccontrol.exception.BadUserInfoException;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.JwtService;
@@ -60,6 +62,9 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
                 } else if (e instanceof ForbiddenException) {
                     response.sendError(HttpStatus.FORBIDDEN.value(), e.getMessage());
                     return;
+                } else if (e instanceof BadUserInfoException) {
+                    response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+                    return;
                 }
             }
         }
@@ -86,6 +91,10 @@ public class ValidateJwtTokenFilter extends OncePerRequestFilter {
         String spaceId = jwtService.getValue(jwtToken, CLAIM_SPACE_ID);
         String spaceName = jwtService.getValue(jwtToken, CLAIM_SPACE_NAME);
         UserApp userApp = userAppService.findById(userId).orElseThrow(AuthorizationException::new);
+
+        if (!userApp.getEnabled() || userApp.isExpiredPassword()) {
+            throw new AuthorizationException(null, messagesService.get(KeyMessageConstants.TOKEN_JWT_INVALID));
+        }
 
         return new AuthInfoDto(userApp, spaceId, spaceName);
     }

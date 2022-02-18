@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.config.logging;
 
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.exception.AuthorizationException;
+import br.com.kbmg.wsmusiccontrol.exception.BadUserInfoException;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
 import br.com.kbmg.wsmusiccontrol.exception.LockedClientException;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
@@ -77,7 +78,9 @@ public class RestResponseExceptionHandler extends ResponseEntityExceptionHandler
         return generatedError(ex.getMessage(), HttpStatus.NOT_FOUND, ex);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, EntityExistsException.class})
+    @ExceptionHandler({IllegalArgumentException.class,
+            EntityExistsException.class,
+            BadUserInfoException.class})
     public ResponseEntity<ResponseData<?>> handleArguments(final RuntimeException ex, final WebRequest request) {
         return generatedError(ex.getMessage(), HttpStatus.BAD_REQUEST, ex);
     }

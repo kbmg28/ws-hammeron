@@ -2,18 +2,29 @@ package br.com.kbmg.wsmusiccontrol.event.listener;
 
 import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
+import br.com.kbmg.wsmusiccontrol.constants.AppConstants;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import javax.mail.internet.MimeMessage;
+import java.time.LocalDate;
+import java.util.Map;
 
 @Component
 @Slf4j
 public abstract class AbstractEmailListener {
+
+    @Value("${profile}")
+    private String profile;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -24,12 +35,28 @@ public abstract class AbstractEmailListener {
     @Autowired
     public LogService logService;
 
-    protected void sendEmail(String to, String subject, String htmlText, String messageErrorKey) {
-        sendEmail(new String[]{to}, subject, htmlText, messageErrorKey);
+    @Autowired
+    protected Configuration configurationFreemarker;
+
+    protected void sendEmailFreeMarker(String to, String subject, String templateName, Map<String, String> data, String messageErrorKey) {
+        sendEmailFreeMarker(new String[]{to}, subject, templateName, data, messageErrorKey);
     }
 
-    protected void sendEmail(String[] to, String subject, String htmlText, String messageErrorKey) {
+    protected void sendEmailFreeMarker(String[] to, String subject, String templateName, Map<String, String> data, String messageErrorKey) {
         try {
+            if (profile == null) {
+                logService.logMessage(Level.ERROR, "No profile");
+            }
+            String frontUrl = AppConstants.getFrontUrl(profile);
+
+            data.put("currentYear", String.valueOf(LocalDate.now().getYear()));
+            data.put("frontUrl", frontUrl);
+
+            Template t = configurationFreemarker.getTemplate(templateName.concat(".ftl"));
+
+            String htmlText = FreeMarkerTemplateUtils
+                    .processTemplateIntoString(t, data);
+
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper email = new MimeMessageHelper(mimeMessage, true);
             email.setTo(to);

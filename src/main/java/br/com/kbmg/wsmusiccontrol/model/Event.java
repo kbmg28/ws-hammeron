@@ -28,6 +28,9 @@ public class Event extends AbstractEntity {
 	private LocalTime timeEvent;
 
 	@Column(nullable = false)
+	private String timeZoneName;
+
+	@Column(nullable = false)
 	private String name;
 
 	@EqualsAndHashCode.Exclude

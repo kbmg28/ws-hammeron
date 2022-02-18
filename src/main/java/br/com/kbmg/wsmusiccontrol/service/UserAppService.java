@@ -8,6 +8,7 @@ import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,10 +16,10 @@ import java.util.Set;
 public interface UserAppService extends GenericService<UserApp>{
     UserApp registerNewUserAccount(RegisterDto userDto);
     void saveUserEnabled(UserApp userApp);
-    UserApp findByEmailValidated(String email);
+    UserApp findByEmailOrCreateIfNotExists(String email);
     Optional<UserApp> findByEmail(String email);
     void registerUserPassword(RegisterPasswordDto registerPasswordDto);
-    void encodePasswordAndSave(UserApp userApp, String password);
+    void encodePasswordAndSave(UserApp userApp, String password, LocalDateTime expireDate);
 
     List<UserApp> findAllSysAdmin();
 
@@ -31,4 +32,6 @@ public interface UserAppService extends GenericService<UserApp>{
     List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId);
 
     UserApp updateUserLogged(UserDto body);
+
+    void deleteCascade(String email);
 }

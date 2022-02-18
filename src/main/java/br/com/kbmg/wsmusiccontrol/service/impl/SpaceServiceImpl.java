@@ -7,6 +7,7 @@ import br.com.kbmg.wsmusiccontrol.dto.space.overview.EventOverviewDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.SpaceOverviewDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.UserOverviewDto;
+import br.com.kbmg.wsmusiccontrol.enums.SpaceStatusEnum;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceApproveProducer;
 import br.com.kbmg.wsmusiccontrol.event.producer.SpaceRequestProducer;
 import br.com.kbmg.wsmusiccontrol.exception.ForbiddenException;
@@ -22,10 +23,12 @@ import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -62,6 +65,7 @@ public class SpaceServiceImpl
             Space publicSpace = new Space();
             publicSpace.setName(AppConstants.DEFAULT_SPACE);
             publicSpace.setJustification(AppConstants.DEFAULT_SPACE);
+            publicSpace.setSpaceStatus(SpaceStatusEnum.APPROVED);
 
             return repository.save(publicSpace);
         });
@@ -80,6 +84,7 @@ public class SpaceServiceImpl
 
         space.setName(spaceRequestDto.getName());
         space.setJustification(spaceRequestDto.getJustification());
+        space.setSpaceStatus(SpaceStatusEnum.REQUESTED);
         space.setRequestedBy(userLogged);
 
         space.setRequestedByDate(LocalDateTime.now());
@@ -102,29 +107,22 @@ public class SpaceServiceImpl
             return findByIdValidated(spaceId);
         }
 
-        return repository.findByIdAndUserApp(spaceId, userApp)
+        return repository.findByIdAndSpaceStatusAndUserApp(spaceId, SpaceStatusEnum.APPROVED, userApp)
                 .orElseThrow(() -> new ForbiddenException(
                         messagesService.get("space.user.not.access"))
                 );
     }
 
     @Override
-    public void approveNewSpaceForUser(String idSpace, HttpServletRequest request) {
+    public void approveNewSpaceForUser(String idSpace, SpaceStatusEnum spaceStatusEnum, HttpServletRequest request) {
         repository.findById(idSpace).ifPresent(space -> {
             if (space.isApproved()) {
                 return;
             }
             UserApp requestedBy = space.getRequestedBy();
-            if(requestedBy == null) {
-                throw new ServiceException(
-                        messagesService.get("space.approve.notFound.requested")
-                );
-            }
 
-            UserApp userLogged = userAppService.findUserLogged();
-
-            space.setApprovedBy(userLogged);
-            space.setApprovedByDate(LocalDateTime.now());
+            validateParamsBeforeApprove(space, spaceStatusEnum, requestedBy);
+            updateParamsToApprove(spaceStatusEnum, space);
             repository.save(space);
 
             spaceUserAppAssociationService.createAssociationToSpaceOwner(space, requestedBy);
@@ -134,8 +132,8 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public List<Space> findAllSpaceToApprove() {
-        return repository.findAllByApprovedByIsNull();
+    public List<Space> findAllSpaceByStatus(SpaceStatusEnum spaceStatusEnum) {
+        return repository.findAllBySpaceStatus(spaceStatusEnum);
     }
 
     @Override
@@ -143,12 +141,14 @@ public class SpaceServiceImpl
         UserApp userLogged = userAppService.findUserLogged();
 
         if(userLogged.getIsSysAdmin()) {
-            return this.findAll();
+            return this.findAll(Sort.by("name"));
         }
 
         return userLogged.getSpaceUserAppAssociationList()
                 .stream()
                 .map(SpaceUserAppAssociation::getSpace)
+                .filter(space -> SpaceStatusEnum.APPROVED.equals(space.getSpaceStatus()))
+                .sorted(Comparator.comparing(Space::getName))
                 .collect(Collectors.toList());
     }
 
@@ -156,11 +156,12 @@ public class SpaceServiceImpl
     public String changeViewSpaceUser(String idSpace, HttpServletRequest request) {
         UserApp userLogged = userAppService.findUserLogged();
         Space space = findByIdAndUserAppValidated(idSpace, userLogged);
+
         if(!userLogged.getIsSysAdmin()) {
             spaceUserAppAssociationService.updateLastAccessedSpace(userLogged, space);
         }
-        String tokenUpdated = jwtService.updateSpaceOnToken(request, space);
-        return tokenUpdated;
+
+        return jwtService.updateSpaceOnToken(request, space);
     }
 
     @Override
@@ -196,6 +197,24 @@ public class SpaceServiceImpl
                 musicOverviewDtoList,
                 eventOverviewDtoList
         );
+    }
+
+    private void updateParamsToApprove(SpaceStatusEnum spaceStatusEnum, Space space) {
+        UserApp userLogged = userAppService.findUserLogged();
+
+        space.setSpaceStatus(spaceStatusEnum);
+        space.setApprovedBy(userLogged);
+        space.setApprovedByDate(LocalDateTime.now());
+    }
+
+    private void validateParamsBeforeApprove(Space space, SpaceStatusEnum spaceStatusEnum,  UserApp requestedBy) {
+        if(requestedBy == null) {
+            throw new ServiceException(
+                    messagesService.get("space.approve.notFound.requested")
+            );
+        }
+
+        // TODO add status machine to space status
     }
 
 }

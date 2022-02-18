@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSysAdmin;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
@@ -8,9 +9,12 @@ import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
+import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
+import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
+import br.com.kbmg.wsmusiccontrol.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -20,13 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_ALREADY_EXISTS;
-import static br.com.kbmg.wsmusiccontrol.constants.KeyMessageConstants.USER_EMAIL_NOT_EXISTS;
 
 @Service
 public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepository> implements UserAppService {
@@ -43,11 +47,18 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @Autowired
     private UserAppMapper userAppMapper;
 
+    @Autowired
+    private VerificationTokenRepository tokenRepository;
+
+    @Autowired
+    private EventSpaceUserAppAssociationService eventSpaceUserAppAssociationService;
+
     @Override
     public UserApp registerNewUserAccount(RegisterDto userDto) {
         AtomicReference<UserApp> userAppAtomicReference = new AtomicReference<>(null);
+        String email = userDto.getEmail().toLowerCase();
 
-        repository.findByEmail(userDto.getEmail()).ifPresent(userAppInDatabase -> {
+        repository.findByEmailIgnoreCase(email).ifPresent(userAppInDatabase -> {
             if (userAppInDatabase.getEnabled()) {
                 throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
             }
@@ -57,29 +68,34 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         if (userAppAtomicReference.get() == null) {
             UserApp newUserApp = new UserApp();
 
-            newUserApp.setEmail(userDto.getEmail());
-            newUserApp.setName(userDto.getName());
-            newUserApp.setCellPhone(userDto.getCellPhone());
+            newUserApp.setEmail(email);
             newUserApp.setEnabled(false);
             newUserApp.setIsSysAdmin(false);
-            repository.save(newUserApp);
 
             userAppAtomicReference.set(newUserApp);
         }
 
-        return userAppAtomicReference.get();
+        UserApp userAppRegistered = userAppAtomicReference.get();
+        userAppRegistered.setName(userDto.getName());
+        userAppRegistered.setCellPhone(userDto.getCellPhone());
+
+        return repository.save(userAppRegistered);
     }
 
     @Override
     public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
-        this.findByEmail(registerPasswordDto.getEmail()).ifPresent(user -> this.encodePasswordAndSave(user, registerPasswordDto.getPassword()));
+        this.findByEmail(registerPasswordDto.getEmail().toLowerCase())
+                .ifPresent(user -> {
+                    LocalDateTime expireDate = LocalDateTime.now().plusYears(1);
+                    this.encodePasswordAndSave(user, registerPasswordDto.getPassword(), expireDate);
+                });
     }
 
     @Override
-    public void encodePasswordAndSave(UserApp userApp, String password) {
+    public void encodePasswordAndSave(UserApp userApp, String password, LocalDateTime expireDate) {
         String hashpw = BCrypt.hashpw(password, BCrypt.gensalt());
         userApp.setPassword(hashpw);
-
+        userApp.setPasswordExpireDate(expireDate);
         repository.save(userApp);
     }
 
@@ -90,7 +106,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public UserApp findUserLogged() {
-        return repository.findByEmail(SpringSecurityUtil.getEmail()).orElse(null);
+        return repository.findByEmailIgnoreCase(SpringSecurityUtil.getEmail()).orElse(null);
     }
 
     @Override
@@ -105,7 +121,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public void addPermissionToUserInSpace(String emailUser, String spaceId, PermissionEnum permissionEnum) {
-        UserApp userAppToAddRole = this.findByEmailValidated(emailUser);
+        UserApp userAppToAddRole = this.findByEmailOrCreateIfNotExists(emailUser);
         Space space = spaceService.findByIdValidated(spaceId);
 
         if (PermissionEnum.SPACE_OWNER.equals(permissionEnum)) {
@@ -118,8 +134,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Override
     public List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId) {
-        List<UserOnlyIdNameAndEmailProjection> list =  repository.findUsersAssociationForEventsBySpace(spaceId);
-        return list;
+        return repository.findUsersAssociationForEventsBySpace(spaceId);
     }
 
     @Override
@@ -132,6 +147,22 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
+    @SecuredSysAdmin
+    public void deleteCascade(String email) {
+        this.findByEmail(email).ifPresent(userApp -> {
+            tokenRepository.deleteByUserApp(userApp);
+            Set<SpaceUserAppAssociation> spaceUserAppAssociationList = userApp.getSpaceUserAppAssociationList();
+
+            spaceUserAppAssociationList.forEach(esu -> {
+                eventSpaceUserAppAssociationService.deleteInBatch(esu.getEventAssociationList());
+                userPermissionService.deleteInBatch(esu.getUserPermissionList());
+            });
+
+            spaceUserAppAssociationService.deleteInBatch(spaceUserAppAssociationList);
+        });
+    }
+
+    @Override
     public void saveUserEnabled(UserApp userApp) {
         userApp.setEnabled(true);
         repository.save(userApp);
@@ -139,18 +170,22 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
 
     @Override
-    public UserApp findByEmailValidated(String email) {
+    public UserApp findByEmailOrCreateIfNotExists(String email) {
         return repository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new ServiceException(
-                                messagesService.get(String.format(USER_EMAIL_NOT_EXISTS, email))
-                        ));
+                .findByEmailIgnoreCase(email)
+                .orElseGet(() -> {
+                    UserApp newUserApp = new UserApp();
+                    newUserApp.setEmail(email.toLowerCase());
+                    newUserApp.setEnabled(false);
+                    newUserApp.setIsSysAdmin(false);
+
+                    return repository.save(newUserApp);
+                });
     }
 
     @Override
     public Optional<UserApp> findByEmail(String email) {
-        return repository.findByEmail(email);
+        return repository.findByEmailIgnoreCase(email);
     }
 
 }
