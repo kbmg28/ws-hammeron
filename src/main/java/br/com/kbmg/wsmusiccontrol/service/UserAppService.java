@@ -32,4 +32,6 @@ public interface UserAppService extends GenericService<UserApp>{
     List<UserOnlyIdNameAndEmailProjection> findUsersAssociationForEventsBySpace(String spaceId);
 
     UserApp updateUserLogged(UserDto body);
+
+    void deleteCascade(String email);
 }
