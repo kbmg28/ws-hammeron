@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.controller;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
 import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredAnyUserAuth;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSysAdmin;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
@@ -16,6 +17,7 @@ import br.com.kbmg.wsmusiccontrol.util.response.ResponseData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -80,6 +82,15 @@ public class UserController extends GenericController {
             ) {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         userAppService.addPermissionToUserInSpace(emailUser, spaceId, permissionEnum);
+        return super.ok();
+    }
+
+    @DeleteMapping("/{email}")
+    @Transactional
+    @SecuredSysAdmin
+    public ResponseEntity<ResponseData<Void>> deleteUserByEmailCascade(
+            @PathVariable("email") String email) {
+        userAppService.deleteCascade(email);
         return super.ok();
     }
 

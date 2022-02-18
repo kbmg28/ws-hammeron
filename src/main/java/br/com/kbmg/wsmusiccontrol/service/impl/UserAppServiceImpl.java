@@ -1,6 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.config.security.SpringSecurityUtil;
+import br.com.kbmg.wsmusiccontrol.config.security.annotations.SecuredSysAdmin;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
@@ -8,9 +9,12 @@ import br.com.kbmg.wsmusiccontrol.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Space;
+import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.UserAppRepository;
+import br.com.kbmg.wsmusiccontrol.repository.VerificationTokenRepository;
 import br.com.kbmg.wsmusiccontrol.repository.projection.UserOnlyIdNameAndEmailProjection;
+import br.com.kbmg.wsmusiccontrol.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceService;
 import br.com.kbmg.wsmusiccontrol.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wsmusiccontrol.service.UserAppService;
@@ -42,6 +46,12 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
 
     @Autowired
     private UserAppMapper userAppMapper;
+
+    @Autowired
+    private VerificationTokenRepository tokenRepository;
+
+    @Autowired
+    private EventSpaceUserAppAssociationService eventSpaceUserAppAssociationService;
 
     @Override
     public UserApp registerNewUserAccount(RegisterDto userDto) {
@@ -134,6 +144,22 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
         userLogged.setCellPhone(body.getCellPhone());
 
         return repository.save(userLogged);
+    }
+
+    @Override
+    @SecuredSysAdmin
+    public void deleteCascade(String email) {
+        this.findByEmail(email).ifPresent(userApp -> {
+            tokenRepository.deleteByUserApp(userApp);
+            Set<SpaceUserAppAssociation> spaceUserAppAssociationList = userApp.getSpaceUserAppAssociationList();
+
+            spaceUserAppAssociationList.forEach(esu -> {
+                eventSpaceUserAppAssociationService.deleteInBatch(esu.getEventAssociationList());
+                userPermissionService.deleteInBatch(esu.getUserPermissionList());
+            });
+
+            spaceUserAppAssociationService.deleteInBatch(spaceUserAppAssociationList);
+        });
     }
 
     @Override
