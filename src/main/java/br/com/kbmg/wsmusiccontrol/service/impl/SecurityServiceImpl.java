@@ -119,6 +119,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public void createVerificationToken(UserApp userApp, String token) {
+        deleteOldTokenIfExists(userApp);
         VerificationToken myToken = new VerificationToken(token, userApp);
         tokenRepository.save(myToken);
     }
@@ -130,7 +131,7 @@ public class SecurityServiceImpl implements SecurityService {
                 return;
             }
 
-            tokenRepository.findByUserApp(userApp).ifPresent(token -> tokenRepository.delete(token));
+            deleteOldTokenIfExists(userApp);
 
             registrationProducer.publishEvent(request, userApp);
         });
@@ -153,6 +154,10 @@ public class SecurityServiceImpl implements SecurityService {
         validatePassword(email, userChangePasswordDto.getTemporaryPassword(), userApp.getPassword(), defaultError);
         LocalDateTime expireDate = LocalDateTime.now().plusYears(1);
         userAppService.encodePasswordAndSave(userApp, userChangePasswordDto.getNewPassword(), expireDate);
+    }
+
+    private void deleteOldTokenIfExists(UserApp userApp) {
+        tokenRepository.findByUserApp(userApp).ifPresent(token -> tokenRepository.delete(token));
     }
 
     private void validatePassword(String email, String plainTextPassword, String hashPassword, String error) {
