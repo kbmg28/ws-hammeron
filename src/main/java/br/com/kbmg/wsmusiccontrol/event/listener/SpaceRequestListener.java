@@ -38,7 +38,6 @@ public class SpaceRequestListener
         validateRequestedBy(requestedBy);
 
         Map<String, String> data = new HashMap<>();
-        data.put("userName", requestedBy.getName());
         data.put("spaceName", space.getName());
 
         sendEmailToUserRequested(subject, data, requestedBy);
@@ -46,6 +45,8 @@ public class SpaceRequestListener
     }
 
     private void sendEmailToUserRequested(String subject, Map<String, String> data, UserApp requestedBy) {
+
+        data.put("userName", requestedBy.getName());
         super.sendEmailFreeMarker(requestedBy.getEmail(),
                 subject,
                 "requestedSpace",
@@ -58,6 +59,7 @@ public class SpaceRequestListener
         Set<String> emailSysAdminList = list.stream().map(UserApp::getEmail).collect(Collectors.toSet());
         String[] emailsTo = emailSysAdminList.toArray(String[]::new);
 
+        data.put("userName", "#SysAdmin");
         data.put("userRequestName", requestedBy.getName());
         data.put("userRequestEmail", requestedBy.getEmail());
         data.put("spaceJustification", space.getJustification());
