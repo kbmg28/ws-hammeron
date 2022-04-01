@@ -1,5 +1,6 @@
 package br.com.kbmg.wsmusiccontrol.dto.event;
 
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicFullWithOrderDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -26,7 +27,7 @@ public class EventDetailsDto {
     @JsonFormat(pattern = "HH:mm", shape = JsonFormat.Shape.STRING)
     private LocalTime time;
 
-    private Set<MusicWithSingerAndLinksDto> musicList = new HashSet<>();
+    private Set<MusicFullWithOrderDto> musicList = new HashSet<>();
     private Set<UserDto> userList = new HashSet<>();
 
 }

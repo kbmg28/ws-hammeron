@@ -5,7 +5,7 @@ import br.com.kbmg.wsmusiccontrol.dto.event.EventDetailsDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventWithMusicListDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicFullWithOrderDto;
 import br.com.kbmg.wsmusiccontrol.dto.space.overview.EventOverviewDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
@@ -16,7 +16,6 @@ import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
 import br.com.kbmg.wsmusiccontrol.model.EventSpaceUserAppAssociation;
-import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.Space;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.repository.EventRepository;
@@ -39,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -235,8 +235,13 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     }
 
     private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {
-        List<Music> musicList = eventMusicAssociationService.findAllMusicByEvent(event);
-        Set<MusicWithSingerAndLinksDto> dtoList = musicMapper.toMusicWithSingerAndLinksDtoList(musicList);
+        List<EventMusicAssociation> associationList = eventMusicAssociationService.findAllMusicByEvent(event);
+        Set<MusicFullWithOrderDto> dtoList = musicMapper
+                .toMusicFullWithOrderDtoList(associationList)
+                .stream()
+                .sorted(Comparator.comparingInt(MusicFullWithOrderDto::getSequentialOrder))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         eventDetails.setMusicList(dtoList);
     }
 

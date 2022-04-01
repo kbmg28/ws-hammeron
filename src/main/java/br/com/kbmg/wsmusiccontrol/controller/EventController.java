@@ -49,7 +49,7 @@ public class EventController extends GenericController {
     @Transactional
     public ResponseEntity<ResponseData<EventDetailsDto>> findById(
             @PathVariable("id-event") String idMusic) {
-        EventDetailsDto data = eventService.findByIdValidated( idMusic);
+        EventDetailsDto data = eventService.findByIdValidated(idMusic);
         return super.ok(data);
     }
 

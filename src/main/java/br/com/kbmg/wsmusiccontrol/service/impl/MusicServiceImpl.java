@@ -152,8 +152,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId) {
-        List<MusicOnlyIdAndMusicNameAndSingerNameProjection> list = repository.findMusicsAssociationForEventsBySpace(spaceId);
-        return list;
+        return repository.findMusicsAssociationForEventsBySpace(spaceId);
     }
 
     @Override

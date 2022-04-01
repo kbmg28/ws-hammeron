@@ -12,6 +12,7 @@ import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import br.com.kbmg.wsmusiccontrol.config.messages.MessagesService;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.EventMailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +104,7 @@ public class EventMailServiceImpl implements EventMailService {
     }
 
     private String getDescription(EventMainDataDto event, Set<UserApp> userList) {
-        Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList = event.getMusicList();
+        Set<MusicSimpleToEventDto> musicList = event.getMusicList();
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM");
         String formattedDate = event.getDateEvent().format(formatterDate);
 

@@ -1,10 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.util.mapper;
 
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicLinkDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.*;
+import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.MusicLink;
 import br.com.kbmg.wsmusiccontrol.model.Singer;
@@ -23,20 +20,12 @@ import java.util.Set;
 public interface MusicMapper {
     String TO_MUSIC_ONLY_ID_AND_MUSIC_NAME_AND_SINGER_NAME_DTO = "toMusicOnlyIdAndMusicNameAndSingerNameDto";
     String TO_MUSIC_WITH_SINGER_AND_LINKS_DTO = "toMusicWithSingerAndLinksDto";
+    String TO_MUSIC_FULL_WITH_ORDER_DTO = "toMusicFullWithOrderDto";
     String TO_MUSIC_DTO = "toMusicDto";
     String TO_SINGER = "toSinger";
     String TO_MUSIC_LINK_LIST = "toMusicLinkList";
     String TO_MUSIC_LINK = "toMusicLink";
     String TO_SINGER_DTO = "toSingerDto";
-
-    @IterableMapping(elementTargetType = MusicOnlyIdAndMusicNameAndSingerNameDto.class, qualifiedByName = TO_MUSIC_ONLY_ID_AND_MUSIC_NAME_AND_SINGER_NAME_DTO)
-    Set<MusicOnlyIdAndMusicNameAndSingerNameDto> toMusicOnlyIdAndMusicNameAndSingerNameDtoList(Collection<Music> musicList);
-
-    @Named(TO_MUSIC_ONLY_ID_AND_MUSIC_NAME_AND_SINGER_NAME_DTO)
-    @Mapping(target = "musicId", source = "id")
-    @Mapping(target = "musicName", source = "name")
-    @Mapping(target = "singerName", source = "singer.name")
-    MusicOnlyIdAndMusicNameAndSingerNameDto toMusicOnlyIdAndMusicNameAndSingerNameDto(Music music);
 
     @IterableMapping(elementTargetType = MusicWithSingerAndLinksDto.class, qualifiedByName = TO_MUSIC_WITH_SINGER_AND_LINKS_DTO)
     Set<MusicWithSingerAndLinksDto> toMusicWithSingerAndLinksDtoList(Collection<Music> musicList);
@@ -44,6 +33,17 @@ public interface MusicMapper {
     @Named(TO_MUSIC_WITH_SINGER_AND_LINKS_DTO)
     @Mapping(target = "links", source = "musicLinkList")
     MusicWithSingerAndLinksDto toMusicWithSingerAndLinksDto(Music music);
+
+    @IterableMapping(elementTargetType = MusicFullWithOrderDto.class, qualifiedByName = TO_MUSIC_FULL_WITH_ORDER_DTO)
+    Set<MusicFullWithOrderDto> toMusicFullWithOrderDtoList(Collection<EventMusicAssociation> associationList);
+
+    @Named(TO_MUSIC_FULL_WITH_ORDER_DTO)
+    @Mapping(target = "id", source = "music.id")
+    @Mapping(target = "name", source = "music.name")
+    @Mapping(target = "musicStatus", source = "music.musicStatus")
+    @Mapping(target = "singer", source = "music.singer")
+    @Mapping(target = "links", source = "music.musicLinkList")
+    MusicFullWithOrderDto toMusicFullWithOrderDto(EventMusicAssociation association);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdDate", ignore = true)
