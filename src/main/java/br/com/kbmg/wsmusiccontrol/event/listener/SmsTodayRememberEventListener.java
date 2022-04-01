@@ -3,9 +3,11 @@ package br.com.kbmg.wsmusiccontrol.event.listener;
 import br.com.kbmg.wsmusiccontrol.config.logging.LogService;
 import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wsmusiccontrol.event.OnSmsTodayRememberEvent;
 import br.com.kbmg.wsmusiccontrol.event.view.SmsRememberData;
 import br.com.kbmg.wsmusiccontrol.model.Event;
+import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
 import br.com.kbmg.wsmusiccontrol.model.Music;
 import br.com.kbmg.wsmusiccontrol.model.UserApp;
 import br.com.kbmg.wsmusiccontrol.service.EventMailService;
@@ -84,13 +86,17 @@ public class SmsTodayRememberEventListener
     }
 
     private EventMainDataDto generateEventMainDataDto(Event eventHammerOn) {
-        List<Music> allMusicByEvent = eventMusicAssociationService.findAllMusicByEvent(eventHammerOn);
+        List<EventMusicAssociation> allMusicByEvent = eventMusicAssociationService.findAllMusicByEvent(eventHammerOn);
 
-        Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList = allMusicByEvent
-                .parallelStream()
-                .map(music -> new MusicOnlyIdAndMusicNameAndSingerNameDto(music.getId(),
-                        music.getName(),
-                        music.getSinger().getName()))
+        Set<MusicSimpleToEventDto> musicList = allMusicByEvent
+                .stream()
+                .map(association -> {
+                    Music music = association.getMusic();
+                    return new MusicSimpleToEventDto(music.getId(),
+                            music.getName(),
+                            music.getSinger().getName(),
+                            association.getSequentialOrder());
+                })
                 .collect(Collectors.toSet());
 
         return new EventMainDataDto(eventHammerOn, musicList);

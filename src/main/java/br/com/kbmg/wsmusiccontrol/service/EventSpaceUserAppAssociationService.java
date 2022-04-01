@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.service;
 
 import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.enums.DatabaseOperationEnum;
 import br.com.kbmg.wsmusiccontrol.model.Event;
@@ -15,9 +16,9 @@ import java.util.Set;
 public interface EventSpaceUserAppAssociationService extends GenericService<EventSpaceUserAppAssociation>{
     List<UserApp> findAllUserAppByEvent(Event event);
 
-    Set<EventSpaceUserAppAssociation> createAssociation(Space space, Event event, Set<String> userEmailList, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList);
+    Set<EventSpaceUserAppAssociation> createAssociation(Space space, Event event, Set<String> userEmailList, Set<MusicSimpleToEventDto> musicList);
 
-    Set<EventSpaceUserAppAssociation> updateAssociations(Event eventInDatabase, Set<UserOnlyIdNameAndEmailDto> userList, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList);
+    Set<EventSpaceUserAppAssociation> updateAssociations(Event eventInDatabase, Set<UserOnlyIdNameAndEmailDto> userList, Set<MusicSimpleToEventDto> musicList);
 
     void sendNotificationToAssociations(EventMainDataDto eventMainDataDto,
                                         Set<UserApp> userList,

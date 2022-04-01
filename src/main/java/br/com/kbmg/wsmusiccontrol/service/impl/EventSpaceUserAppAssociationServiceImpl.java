@@ -2,6 +2,7 @@ package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.dto.event.EventMainDataDto;
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wsmusiccontrol.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wsmusiccontrol.enums.DatabaseOperationEnum;
 import br.com.kbmg.wsmusiccontrol.event.producer.UserOfEventOperationProducer;
@@ -51,7 +52,7 @@ public class EventSpaceUserAppAssociationServiceImpl
     public Set<EventSpaceUserAppAssociation> createAssociation(Space space,
                                                                Event event,
                                                                Set<String> userEmailList,
-                                                               Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
+                                                               Set<MusicSimpleToEventDto> musicList) {
         Set<SpaceUserAppAssociation> spaceUserList = spaceUserAppAssociationService
                 .findAllBySpaceAndEmailList(space, userEmailList);
 
@@ -65,7 +66,7 @@ public class EventSpaceUserAppAssociationServiceImpl
     @Override
     public Set<EventSpaceUserAppAssociation> updateAssociations(Event eventInDatabase,
                                                                 Set<UserOnlyIdNameAndEmailDto> userList,
-                                                                Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
+                                                                Set<MusicSimpleToEventDto> musicList) {
         Set<EventSpaceUserAppAssociation> userListInDatabase = eventInDatabase.getSpaceUserAppAssociationList();
         Map<String, EventSpaceUserAppAssociation> spaceUserInDatabaseMap = userListInDatabase
                 .stream()

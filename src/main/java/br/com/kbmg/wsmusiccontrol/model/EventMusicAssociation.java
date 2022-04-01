@@ -12,6 +12,9 @@ import javax.persistence.*;
 @ToString(callSuper = true)
 public class EventMusicAssociation extends AbstractEntity {
 
+	@Column(nullable = false)
+	private Integer sequentialOrder;
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(nullable = false)
 	@ToString.Exclude
