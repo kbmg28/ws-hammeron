@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'br.com.kbmg'
-version = '0.1.7'
+version = '0.1.8'
 sourceCompatibility = '11'
 
 configurations {
