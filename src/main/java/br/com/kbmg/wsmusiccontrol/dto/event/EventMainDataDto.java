@@ -1,9 +1,11 @@
 package br.com.kbmg.wsmusiccontrol.dto.event;
 
 import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import lombok.Data;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
@@ -17,9 +19,9 @@ public class EventMainDataDto {
     private String timeZoneName;
     private String nameEvent;
 
-    private Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList;
+    @Valid private Set<MusicSimpleToEventDto> musicList;
 
-    public EventMainDataDto(Event event, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
+    public EventMainDataDto(Event event, Set<MusicSimpleToEventDto> musicList) {
         this.id = event.getId();
         this.dateEvent = event.getDateEvent();
         this.timeEvent = event.getTimeEvent();

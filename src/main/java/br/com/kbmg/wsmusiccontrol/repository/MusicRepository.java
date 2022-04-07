@@ -40,7 +40,8 @@ public interface MusicRepository extends JpaRepository<Music, String> {
     @Query(value = "SELECT m.id AS \"musicId\", m.name AS \"musicName\", s.name AS \"singerName\" " +
             "FROM MUSIC m " +
             "JOIN SINGER s ON s.id = m.singer_id " +
-            "WHERE m.space_id = :spaceId and m.music_status = 'ENABLED'", nativeQuery = true)
+            "WHERE m.space_id = :spaceId and m.music_status = 'ENABLED' " +
+            "ORDER BY lower(m.name)", nativeQuery = true)
     List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId);
 
     @Query(value = "SELECT m.music_status AS \"groupName\", COUNT(m.ID) AS \"total\" " +

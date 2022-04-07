@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'br.com.kbmg'
-version = '0.1.6'
+version = '0.1.8'
 sourceCompatibility = '11'
 
 configurations {
@@ -103,7 +103,7 @@ tasks.withType(Test) { testTask ->
 	doFirst {
 		def profile = 'h2'
 
-		systemProperty 'spring.profiles.active', profile
+		systemProperty 'profile', profile
 		failFast = project.hasProperty("failFast")
 	}
 

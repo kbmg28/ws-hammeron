@@ -1,7 +1,7 @@
 package br.com.kbmg.wsmusiccontrol.service.impl;
 
 import br.com.kbmg.wsmusiccontrol.dto.event.EventSimpleDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
+import br.com.kbmg.wsmusiccontrol.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wsmusiccontrol.exception.ServiceException;
 import br.com.kbmg.wsmusiccontrol.model.Event;
 import br.com.kbmg.wsmusiccontrol.model.EventMusicAssociation;
@@ -29,34 +29,28 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
     private MusicService musicService;
 
     @Override
-    public List<Music> findAllMusicByEvent(Event event) {
-        List<Music> list = repository.findAllMusicByEvent(event);
-        return list;
+    public List<EventMusicAssociation> findAllMusicByEvent(Event event) {
+        return repository.findAllByEvent(event);
     }
 
     @Override
-    public Set<EventMusicAssociation> createAssociation(Event event, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
-        Set<String> musicIdList = musicList.stream().map(MusicOnlyIdAndMusicNameAndSingerNameDto::getMusicId).collect(Collectors.toSet());
+    public Set<EventMusicAssociation> createAssociation(Event event, Set<MusicSimpleToEventDto> musicList) {
+        Map<String, Integer> musicIdOrderMap = getMusicIdOrderMap(musicList);
+        Set<String> musicIdList = musicIdOrderMap.keySet();
+
         List<Music> entityMusicList = musicService.findAllById(musicIdList);
 
         if (entityMusicList.size() != musicIdList.size()) {
             throw new ServiceException(messagesService.get("event.music.list.invalid"));
         }
 
-        return createAssociationInDatabase(event, entityMusicList);
-    }
-
-    private Set<EventMusicAssociation> createAssociationInDatabase(Event event, List<Music> entityMusicList) {
-        return entityMusicList.stream().map(music -> {
-            EventMusicAssociation eventMusicAssociation = new EventMusicAssociation(event, music);
-            return repository.save(eventMusicAssociation);
-        }).collect(Collectors.toSet());
+        return createAssociationInDatabase(event, entityMusicList, musicIdOrderMap);
     }
 
     @Override
     public List<EventSimpleDto> findEventsByMusic(Music music, Boolean eventsFromTheLast3Months) {
         List<EventSimpleProjection> projectionList;
-        if (eventsFromTheLast3Months) {
+        if (Boolean.TRUE.equals(eventsFromTheLast3Months)) {
             LocalDate now = LocalDate.now();
             LocalDate threeMothsAgo = now.minusMonths(3);
             projectionList = repository.findAllEventsOfMusicByDateRange(music.getId(), threeMothsAgo, now);
@@ -70,25 +64,30 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
     }
 
     @Override
-    public Set<EventMusicAssociation> updateAssociations(Event eventInDatabase, Set<MusicOnlyIdAndMusicNameAndSingerNameDto> musicList) {
+    public Set<EventMusicAssociation> updateAssociations(Event eventInDatabase, Set<MusicSimpleToEventDto> musicList) {
         Set<EventMusicAssociation> musicListInDatabase = eventInDatabase.getEventMusicList();
         Map<String, EventMusicAssociation> musicInDatabaseMap = musicListInDatabase
                 .stream()
                 .collect(Collectors.toMap(ema -> ema.getMusic().getId(), Function.identity()));
 
-        Set<String> musicIdList = musicList.stream().map(MusicOnlyIdAndMusicNameAndSingerNameDto::getMusicId).collect(Collectors.toSet());
+        Map<String, Integer> musicIdOrderMap = getMusicIdOrderMap(musicList);
+        Set<String> musicIdList = musicIdOrderMap.keySet();
         List<Music> musicUpdatedList = musicService.findAllById(musicIdList);
 
         List<Music> musicToCreateAssociationList = new ArrayList<>();
 
         musicUpdatedList.forEach(musicToUpdate -> {
-            EventMusicAssociation eventMusicInDatabase = musicInDatabaseMap.get(musicToUpdate.getId());
+            String currentMusicId = musicToUpdate.getId();
+
+            EventMusicAssociation eventMusicInDatabase = musicInDatabaseMap.get(currentMusicId);
 
             if (eventMusicInDatabase == null) {
                 musicToCreateAssociationList.add(musicToUpdate);
+            } else {
+                eventMusicInDatabase.setSequentialOrder(musicIdOrderMap.get(currentMusicId));
             }
 
-            musicInDatabaseMap.remove(musicToUpdate.getId());
+            musicInDatabaseMap.remove(currentMusicId);
         });
 
         if (musicInDatabaseMap.size() > 0) {
@@ -97,9 +96,25 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
             repository.deleteAllInBatch(eventUserAssociationList);
         }
 
-        Set<EventMusicAssociation> newAssociations = createAssociationInDatabase(eventInDatabase, musicToCreateAssociationList);
+        Set<EventMusicAssociation> newAssociations =
+                createAssociationInDatabase(eventInDatabase, musicToCreateAssociationList, musicIdOrderMap);
         musicListInDatabase.addAll(newAssociations);
 
         return musicListInDatabase;
     }
+
+    private Map<String, Integer> getMusicIdOrderMap(Set<MusicSimpleToEventDto> musicList) {
+        return musicList.stream().collect(Collectors
+                .toMap(MusicSimpleToEventDto::getMusicId,
+                        MusicSimpleToEventDto::getSequentialOrder));
+    }
+
+    private Set<EventMusicAssociation> createAssociationInDatabase(Event event, List<Music> entityMusicList, Map<String, Integer> musicIdOrderMap) {
+        return entityMusicList.stream().map(music -> {
+            Integer sequentialOrder = musicIdOrderMap.get(music.getId());
+            EventMusicAssociation eventMusicAssociation = new EventMusicAssociation(sequentialOrder, event, music);
+            return repository.save(eventMusicAssociation);
+        }).collect(Collectors.toSet());
+    }
+
 }
