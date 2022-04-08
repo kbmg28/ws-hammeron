@@ -1,8 +1,8 @@
 package builder;
 
-import br.com.kbmg.wsmusiccontrol.model.Space;
-import br.com.kbmg.wsmusiccontrol.model.SpaceUserAppAssociation;
-import br.com.kbmg.wsmusiccontrol.model.UserApp;
+import br.com.kbmg.wshammeron.model.Space;
+import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
+import br.com.kbmg.wshammeron.model.UserApp;
 
 import static constants.BaseTestsConstants.ANY_VALUE;
 

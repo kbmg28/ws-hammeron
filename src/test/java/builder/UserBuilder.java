@@ -1,14 +1,14 @@
 package builder;
 
-import br.com.kbmg.wsmusiccontrol.dto.user.ActivateUserAccountRefreshDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.LoginDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.RegisterPasswordDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserDto;
-import br.com.kbmg.wsmusiccontrol.dto.user.UserTokenHashDto;
-import br.com.kbmg.wsmusiccontrol.enums.PermissionEnum;
-import br.com.kbmg.wsmusiccontrol.model.UserApp;
-import br.com.kbmg.wsmusiccontrol.model.UserPermission;
-import br.com.kbmg.wsmusiccontrol.model.VerificationToken;
+import br.com.kbmg.wshammeron.dto.user.ActivateUserAccountRefreshDto;
+import br.com.kbmg.wshammeron.dto.user.LoginDto;
+import br.com.kbmg.wshammeron.dto.user.RegisterPasswordDto;
+import br.com.kbmg.wshammeron.dto.user.UserDto;
+import br.com.kbmg.wshammeron.dto.user.UserTokenHashDto;
+import br.com.kbmg.wshammeron.enums.PermissionEnum;
+import br.com.kbmg.wshammeron.model.UserApp;
+import br.com.kbmg.wshammeron.model.UserPermission;
+import br.com.kbmg.wshammeron.model.VerificationToken;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.util.Arrays;

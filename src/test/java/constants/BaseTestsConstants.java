@@ -2,7 +2,7 @@ package constants;
 
 import java.util.UUID;
 
-import static br.com.kbmg.wsmusiccontrol.constants.JwtConstants.BEARER;
+import static br.com.kbmg.wshammeron.constants.JwtConstants.BEARER;
 
 public abstract class BaseTestsConstants {
 
