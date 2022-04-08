@@ -1,11 +1,11 @@
 package builder;
 
-import br.com.kbmg.wsmusiccontrol.dto.music.MusicWithSingerAndLinksDto;
-import br.com.kbmg.wsmusiccontrol.dto.music.SingerDto;
-import br.com.kbmg.wsmusiccontrol.enums.MusicStatusEnum;
-import br.com.kbmg.wsmusiccontrol.model.Music;
-import br.com.kbmg.wsmusiccontrol.model.Singer;
-import br.com.kbmg.wsmusiccontrol.model.Space;
+import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wshammeron.dto.music.SingerDto;
+import br.com.kbmg.wshammeron.enums.MusicStatusEnum;
+import br.com.kbmg.wshammeron.model.Music;
+import br.com.kbmg.wshammeron.model.Singer;
+import br.com.kbmg.wshammeron.model.Space;
 
 import static constants.BaseTestsConstants.ANY_VALUE;
 
