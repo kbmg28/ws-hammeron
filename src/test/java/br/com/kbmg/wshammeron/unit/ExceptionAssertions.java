@@ -13,6 +13,10 @@ public abstract class ExceptionAssertions {
         assertEquals(msgErrorExpected, exception.getMessage());
     }
 
+    public static <E extends Throwable, P1> void thenShouldThrowServiceException(Class<E> exceptionClass, P1 param1, Consumer<P1> method) {
+        thenShouldThrowServiceException(exceptionClass, param1, method, null);
+    }
+
     public static <E extends Throwable, P1> void thenShouldThrowServiceException(Class<E> exceptionClass, P1 param1, Consumer<P1> method, String msgErrorExpected) {
         E exception = assertThrows(exceptionClass, () -> method.accept(param1));
         assertEquals(msgErrorExpected, exception.getMessage());

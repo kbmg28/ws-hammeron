@@ -6,11 +6,13 @@ import br.com.kbmg.wshammeron.dto.user.LoginDto;
 import br.com.kbmg.wshammeron.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserDto;
 import br.com.kbmg.wshammeron.dto.user.UserTokenHashDto;
+import br.com.kbmg.wshammeron.enums.PermissionEnum;
 import br.com.kbmg.wshammeron.model.AbstractEntity;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
+import br.com.kbmg.wshammeron.model.UserPermission;
 import br.com.kbmg.wshammeron.model.VerificationToken;
 import br.com.kbmg.wshammeron.repository.MusicRepository;
 import br.com.kbmg.wshammeron.repository.SingerRepository;
@@ -28,9 +30,12 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
+import static constants.BaseTestsConstants.USER_TEST_PASSWORD;
 import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.mockito.Mockito.when;
 
@@ -101,7 +106,7 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     }
 
     protected void givenLoginDto() {
-        loginDtoTest = UserBuilder.generateLoginDto(userAppLoggedTest.getEmail(), AUTHENTICATED_USER_TEST_PASSWORD);
+        loginDtoTest = UserBuilder.generateLoginDto(userAppLoggedTest.getEmail(), USER_TEST_PASSWORD);
     }
 
     protected void givenLoginDto(String email, String pass) {
@@ -138,8 +143,24 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
         spaceRepository.save(spaceTest);
     }
 
-    protected void givenSpaceUserAppAssociationInDatabase(Boolean isOwner) {
-        spaceUserAppAssociationTest = SpaceBuilder.generateSpaceUserAppAssociation(spaceTest, userAppLoggedTest, isOwner);
+    protected void givenSpaceUserAppAssociationOwnerInDatabase() {
+        givenSpaceUserAppAssociationInDatabase(PermissionEnum.SPACE_OWNER);
+    }
+
+    protected void givenSpaceUserAppAssociationParticipantInDatabase() {
+        givenSpaceUserAppAssociationInDatabase(PermissionEnum.PARTICIPANT);
+    }
+
+    protected void givenSpaceUserAppAssociationInDatabase(PermissionEnum... permissions) {
+        Set<UserPermission> userPermissionList = Stream.of(permissions).map(perm -> {
+            UserPermission userPermission = new UserPermission();
+
+            userPermission.setPermission(perm);
+
+            return userPermission;
+        }).collect(Collectors.toSet());
+
+        spaceUserAppAssociationTest = SpaceBuilder.generateSpaceUserAppAssociation(spaceTest, userAppLoggedTest, userPermissionList);
         spaceUserAppAssociationRepository.save(spaceUserAppAssociationTest);
     }
 
