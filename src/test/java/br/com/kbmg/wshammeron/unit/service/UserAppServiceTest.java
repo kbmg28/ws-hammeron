@@ -5,7 +5,6 @@ import br.com.kbmg.wshammeron.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserDto;
 import br.com.kbmg.wshammeron.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
-import br.com.kbmg.wshammeron.exception.ServiceException;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.repository.UserAppRepository;
@@ -73,8 +72,8 @@ class UserAppServiceTest extends BaseUnitTests {
 
         when(repositoryMock.findByEmailIgnoreCase(email)).thenReturn(Optional.of(userApp));
 
-        thenShouldThrowServiceException(ServiceException.class, registerDto, userAppService::registerNewUserAccount, null);
-        assertAll(() -> verify(repositoryMock).findByEmailIgnoreCase(email),
+        assertAll(() -> thenShouldThrowServiceException(registerDto, userAppService::registerNewUserAccount),
+                () -> verify(repositoryMock).findByEmailIgnoreCase(email),
                 () -> verify(messagesServiceMock).get(USER_ALREADY_EXISTS));
     }
 

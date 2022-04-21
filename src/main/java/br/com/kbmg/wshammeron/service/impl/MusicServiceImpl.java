@@ -35,7 +35,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.MUSIC_ALREADY_EXIST_SPACE;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.MUSIC_CANNOT_CHANGE_STATUS;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.MUSIC_NOT_EXIST_SPACE;
 
 @Service
 public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository> implements MusicService {
@@ -110,19 +112,10 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
         repository.findByNameIgnoreCaseAndSingerAndSpace(musicUpdated.getName(), singer, space)
                 .ifPresent(musicFound ->
-                        super.verifyIfAlreadyExist(idMusic, musicFound, "music.already.exist.space"));
+                        super.verifyIfAlreadyExist(idMusic, musicFound, MUSIC_ALREADY_EXIST_SPACE));
 
         musicLinkService.updateMusicLink(musicInDatabase, musicWithSingerAndLinksDto.getLinks());
         return musicMapper.updateMusic(musicInDatabase, musicUpdated);
-    }
-
-    private void checkIfUserCanChangeMusicStatus(Music musicInDatabase, Music musicUpdated) {
-        boolean statusInDatabaseIsRejected = MusicStatusEnum.REJECTED.equals(musicInDatabase.getMusicStatus());
-        boolean newStatusIsRejected = MusicStatusEnum.REJECTED.equals(musicUpdated.getMusicStatus());
-        boolean isNotSpaceOwner = SpringSecurityUtil.getAllPermissions().stream().noneMatch(p -> PermissionEnum.SPACE_OWNER.name().equals(p));
-        if ((statusInDatabaseIsRejected || newStatusIsRejected) && isNotSpaceOwner) {
-            throw new ForbiddenException(messagesService.get(MUSIC_CANNOT_CHANGE_STATUS));
-        }
     }
 
     @Override
@@ -171,6 +164,15 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         return musicOverviewDtoList;
     }
 
+    private void checkIfUserCanChangeMusicStatus(Music musicInDatabase, Music musicUpdated) {
+        boolean statusInDatabaseIsRejected = MusicStatusEnum.REJECTED.equals(musicInDatabase.getMusicStatus());
+        boolean newStatusIsRejected = MusicStatusEnum.REJECTED.equals(musicUpdated.getMusicStatus());
+        boolean isNotSpaceOwner = SpringSecurityUtil.getAllPermissions().stream().noneMatch(p -> PermissionEnum.SPACE_OWNER.name().equals(p));
+        if ((statusInDatabaseIsRejected || newStatusIsRejected) && isNotSpaceOwner) {
+            throw new ForbiddenException(messagesService.get(MUSIC_CANNOT_CHANGE_STATUS));
+        }
+    }
+
     private Music findMusicValidatingSpace(String spaceId, String idMusic) {
         Space space = spaceService.findByIdValidated(spaceId);
         return findBySpaceAndIdValidated(idMusic, space);
@@ -180,7 +182,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         return repository.findBySpaceAndId(space, idMusic)
                 .orElseThrow(() ->
                         new ServiceException(
-                                messagesService.get("music.not.exist.space")
+                                messagesService.get(MUSIC_NOT_EXIST_SPACE)
                         ));
     }
 
@@ -188,7 +190,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         repository.findByNameIgnoreCaseAndSingerAndSpace(music.getName(), singer, space)
                 .ifPresent(mus -> {
                     throw new ServiceException(
-                            messagesService.get("music.already.exist.space")
+                            messagesService.get(MUSIC_ALREADY_EXIST_SPACE)
                     );
                 });
 

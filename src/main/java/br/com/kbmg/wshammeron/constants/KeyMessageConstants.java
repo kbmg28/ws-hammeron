@@ -23,8 +23,13 @@ public abstract class KeyMessageConstants {
     public static final String USER_ALREADY_EXISTS = "user.already.exists";
     public static final String USER_EMAIL_NOT_EXISTS = "user.email.not.exists";
 
+    /* Music */
     public static final String MUSIC_INVALID_LINK = "music.invalid.link";
+    public static final String MUSIC_NOT_EXIST_SPACE = "music.not.exist.space";
+    public static final String MUSIC_ALREADY_EXIST_SPACE = "music.already.exist.space";
     public static final String MUSIC_CANNOT_CHANGE_STATUS = "music.cannot.change.status";
+
+    /* Event */
 
     public static final String EVENT_IS_NOT_EDITABLE = "event.not.editable";
 }
