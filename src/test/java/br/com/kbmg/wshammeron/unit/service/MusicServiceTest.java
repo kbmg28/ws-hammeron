@@ -1,13 +1,10 @@
 package br.com.kbmg.wshammeron.unit.service;
 
 import br.com.kbmg.wshammeron.dto.music.MusicDto;
-import br.com.kbmg.wshammeron.dto.music.MusicLinkDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
-import br.com.kbmg.wshammeron.dto.music.SingerDto;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.model.Space;
-import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.repository.MusicRepository;
 import br.com.kbmg.wshammeron.service.impl.MusicServiceImpl;
 import br.com.kbmg.wshammeron.unit.BaseUnitTests;
@@ -19,18 +16,11 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.MUSIC_ALREADY_EXIST_SPACE;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.MUSIC_NOT_EXIST_SPACE;
 import static br.com.kbmg.wshammeron.unit.ExceptionAssertions.thenShouldThrowServiceException;
-import static builder.MusicBuilder.generateMusic;
-import static builder.MusicBuilder.generateMusicLinks;
-import static builder.MusicBuilder.generateSinger;
-import static builder.SpaceBuilder.generateSpace;
-import static builder.UserBuilder.generateUserAppLogged;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -244,58 +234,4 @@ class MusicServiceTest extends BaseUnitTests {
                 () -> verify(messagesServiceMock).get(MUSIC_NOT_EXIST_SPACE));
     }
 
-    private MusicDto givenMusicDto(Music music) {
-        SingerDto singerDto = givenSingerDto(music.getSinger());
-        Set<MusicLinkDto> musicLinkDtoList = givenMusicLinkDtoList(music);
-
-        return new MusicDto(
-                music.getId(),
-                music.getName(),
-                music.getMusicStatus(),
-                singerDto,
-                musicLinkDtoList,
-                null
-        );
-    }
-
-    private MusicWithSingerAndLinksDto givenMusicWithSingerAndLinksDto(Music music) {
-        Singer singer = music.getSinger();
-        SingerDto singerDto = givenSingerDto(singer);
-
-        Set<MusicLinkDto> musicLinkDtoList = givenMusicLinkDtoList(music);
-
-        return new MusicWithSingerAndLinksDto(null, music.getName(),
-                music.getMusicStatus(), singerDto, musicLinkDtoList);
-    }
-
-    private Set<MusicLinkDto> givenMusicLinkDtoList(Music music) {
-        Set<MusicLinkDto> musicLinkDtoList = music
-                .getMusicLinkList()
-                .stream()
-                .map(musicLink -> new MusicLinkDto(UUID.randomUUID().toString(), musicLink.getLink(), musicLink.getTypeLink()))
-                .collect(Collectors.toSet());
-        return musicLinkDtoList;
-    }
-
-    private SingerDto givenSingerDto(Singer singer) {
-        SingerDto singerDto = new SingerDto(singer.getId(), singer.getName());
-        return singerDto;
-    }
-
-    private Music givenMusicFull() {
-        UserApp userApp = generateUserAppLogged();
-
-        Space space = generateSpace(userApp);
-        space.setId(UUID.randomUUID().toString());
-
-        Singer singer = generateSinger();
-        singer.setId(UUID.randomUUID().toString());
-
-        Music music = generateMusic(space, singer);
-        music.setId(UUID.randomUUID().toString());
-
-        generateMusicLinks(music);
-
-        return music;
-    }
 }

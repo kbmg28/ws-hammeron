@@ -3,6 +3,13 @@ package br.com.kbmg.wshammeron.unit;
 
 import br.com.kbmg.wshammeron.config.logging.LogService;
 import br.com.kbmg.wshammeron.config.messages.MessagesService;
+import br.com.kbmg.wshammeron.dto.music.MusicDto;
+import br.com.kbmg.wshammeron.dto.music.MusicLinkDto;
+import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wshammeron.dto.music.SingerDto;
+import br.com.kbmg.wshammeron.model.Music;
+import br.com.kbmg.wshammeron.model.MusicLink;
+import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.service.EventMusicAssociationService;
@@ -27,6 +34,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.persistence.EntityManager;
 
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static builder.MusicBuilder.generateMusic;
+import static builder.MusicBuilder.generateMusicLinks;
+import static builder.MusicBuilder.generateSinger;
+import static builder.SpaceBuilder.generateSpace;
 import static builder.UserBuilder.generateSpaceUserAppAssociation;
 import static builder.UserBuilder.generateUserAppLogged;
 
@@ -85,4 +100,58 @@ public abstract class BaseUnitTests {
         return userApp;
     }
 
+    protected MusicDto givenMusicDto(Music music) {
+        SingerDto singerDto = givenSingerDto(music.getSinger());
+        Set<MusicLinkDto> musicLinkDtoList = givenMusicLinkDtoList(music);
+
+        return new MusicDto(
+                music.getId(),
+                music.getName(),
+                music.getMusicStatus(),
+                singerDto,
+                musicLinkDtoList,
+                null
+        );
+    }
+
+    protected MusicWithSingerAndLinksDto givenMusicWithSingerAndLinksDto(Music music) {
+        Singer singer = music.getSinger();
+        SingerDto singerDto = givenSingerDto(singer);
+
+        Set<MusicLinkDto> musicLinkDtoList = givenMusicLinkDtoList(music);
+
+        return new MusicWithSingerAndLinksDto(null, music.getName(),
+                music.getMusicStatus(), singerDto, musicLinkDtoList);
+    }
+
+    protected Set<MusicLinkDto> givenMusicLinkDtoList(Music music) {
+        Set<MusicLinkDto> musicLinkDtoList = music
+                .getMusicLinkList()
+                .stream()
+                .map(musicLink -> new MusicLinkDto(musicLink.getId(), musicLink.getLink(), musicLink.getTypeLink()))
+                .collect(Collectors.toSet());
+        return musicLinkDtoList;
+    }
+
+    protected SingerDto givenSingerDto(Singer singer) {
+        return new SingerDto(singer.getId(), singer.getName());
+    }
+
+    protected Music givenMusicFull() {
+        UserApp userApp = generateUserAppLogged();
+
+        Space space = generateSpace(userApp);
+        space.setId(UUID.randomUUID().toString());
+
+        Singer singer = generateSinger();
+        singer.setId(UUID.randomUUID().toString());
+
+        Music music = generateMusic(space, singer);
+        music.setId(UUID.randomUUID().toString());
+
+        Set<MusicLink> musicLinks = generateMusicLinks(music);
+        musicLinks.forEach(musicLink -> musicLink.setId(UUID.randomUUID().toString()));
+        music.getMusicLinkList().addAll(musicLinks);
+        return music;
+    }
 }
