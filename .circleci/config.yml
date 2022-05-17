@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    parallelism: 2
+    parallelism: 3
     
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
