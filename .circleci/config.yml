@@ -19,6 +19,7 @@ jobs:
       - run:
           name: Run tests in parallel
           command: |
+            sudo chmod +x ./gradlew
             cd src/test/java
             # Get list of classnames of tests that should run on this node
             CLASSNAMES=$(circleci tests glob "**/*.java" \
