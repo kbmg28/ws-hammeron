@@ -7,7 +7,6 @@ import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.repository.SingerRepository;
 import br.com.kbmg.wshammeron.service.SingerService;
 import br.com.kbmg.wshammeron.service.SpaceService;
-import br.com.kbmg.wshammeron.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +18,6 @@ public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerReposito
 
     @Autowired
     private SpaceService spaceService;
-
-    @Autowired
-    private UserAppService userAppService;
 
     @Override
     public Singer findByNameOrCreateIfNotExist(String name) {
