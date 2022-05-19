@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import static br.com.kbmg.wshammeron.unit.ExceptionAssertions.thenShouldThrowException;
+import static constants.BaseTestsConstants.SECRET_UNIT_TEST;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +39,6 @@ import static org.mockito.Mockito.when;
 
 class JwtServiceTest extends BaseUnitTests {
 
-    private static final String SECRET_UNIT_TEST =  "secretUnitTest";
     @InjectMocks
     private JwtServiceImpl jwtService;
 
