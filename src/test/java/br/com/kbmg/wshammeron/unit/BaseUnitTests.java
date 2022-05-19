@@ -18,6 +18,7 @@ import br.com.kbmg.wshammeron.service.MusicLinkService;
 import br.com.kbmg.wshammeron.service.SingerService;
 import br.com.kbmg.wshammeron.service.SpaceService;
 import br.com.kbmg.wshammeron.service.SpaceUserAppAssociationService;
+import br.com.kbmg.wshammeron.service.UserAppService;
 import br.com.kbmg.wshammeron.service.UserPermissionService;
 import br.com.kbmg.wshammeron.service.VerificationTokenService;
 import br.com.kbmg.wshammeron.util.mapper.MusicMapper;
@@ -93,8 +94,13 @@ public abstract class BaseUnitTests {
     @Mock
     protected OverviewMapper overviewMapperMock;
 
+    @Mock
+    protected UserAppService userAppServiceMock;
+
     protected UserApp givenUserAppFull() {
         UserApp userApp = generateUserAppLogged();
+        userApp.setId(UUID.randomUUID().toString());
+
         Space space = SpaceBuilder.generateSpace(userApp);
         generateSpaceUserAppAssociation(userApp, space);
         return userApp;
