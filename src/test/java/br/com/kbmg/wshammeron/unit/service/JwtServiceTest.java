@@ -12,7 +12,6 @@ import br.com.kbmg.wshammeron.service.impl.JwtServiceImpl;
 import br.com.kbmg.wshammeron.unit.BaseUnitTests;
 import builder.UserBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -23,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 import java.util.List;
 
 import static br.com.kbmg.wshammeron.unit.ExceptionAssertions.thenShouldThrowException;
@@ -139,25 +137,8 @@ class JwtServiceTest extends BaseUnitTests {
         );
     }
 
-    private String givenValidJwt(UserApp userApp) {
-        return generateJwt(600000L, userApp);
-    }
-
     private String givenInvalidJwt(UserApp userApp) {
         return generateJwt(1L, userApp);
-    }
-
-    private String generateJwt(Long plusExpiration, UserApp userApp) {
-        Date startDate = new Date();
-        Date expirationDate = new Date(startDate.getTime() + plusExpiration);
-
-        return Jwts.builder()
-                .setSubject(userApp.getId())
-                .setIssuedAt(startDate)
-                .claim(JwtConstants.CLAIM_EMAIL, userApp.getEmail())
-                .setExpiration(expirationDate)
-                .signWith(SignatureAlgorithm.HS256, SECRET_UNIT_TEST)
-                .compact();
     }
 
 }

@@ -21,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class JwtServiceImpl implements JwtService {
     public MessagesService messagesService;
 
     @Override
-    public String generateToken(LoginDto loginDto, UserApp userApp, Space lastAccessedSpace) {
+    public String generateToken(@Valid LoginDto loginDto, UserApp userApp, Space lastAccessedSpace) {
         Date today = new Date();
         Date expirationDate = new Date(today.getTime() + Long.parseLong(expiration));
         List<String> permissions = userPermissionService.findAllBySpaceAndUserApp(lastAccessedSpace, userApp);

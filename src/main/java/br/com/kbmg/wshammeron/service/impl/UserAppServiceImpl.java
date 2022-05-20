@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +55,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     private VerificationTokenService verificationTokenService;
 
     @Override
-    public UserApp registerNewUserAccount(RegisterDto userDto) {
+    public UserApp registerNewUserAccount(@Valid RegisterDto userDto) {
         AtomicReference<UserApp> userAppAtomicReference = new AtomicReference<>(null);
         String email = userDto.getEmail().toLowerCase();
 
@@ -83,7 +84,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
+    public void registerUserPassword(@Valid RegisterPasswordDto registerPasswordDto) {
         this.findByEmail(registerPasswordDto.getEmail().toLowerCase())
                 .ifPresent(user -> {
                     LocalDateTime expireDate = LocalDateTime.now().plusYears(1);
@@ -138,7 +139,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public UserApp updateUserLogged(UserDto body) {
+    public UserApp updateUserLogged(@Valid UserDto body) {
         UserApp userLogged = this.findUserLogged();
         userLogged.setName(body.getName());
         userLogged.setCellPhone(body.getCellPhone());

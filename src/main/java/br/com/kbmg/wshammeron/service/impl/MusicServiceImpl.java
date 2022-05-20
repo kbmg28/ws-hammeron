@@ -28,6 +28,7 @@ import br.com.kbmg.wshammeron.util.mapper.OverviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -64,7 +65,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     private OverviewMapper overviewMapper;
 
     @Override
-    public Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
+    public Music createMusic(String spaceId, @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Space space = spaceService.findByIdValidated(spaceId);
         Singer singer = singerService.findByNameOrCreateIfNotExist(musicWithSingerAndLinksDto.getSinger().getName());
         Music music = musicMapper.toMusic(musicWithSingerAndLinksDto);
@@ -103,7 +104,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public Music updateMusic(String spaceId, String idMusic, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
+    public Music updateMusic(String spaceId, String idMusic, @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Space space = spaceService.findByIdValidated(spaceId);
         Music musicInDatabase = findBySpaceAndIdValidated(idMusic, space);
         Music musicUpdated = musicMapper.toMusic(musicWithSingerAndLinksDto);

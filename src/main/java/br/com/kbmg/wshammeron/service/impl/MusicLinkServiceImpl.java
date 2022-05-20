@@ -12,6 +12,7 @@ import br.com.kbmg.wshammeron.util.mapper.MusicMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -27,7 +28,7 @@ public class MusicLinkServiceImpl extends GenericServiceImpl<MusicLink, MusicLin
     private MusicMapper musicMapper;
 
     @Override
-    public Set<MusicLink> createLinksValidated(Music music, Set<MusicLinkDto> linksDto) {
+    public Set<MusicLink> createLinksValidated(Music music, @Valid Set<MusicLinkDto> linksDto) {
 
         Map<MusicTypeLinkEnum, MusicLinkDto> linksDtoMap = linksDto
                 .stream()
@@ -40,7 +41,7 @@ public class MusicLinkServiceImpl extends GenericServiceImpl<MusicLink, MusicLin
     }
 
     @Override
-    public void updateMusicLink(Music musicInDatabase, Set<MusicLinkDto> linksDto) {
+    public void updateMusicLink(Music musicInDatabase, @Valid Set<MusicLinkDto> linksDto) {
         Set<MusicLink> musicLinkList = musicInDatabase.getMusicLinkList();
 
         Map<MusicTypeLinkEnum, MusicLinkDto> linksDtoMap = linksDto
