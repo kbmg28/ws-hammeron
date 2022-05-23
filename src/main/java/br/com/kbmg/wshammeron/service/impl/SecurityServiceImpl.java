@@ -19,11 +19,11 @@ import br.com.kbmg.wshammeron.service.SecurityService;
 import br.com.kbmg.wshammeron.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wshammeron.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -49,9 +49,6 @@ public class SecurityServiceImpl implements SecurityService {
     private SpaceUserAppAssociationService spaceUserAppAssociationService;
 
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
     public MessagesService messagesService;
 
     @Autowired
@@ -61,14 +58,14 @@ public class SecurityServiceImpl implements SecurityService {
     private RegistrationProducer registrationProducer;
 
     @Override
-    public String validateLoginAndGetToken(LoginDto loginDto) {
+    public String validateLoginAndGetToken(@Valid LoginDto loginDto) {
         String email = loginDto.getEmail().toLowerCase();
         String error = messagesService.get(USER_OR_PASSWORD_INCORRECT);
         UserApp userApp = userAppService
                 .findByEmail(email)
                 .orElseThrow(() -> new BadUserInfoException(email, error));
 
-        if (!userApp.getEnabled()) {
+        if (Boolean.FALSE.equals(userApp.getEnabled())) {
             throw new BadUserInfoException(email, messagesService.get(USER_ACTIVATE_ACCOUNT));
         }
 
@@ -77,25 +74,24 @@ public class SecurityServiceImpl implements SecurityService {
         }
         validatePassword(email, loginDto.getPassword(), userApp.getPassword(), error);
         SpaceUserAppAssociation lastAccessedSpace = spaceUserAppAssociationService.findLastAccessedSpace(userApp);
-        String token = jwtService.generateToken(loginDto, userApp, lastAccessedSpace.getSpace());
 
-        return token;
+        return jwtService.generateToken(loginDto, userApp, lastAccessedSpace.getSpace());
     }
 
     @Override
-    public void registerNewUserAccount(RegisterDto userDto, HttpServletRequest request) {
+    public void registerNewUserAccount(@Valid RegisterDto userDto, HttpServletRequest request) {
         UserApp registered = userAppService.registerNewUserAccount(userDto);
 
         registrationProducer.publishEvent(request, registered);
     }
 
     @Override
-    public void activateUserAccount(UserTokenHashDto userTokenHashDto) {
+    public void activateUserAccount(@Valid UserTokenHashDto userTokenHashDto) {
         String errorMessage = messagesService.get(TOKEN_ACTIVATE_EXPIRED);
         UserApp userApp = userAppService.findByEmail(userTokenHashDto.getEmail().toLowerCase())
                 .orElseThrow( () -> new ServiceException(errorMessage));
 
-        if (userApp.getEnabled()) {
+        if (Boolean.TRUE.equals(userApp.getEnabled())) {
             return;
         }
 
@@ -125,9 +121,9 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public void resendMailToken(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
+    public void resendMailToken(@Valid ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
         userAppService.findByEmail(activateUserAccountRefreshDto.getEmail().toLowerCase()).ifPresent(userApp -> {
-            if (userApp.getEnabled()) {
+            if (Boolean.TRUE.equals(userApp.getEnabled())) {
                 return;
             }
 
@@ -138,13 +134,13 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public void passwordRecovery(ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
+    public void passwordRecovery(@Valid ActivateUserAccountRefreshDto activateUserAccountRefreshDto, HttpServletRequest request) {
         userAppService.findByEmail(activateUserAccountRefreshDto.getEmail().toLowerCase())
                 .ifPresent(userApp -> passwordRecoveryProducer.publishEvent(request, userApp));
     }
 
     @Override
-    public void passwordRecoveryChange(UserChangePasswordDto userChangePasswordDto) {
+    public void passwordRecoveryChange(@Valid UserChangePasswordDto userChangePasswordDto) {
         String defaultError = messagesService.get(DATA_INVALID);
         String email = userChangePasswordDto.getEmail().toLowerCase();
         UserApp userApp = userAppService
