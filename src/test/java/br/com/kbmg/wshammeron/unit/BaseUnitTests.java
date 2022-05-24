@@ -12,11 +12,14 @@ import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.MusicLink;
 import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.model.Space;
+import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.service.EventMusicAssociationService;
+import br.com.kbmg.wshammeron.service.EventService;
 import br.com.kbmg.wshammeron.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wshammeron.service.JwtService;
 import br.com.kbmg.wshammeron.service.MusicLinkService;
+import br.com.kbmg.wshammeron.service.MusicService;
 import br.com.kbmg.wshammeron.service.SingerService;
 import br.com.kbmg.wshammeron.service.SpaceService;
 import br.com.kbmg.wshammeron.service.SpaceUserAppAssociationService;
@@ -39,7 +42,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.persistence.EntityManager;
-
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
@@ -110,12 +112,21 @@ public abstract class BaseUnitTests {
     @Mock
     protected ApplicationEventPublisher eventPublisherMock;
 
+    @Mock
+    protected MusicService musicServiceMock;
+
+    @Mock
+    protected EventService eventServiceMock;
+
     protected UserApp givenUserAppFull() {
         UserApp userApp = generateUserAppLogged();
         userApp.setId(UUID.randomUUID().toString());
 
         Space space = SpaceBuilder.generateSpace(userApp);
+        space.setId(UUID.randomUUID().toString());
+
         generateSpaceUserAppAssociation(userApp, space);
+        
         return userApp;
     }
 
@@ -189,6 +200,21 @@ public abstract class BaseUnitTests {
                 .setExpiration(expirationDate)
                 .signWith(SignatureAlgorithm.HS256, SECRET_UNIT_TEST)
                 .compact();
+    }
+
+    protected Space givenSpace() {
+        UserApp userApp = givenUserAppFull();
+
+        return givenSpace(userApp);
+    }
+
+    protected Space givenSpace(UserApp userApp) {
+        return userApp
+                .getSpaceUserAppAssociationList()
+                .stream()
+                .findFirst()
+                .map(SpaceUserAppAssociation::getSpace)
+                .orElseThrow();
     }
 
 }

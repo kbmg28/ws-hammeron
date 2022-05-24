@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static constants.BaseTestsConstants.USER_TEST_CELLPHONE;
@@ -49,6 +50,7 @@ public abstract class UserBuilder {
     public static SpaceUserAppAssociation generateSpaceUserAppAssociation(UserApp userApp, Space space) {
         SpaceUserAppAssociation spaceUserAppAssociation = new SpaceUserAppAssociation();
 
+        spaceUserAppAssociation.setId(UUID.randomUUID().toString());
         spaceUserAppAssociation.setSpace(space);
         spaceUserAppAssociation.setUserApp(userApp);
         spaceUserAppAssociation.setLastAccessedSpace(true);

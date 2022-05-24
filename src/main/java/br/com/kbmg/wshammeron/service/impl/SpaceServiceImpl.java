@@ -27,11 +27,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.SPACE_ALREADY_EXIST;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.SPACE_APPROVE_NOT_FOUND_REQUESTED;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.SPACE_NOT_EXIST;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.SPACE_USER_NOT_EXIST;
 
 @Service
 public class SpaceServiceImpl
@@ -72,11 +78,11 @@ public class SpaceServiceImpl
     }
 
     @Override
-    public void requestNewSpaceForUser(SpaceRequestDto spaceRequestDto, HttpServletRequest request) {
+    public void requestNewSpaceForUser(@Valid SpaceRequestDto spaceRequestDto, HttpServletRequest request) {
         this.repository.findByName(spaceRequestDto.getName())
                 .ifPresent(space -> {
                     throw new ServiceException(String.format
-                            (messagesService.get("space.already.exist"), space.getName()));
+                            (messagesService.get(SPACE_ALREADY_EXIST), space.getName()));
                 });
         Space space = new Space();
 
@@ -97,19 +103,19 @@ public class SpaceServiceImpl
     public Space findByIdValidated(String spaceId) {
         return repository.findById(spaceId)
                 .orElseThrow(() -> new ServiceException(
-                        messagesService.get("space.not.exist")
+                        messagesService.get(SPACE_NOT_EXIST)
                 ));
     }
 
     @Override
     public Space findByIdAndUserAppValidated(String spaceId, UserApp userApp) {
-        if(userApp.getIsSysAdmin()) {
+        if(Boolean.TRUE.equals(userApp.getIsSysAdmin())) {
             return findByIdValidated(spaceId);
         }
 
         return repository.findByIdAndSpaceStatusAndUserApp(spaceId, SpaceStatusEnum.APPROVED, userApp)
                 .orElseThrow(() -> new ForbiddenException(
-                        messagesService.get("space.user.not.access"))
+                        messagesService.get(SPACE_USER_NOT_EXIST))
                 );
     }
 
@@ -140,7 +146,7 @@ public class SpaceServiceImpl
     public List<Space> findAllSpacesByUserApp() {
         UserApp userLogged = userAppService.findUserLogged();
 
-        if(userLogged.getIsSysAdmin()) {
+        if(Boolean.TRUE.equals(userLogged.getIsSysAdmin())) {
             return this.findAll(Sort.by("name"));
         }
 
@@ -157,7 +163,7 @@ public class SpaceServiceImpl
         UserApp userLogged = userAppService.findUserLogged();
         Space space = findByIdAndUserAppValidated(idSpace, userLogged);
 
-        if(!userLogged.getIsSysAdmin()) {
+        if(Boolean.FALSE.equals(userLogged.getIsSysAdmin())) {
             spaceUserAppAssociationService.updateLastAccessedSpace(userLogged, space);
         }
 
@@ -168,7 +174,7 @@ public class SpaceServiceImpl
     public Space findLastAccessedSpace() {
         UserApp userLogged = userAppService.findUserLogged();
 
-        if (userLogged.getIsSysAdmin()) {
+        if (Boolean.TRUE.equals(userLogged.getIsSysAdmin())) {
             return this.findOrCreatePublicSpace();
         } else {
             SpaceUserAppAssociation ass = spaceUserAppAssociationService.findLastAccessedSpace(userLogged);
@@ -210,7 +216,7 @@ public class SpaceServiceImpl
     private void validateParamsBeforeApprove(Space space, SpaceStatusEnum spaceStatusEnum,  UserApp requestedBy) {
         if(requestedBy == null) {
             throw new ServiceException(
-                    messagesService.get("space.approve.notFound.requested")
+                    messagesService.get(SPACE_APPROVE_NOT_FOUND_REQUESTED)
             );
         }
 
