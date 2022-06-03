@@ -17,11 +17,12 @@ public abstract class KeyMessageConstants {
     public static final String TOKEN_ACTIVATE_EXPIRED = "token.activate.expired";
     public static final String TOKEN_ACTIVATE_FAILED_SEND = "token.activate.failed.send";
 
+    /* User */
     public static final String USER_OR_PASSWORD_INCORRECT = "user.password.incorrect";
     public static final String USER_PASSWORD_EXPIRED = "user.password.expired";
     public static final String USER_ACTIVATE_ACCOUNT = "user.activate.account";
     public static final String USER_ALREADY_EXISTS = "user.already.exists";
-    public static final String USER_EMAIL_NOT_EXISTS = "user.email.not.exists";
+    public static final String USER_HAS_PERMISSION = "space.user.email.permission.already.exists";
 
     /* Space */
 
@@ -39,4 +40,5 @@ public abstract class KeyMessageConstants {
     /* Event */
 
     public static final String EVENT_IS_NOT_EDITABLE = "event.not.editable";
+    public static final String EVENT_USER_LIST_INVALID = "event.user.list.invalid";
 }

@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_USER_LIST_INVALID;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.USER_HAS_PERMISSION;
+
 @Service
 public class SpaceUserAppAssociationServiceImpl
         extends GenericServiceImpl<SpaceUserAppAssociation, SpaceUserAppAssociationRepository>
@@ -79,7 +82,7 @@ public class SpaceUserAppAssociationServiceImpl
         Set<SpaceUserAppAssociation> associationList = repository.findBySpaceAndEmailUserList(space, userEmailList);
 
         if(associationList.size() != userEmailList.size()) {
-            throw new ServiceException(messagesService.get("event.user.list.invalid"));
+            throw new ServiceException(messagesService.get(EVENT_USER_LIST_INVALID));
         }
 
         return associationList;
@@ -106,8 +109,8 @@ public class SpaceUserAppAssociationServiceImpl
         return repository.findByUserAppAndLastAccessedSpaceTrue(userApp);
     }
 
-    private SpaceUserAppAssociation createAssociation(Space space, UserApp userApp, Boolean isSpaceOwner) {
-        PermissionEnum newPermission = isSpaceOwner ? PermissionEnum.SPACE_OWNER : PermissionEnum.PARTICIPANT;
+    private void createAssociation(Space space, UserApp userApp, Boolean isSpaceOwner) {
+        PermissionEnum newPermission = Boolean.TRUE.equals(isSpaceOwner) ? PermissionEnum.SPACE_OWNER : PermissionEnum.PARTICIPANT;
 
         SpaceUserAppAssociation association = repository.findBySpaceAndUserApp(space, userApp).orElseGet(() -> {
             SpaceUserAppAssociation newAssociation = new SpaceUserAppAssociation();
@@ -124,7 +127,6 @@ public class SpaceUserAppAssociationServiceImpl
         repository.save(association);
         userPermissionService.addPermissionToUser(association, newPermission);
 
-        return association;
     }
 
     private void validateIfAssociationWithPermissionAlreadyExists(SpaceUserAppAssociation association, PermissionEnum newPermission) {
@@ -137,7 +139,7 @@ public class SpaceUserAppAssociationServiceImpl
                 .findFirst()
                 .ifPresent(userPermission -> {
                     throw new ServiceException(
-                            messagesService.get("space.user.email.permission.already.exists")
+                            messagesService.get(USER_HAS_PERMISSION)
                     );
                 });
     }

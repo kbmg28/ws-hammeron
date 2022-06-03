@@ -8,6 +8,7 @@ import br.com.kbmg.wshammeron.dto.music.MusicDto;
 import br.com.kbmg.wshammeron.dto.music.MusicLinkDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.music.SingerDto;
+import br.com.kbmg.wshammeron.enums.PermissionEnum;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.MusicLink;
 import br.com.kbmg.wshammeron.model.Singer;
@@ -119,13 +120,17 @@ public abstract class BaseUnitTests {
     protected EventService eventServiceMock;
 
     protected UserApp givenUserAppFull() {
+        return givenUserAppFull(PermissionEnum.PARTICIPANT);
+    }
+
+    protected UserApp givenUserAppFull(PermissionEnum permission) {
         UserApp userApp = generateUserAppLogged();
         userApp.setId(UUID.randomUUID().toString());
 
         Space space = SpaceBuilder.generateSpace(userApp);
         space.setId(UUID.randomUUID().toString());
 
-        generateSpaceUserAppAssociation(userApp, space);
+        generateSpaceUserAppAssociation(userApp, space, permission);
         
         return userApp;
     }
@@ -214,6 +219,14 @@ public abstract class BaseUnitTests {
                 .stream()
                 .findFirst()
                 .map(SpaceUserAppAssociation::getSpace)
+                .orElseThrow();
+    }
+
+    protected SpaceUserAppAssociation givenSpaceUserAppAssociation(UserApp userApp) {
+        return userApp
+                .getSpaceUserAppAssociationList()
+                .stream()
+                .findFirst()
                 .orElseThrow();
     }
 

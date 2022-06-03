@@ -47,7 +47,9 @@ public abstract class UserBuilder {
         return userAppLoggedTest;
     }
 
-    public static SpaceUserAppAssociation generateSpaceUserAppAssociation(UserApp userApp, Space space) {
+    public static SpaceUserAppAssociation generateSpaceUserAppAssociation(UserApp userApp,
+                                                                          Space space,
+                                                                          PermissionEnum permission) {
         SpaceUserAppAssociation spaceUserAppAssociation = new SpaceUserAppAssociation();
 
         spaceUserAppAssociation.setId(UUID.randomUUID().toString());
@@ -58,7 +60,20 @@ public abstract class UserBuilder {
 
         userApp.getSpaceUserAppAssociationList().add(spaceUserAppAssociation);
 
+        generateUserPermission(spaceUserAppAssociation, permission);
+
         return spaceUserAppAssociation;
+    }
+
+    private static void generateUserPermission(SpaceUserAppAssociation spaceUserAppAssociation,
+                                               PermissionEnum permission) {
+        UserPermission userPermission = new UserPermission();
+
+        userPermission.setId(UUID.randomUUID().toString());
+        userPermission.setPermission(permission);
+        userPermission.setSpaceUserAppAssociation(spaceUserAppAssociation);
+
+        spaceUserAppAssociation.getUserPermissionList().add(userPermission);
     }
 
     public static Set<UserPermission> generateUserPermissions(SpaceUserAppAssociation spaceUserAppAssociation,
