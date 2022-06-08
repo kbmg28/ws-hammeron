@@ -8,6 +8,7 @@ import br.com.kbmg.wshammeron.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserDto;
 import br.com.kbmg.wshammeron.dto.user.UserTokenHashDto;
 import br.com.kbmg.wshammeron.dto.user.UserWithPermissionDto;
+import br.com.kbmg.wshammeron.dto.user.UserWithSinglePermissionDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
@@ -95,6 +96,10 @@ public abstract class UserBuilder {
     public static UserWithPermissionDto generateUserWithPermissionDto(UserApp userApp, PermissionEnum... permissions) {
         return new UserWithPermissionDto(userApp.getId(), USER_TEST_NAME,
                 userApp.getEmail(), USER_TEST_CELLPHONE, Set.of(permissions));
+    }
+
+    public static UserWithSinglePermissionDto generateUserWithPermissionDto(UserWithPermissionDto userWithPermissionDto) {
+        return new UserWithSinglePermissionDto(userWithPermissionDto.getName(), PermissionEnum.PARTICIPANT);
     }
 
     public static RegisterPasswordDto generateRegisterPasswordDto(String email) {

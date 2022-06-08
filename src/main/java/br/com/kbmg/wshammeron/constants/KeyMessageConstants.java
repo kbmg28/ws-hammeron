@@ -23,6 +23,7 @@ public abstract class KeyMessageConstants {
     public static final String USER_ACTIVATE_ACCOUNT = "user.activate.account";
     public static final String USER_ALREADY_EXISTS = "user.already.exists";
     public static final String USER_HAS_PERMISSION = "space.user.email.permission.already.exists";
+    public static final String USER_DOES_NOT_PERMISSION_TO_ACTION = "user.without.permission.to.action";
 
     /* Space */
 
