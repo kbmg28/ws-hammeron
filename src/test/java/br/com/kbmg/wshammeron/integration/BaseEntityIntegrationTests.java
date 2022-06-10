@@ -10,7 +10,6 @@ import br.com.kbmg.wshammeron.enums.PermissionEnum;
 import br.com.kbmg.wshammeron.model.AbstractEntity;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
-import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.UserPermission;
 import br.com.kbmg.wshammeron.model.VerificationToken;
@@ -50,7 +49,6 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     protected MusicWithSingerAndLinksDto musicWithSingerAndLinksDtoTest;
 
     /* Entities */
-    protected Space spaceTest;
     protected SpaceUserAppAssociation spaceUserAppAssociationTest;
     protected Music musicTest;
     protected Singer singerTest;

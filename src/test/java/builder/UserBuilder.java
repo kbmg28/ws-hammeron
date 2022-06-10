@@ -18,16 +18,14 @@ import br.com.kbmg.wshammeron.model.VerificationToken;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import static constants.BaseTestsConstants.BEARER_TOKEN_TEST;
 import static constants.BaseTestsConstants.USER_TEST_CELLPHONE;
 import static constants.BaseTestsConstants.USER_TEST_NAME;
 import static constants.BaseTestsConstants.USER_TEST_PASSWORD;
-import static constants.BaseTestsConstants.TOKEN;
 import static constants.BaseTestsConstants.generateRandomEmail;
 import static java.sql.Timestamp.valueOf;
 
@@ -49,6 +47,11 @@ public abstract class UserBuilder {
     }
 
     public static SpaceUserAppAssociation generateSpaceUserAppAssociation(UserApp userApp,
+                                                                          Space space) {
+        return generateSpaceUserAppAssociation(userApp, space, null);
+    }
+
+    public static SpaceUserAppAssociation generateSpaceUserAppAssociation(UserApp userApp,
                                                                           Space space,
                                                                           PermissionEnum permission) {
         SpaceUserAppAssociation spaceUserAppAssociation = new SpaceUserAppAssociation();
@@ -61,12 +64,14 @@ public abstract class UserBuilder {
 
         userApp.getSpaceUserAppAssociationList().add(spaceUserAppAssociation);
 
-        generateUserPermission(spaceUserAppAssociation, permission);
+        if(permission != null) {
+            generateUserPermission(spaceUserAppAssociation, permission);
+        }
 
         return spaceUserAppAssociation;
     }
 
-    private static void generateUserPermission(SpaceUserAppAssociation spaceUserAppAssociation,
+    public static UserPermission generateUserPermission(SpaceUserAppAssociation spaceUserAppAssociation,
                                                PermissionEnum permission) {
         UserPermission userPermission = new UserPermission();
 
@@ -75,18 +80,8 @@ public abstract class UserBuilder {
         userPermission.setSpaceUserAppAssociation(spaceUserAppAssociation);
 
         spaceUserAppAssociation.getUserPermissionList().add(userPermission);
-    }
 
-    public static Set<UserPermission> generateUserPermissions(SpaceUserAppAssociation spaceUserAppAssociation,
-                                                              PermissionEnum... permission) {
-        return Arrays.stream(permission).map(pe -> {
-            UserPermission userPermission = new UserPermission();
-
-            userPermission.setPermission(pe);
-            userPermission.setSpaceUserAppAssociation(spaceUserAppAssociation);
-
-            return userPermission;
-        }).collect(Collectors.toSet());
+        return userPermission;
     }
 
     public static UserDto generateUserDto(String email) {
@@ -107,7 +102,7 @@ public abstract class UserBuilder {
     }
 
     public static UserTokenHashDto generateUserTokenHashDto(String email) {
-        return new UserTokenHashDto(email, TOKEN);
+        return new UserTokenHashDto(email, BEARER_TOKEN_TEST);
     }
 
     public static ActivateUserAccountRefreshDto generateActivateUserAccountRefreshDto(String email) {
@@ -123,7 +118,7 @@ public abstract class UserBuilder {
     }
 
     public static VerificationToken generateVerificationToken(UserApp userApp) {
-        VerificationToken verificationToken = new VerificationToken(TOKEN, userApp);
+        VerificationToken verificationToken = new VerificationToken(BEARER_TOKEN_TEST, userApp);
         Date expireDate = valueOf(LocalDateTime.now().plusDays(1));
         verificationToken.setExpiryDate(expireDate);
 

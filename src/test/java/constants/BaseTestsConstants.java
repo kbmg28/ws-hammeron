@@ -8,7 +8,8 @@ public abstract class BaseTestsConstants {
 
     public static final String ANY_VALUE = "Any value " + UUID.randomUUID();
 
-    public static final String TOKEN =BEARER.concat("tokenTest");
+    public static final String TOKEN_TEST = "tokenTest";
+    public static final String BEARER_TOKEN_TEST =BEARER.concat(TOKEN_TEST);
 
     public static final String SECRET_UNIT_TEST =  "secretUnitTest";
     public static final String USER_TEST_NAME = "Integration test name";

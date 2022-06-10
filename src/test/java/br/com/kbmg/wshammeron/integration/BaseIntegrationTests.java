@@ -5,12 +5,16 @@ import br.com.kbmg.wshammeron.config.messages.MessagesService;
 import br.com.kbmg.wshammeron.config.recaptcha.v3.AbstractCaptchaService;
 import br.com.kbmg.wshammeron.config.recaptcha.v3.RecaptchaEnum;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
+import br.com.kbmg.wshammeron.model.Space;
+import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.model.UserPermission;
+import br.com.kbmg.wshammeron.repository.SpaceRepository;
 import br.com.kbmg.wshammeron.repository.SpaceUserAppAssociationRepository;
 import br.com.kbmg.wshammeron.repository.UserAppRepository;
 import br.com.kbmg.wshammeron.repository.UserPermissionRepository;
 import br.com.kbmg.wshammeron.service.JwtService;
+import builder.SpaceBuilder;
 import builder.UserBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -36,12 +40,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.util.Set;
+import java.util.Arrays;
 
+import static br.com.kbmg.wshammeron.constants.JwtConstants.CLAIM_SPACE_ID;
+import static br.com.kbmg.wshammeron.constants.JwtConstants.CLAIM_SPACE_NAME;
 import static constants.BaseTestsConstants.ANY_VALUE;
-import static constants.BaseTestsConstants.TOKEN;
+import static constants.BaseTestsConstants.BEARER_TOKEN_TEST;
+import static constants.BaseTestsConstants.TOKEN_TEST;
 import static constants.BaseTestsConstants.generateRandomEmail;
-import static org.mockito.ArgumentMatchers.any;
+import static org.hibernate.internal.util.collections.CollectionHelper.isNotEmpty;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,11 +63,12 @@ import static org.springframework.util.CollectionUtils.isEmpty;
             "mail=mail@test.com",
             "mailPassSocial=senha123",
             "mail=mail@test.com",
-            "show-sql=false",
+            "show-sql=true",
             "recaptchaKeySite=key_site_integration_test",
             "recaptchaKeySecret=key_secret_integration_test",
             "recaptchaThreshold=0.8",
-            "app.logs=true"
+            "app.logs=true",
+            "profile=h2"
         }
 )
 @AutoConfigureMockMvc
@@ -73,6 +81,7 @@ public abstract class BaseIntegrationTests {
     protected static ObjectMapper objectMapper = new ObjectMapper();
     protected static Gson gson = new Gson();
     protected UserApp userAppLoggedTest;
+    protected Space spaceTest;
 
     protected static ResultActions perform;
     protected static ResultActions resultActions;
@@ -103,6 +112,9 @@ public abstract class BaseIntegrationTests {
     protected UserAppRepository userAppRepository;
 
     @Autowired
+    protected SpaceRepository spaceRepository;
+
+    @Autowired
     protected UserPermissionRepository userPermissionRepository;
 
     @Autowired
@@ -114,7 +126,7 @@ public abstract class BaseIntegrationTests {
     }
 
     protected void givenHeadersRequired() {
-        headers.add(Constants.AUTHORIZATION_HEADER_NAME, TOKEN);
+        headers.add(Constants.AUTHORIZATION_HEADER_NAME, BEARER_TOKEN_TEST);
     }
 
     protected void givenUserAuthenticatedWithPermission(PermissionEnum permissionEnum) {
@@ -145,6 +157,14 @@ public abstract class BaseIntegrationTests {
         }
     }
 
+    protected void givenUserOnDatabase(UserApp userApp) {
+        userAppRepository.save(userApp);
+    }
+
+    protected void givenSpaceOnDatabase(Space space) {
+        spaceRepository.save(space);
+    }
+
     private void associatePermissionToUserLogged(PermissionEnum permissionEnum) {
         if (userAppLoggedTest == null) {
             this.saveUserAuthenticated(permissionEnum);
@@ -159,18 +179,30 @@ public abstract class BaseIntegrationTests {
         }
 
         userAppLoggedTest = UserBuilder.generateUserAppLogged();
+        givenUserOnDatabase(userAppLoggedTest);
 
-        userAppRepository.save(userAppLoggedTest);
+        spaceTest = SpaceBuilder.generateSpace(userAppLoggedTest);
+        givenSpaceOnDatabase(spaceTest);
 
         addPermissionToUserAppLogged(permission);
     }
 
     private void addPermissionToUserAppLogged(PermissionEnum... permission) {
-        Set<UserPermission> userPermissions = UserBuilder.generateUserPermissions(userAppLoggedTest, permission);
+        if (isNotEmpty(Arrays.asList(permission))) {
+            SpaceUserAppAssociation spaceUserAppAssociation = UserBuilder.generateSpaceUserAppAssociation(userAppLoggedTest, spaceTest);
 
-        if(!isEmpty(userPermissions)) {
-            userPermissionRepository.saveAll(userPermissions);
-//            userAppLoggedTest.setUserPermissionList(userPermissions);
+            spaceUserAppAssociation.setId(null);
+            spaceUserAppAssociationRepository.save(spaceUserAppAssociation);
+
+            Arrays.asList(permission).forEach(perm -> {
+                UserPermission userPermission = UserBuilder.generateUserPermission(spaceUserAppAssociation, perm);
+                userPermission.setId(null);
+
+                userPermissionRepository.save(userPermission);
+            });
+
+            spaceTest.getSpaceUserAppAssociationList().add(spaceUserAppAssociation);
+
         }
     }
 
@@ -187,7 +219,9 @@ public abstract class BaseIntegrationTests {
     private void checkUrlToApi(String urlTemplate) {
         if (urlTemplate.contains("/api/")) {
 
-            when(jwtServiceMockBean.validateTokenAndGetUserId(any())).thenReturn(userAppLoggedTest.getId());
+            when(jwtServiceMockBean.validateTokenAndGetUserId(TOKEN_TEST)).thenReturn(userAppLoggedTest.getId());
+            when(jwtServiceMockBean.getValue(TOKEN_TEST, CLAIM_SPACE_ID)).thenReturn(spaceTest.getId());
+            when(jwtServiceMockBean.getValue(TOKEN_TEST, CLAIM_SPACE_NAME)).thenReturn(spaceTest.getName());
         }
     }
 

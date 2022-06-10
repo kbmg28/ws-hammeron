@@ -82,13 +82,6 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public void updateStatusMusic(String spaceId, String idMusic, MusicStatusEnum newStatus) {
-        Music music = this.findMusicValidatingSpace(spaceId, idMusic);
-        music.setMusicStatus(newStatus);
-        this.update(music);
-    }
-
-    @Override
     public void deleteMusic(String spaceId, String idMusic) {
         Music music = this.findMusicValidatingSpace(spaceId, idMusic);
 
