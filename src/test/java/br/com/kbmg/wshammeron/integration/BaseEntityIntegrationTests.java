@@ -37,6 +37,8 @@ import java.util.stream.Stream;
 import static constants.BaseTestsConstants.USER_TEST_PASSWORD;
 import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
 
@@ -89,6 +91,10 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
 
     protected void givenUserDto() {
         userDtoTest = UserBuilder.generateUserDto(generateRandomEmail());
+    }
+
+    protected UserDto givenUserDto(String email) {
+        return UserBuilder.generateUserDto(email);
     }
 
     protected void givenRegisterPasswordDto(String email) {
@@ -174,4 +180,9 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
         return entity == null ? UUID.randomUUID().toString() : entity.getId();
     }
 
+    protected void thenShouldReturnContentEmpty() throws Exception {
+        perform.andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").doesNotExist())
+        ;
+    }
 }

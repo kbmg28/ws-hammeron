@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
+import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.BEARER_TOKEN_TEST;
 import static constants.BaseTestsConstants.USER_TEST_CELLPHONE;
 import static constants.BaseTestsConstants.USER_TEST_NAME;
@@ -44,6 +45,21 @@ public abstract class UserBuilder {
         userAppLoggedTest.setPassword(hashpw);
         userAppLoggedTest.setPasswordExpireDate(LocalDateTime.now().plusDays(2));
         return userAppLoggedTest;
+    }
+
+    public static UserApp generateOtherUserApp() {
+
+        UserApp userApp = new UserApp();
+
+        userApp.setEmail(generateRandomEmail());
+        userApp.setName(ANY_VALUE);
+        userApp.setCellPhone(ANY_VALUE);
+        userApp.setEnabled(true);
+        userApp.setIsSysAdmin(false);
+        String hashpw = BCrypt.hashpw(USER_TEST_PASSWORD, BCrypt.gensalt());
+        userApp.setPassword(hashpw);
+        userApp.setPasswordExpireDate(LocalDateTime.now().plusDays(2));
+        return userApp;
     }
 
     public static SpaceUserAppAssociation generateSpaceUserAppAssociation(UserApp userApp,

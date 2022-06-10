@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.util.Arrays;
+import java.util.Set;
 
 import static br.com.kbmg.wshammeron.constants.JwtConstants.CLAIM_SPACE_ID;
 import static br.com.kbmg.wshammeron.constants.JwtConstants.CLAIM_SPACE_NAME;
@@ -81,6 +81,7 @@ public abstract class BaseIntegrationTests {
     protected static ObjectMapper objectMapper = new ObjectMapper();
     protected static Gson gson = new Gson();
     protected UserApp userAppLoggedTest;
+    protected SpaceUserAppAssociation spaceUserAppAssociationOfUserLoggedTest;
     protected Space spaceTest;
 
     protected static ResultActions perform;
@@ -120,11 +121,6 @@ public abstract class BaseIntegrationTests {
     @Autowired
     protected SpaceUserAppAssociationRepository spaceUserAppAssociationRepository;
 
-
-    protected void beforeAllTestsBase() {
-        givenUserAuthenticatedWithoutRoles();
-    }
-
     protected void givenHeadersRequired() {
         headers.add(Constants.AUTHORIZATION_HEADER_NAME, BEARER_TOKEN_TEST);
     }
@@ -134,7 +130,12 @@ public abstract class BaseIntegrationTests {
     }
 
     protected void givenUserAuthenticatedWithoutRoles() {
-        this.saveUserAuthenticated();
+        this.saveUserAuthenticated(null);
+    }
+
+    protected void givenSuperUser() {
+        userAppLoggedTest.setIsSysAdmin(true);
+        userAppRepository.save(userAppLoggedTest);
     }
 
     protected void checkIfEmailAlreadyExistAndDeleteIfPresent(){
@@ -173,36 +174,55 @@ public abstract class BaseIntegrationTests {
         }
     }
 
-    private void saveUserAuthenticated(PermissionEnum... permission) {
+    private void saveUserAuthenticated(PermissionEnum permission) {
         if(isEmpty(headers)){
             givenHeadersRequired();
         }
 
-        userAppLoggedTest = UserBuilder.generateUserAppLogged();
-        givenUserOnDatabase(userAppLoggedTest);
+        if (userAppLoggedTest == null) {
+            userAppLoggedTest = UserBuilder.generateUserAppLogged();
+            givenUserOnDatabase(userAppLoggedTest);
+        }
 
-        spaceTest = SpaceBuilder.generateSpace(userAppLoggedTest);
-        givenSpaceOnDatabase(spaceTest);
+        if (spaceTest == null) {
+            spaceTest = SpaceBuilder.generateSpace(userAppLoggedTest);
+            givenSpaceOnDatabase(spaceTest);
+        }
 
         addPermissionToUserAppLogged(permission);
     }
 
-    private void addPermissionToUserAppLogged(PermissionEnum... permission) {
-        if (isNotEmpty(Arrays.asList(permission))) {
-            SpaceUserAppAssociation spaceUserAppAssociation = UserBuilder.generateSpaceUserAppAssociation(userAppLoggedTest, spaceTest);
+    private void addPermissionToUserAppLogged(PermissionEnum permission) {
+        if (permission != null) {
+            givenSpaceUserAppAssociationOnDatabase();
 
-            spaceUserAppAssociation.setId(null);
-            spaceUserAppAssociationRepository.save(spaceUserAppAssociation);
+            Set<UserPermission> userPermissionList = spaceUserAppAssociationOfUserLoggedTest.getUserPermissionList();
 
-            Arrays.asList(permission).forEach(perm -> {
-                UserPermission userPermission = UserBuilder.generateUserPermission(spaceUserAppAssociation, perm);
+            if (isNotEmpty(userPermissionList)) {
+                userPermissionList
+                        .stream()
+                        .findFirst()
+                        .ifPresent(userPermission -> {
+                            userPermission.setPermission(permission);
+                            userPermissionRepository.save(userPermission);
+                        });
+            } else {
+                UserPermission userPermission = UserBuilder.generateUserPermission(
+                        spaceUserAppAssociationOfUserLoggedTest, permission);
                 userPermission.setId(null);
 
                 userPermissionRepository.save(userPermission);
-            });
+            }
+        }
+    }
 
-            spaceTest.getSpaceUserAppAssociationList().add(spaceUserAppAssociation);
+    private void givenSpaceUserAppAssociationOnDatabase() {
+        if (spaceUserAppAssociationOfUserLoggedTest == null) {
+            spaceUserAppAssociationOfUserLoggedTest = UserBuilder.generateSpaceUserAppAssociation(userAppLoggedTest, spaceTest);
+            spaceUserAppAssociationOfUserLoggedTest.setId(null);
+            spaceUserAppAssociationRepository.save(spaceUserAppAssociationOfUserLoggedTest);
 
+            spaceTest.getSpaceUserAppAssociationList().add(spaceUserAppAssociationOfUserLoggedTest);
         }
     }
 
