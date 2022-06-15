@@ -41,7 +41,7 @@ import static builder.UserBuilder.generateUserTokenHashDto;
 import static builder.UserBuilder.generateVerificationToken;
 import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.SECRET_UNIT_TEST;
-import static constants.BaseTestsConstants.TOKEN;
+import static constants.BaseTestsConstants.BEARER_TOKEN_TEST;
 import static constants.BaseTestsConstants.USER_TEST_PASSWORD;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -164,14 +164,14 @@ class SecurityServiceTest extends BaseUnitTests {
         VerificationToken verificationToken = generateVerificationToken(userApp);
 
         when(userAppServiceMock.findByEmail(userEmail)).thenReturn(Optional.of(userApp));
-        when(tokenRepositoryMock.findByTokenAndUserApp(TOKEN, userApp)).thenReturn(verificationToken);
+        when(tokenRepositoryMock.findByTokenAndUserApp(BEARER_TOKEN_TEST, userApp)).thenReturn(verificationToken);
 
         securityService.activateUserAccount(userTokenHashDto);
 
 
         assertAll(() -> verify(messagesServiceMock).get(TOKEN_ACTIVATE_EXPIRED),
                 () -> verify(userAppServiceMock).findByEmail(userEmail),
-                () -> verify(tokenRepositoryMock).findByTokenAndUserApp(TOKEN, userApp),
+                () -> verify(tokenRepositoryMock).findByTokenAndUserApp(BEARER_TOKEN_TEST, userApp),
                 () -> verify(userAppServiceMock).saveUserEnabled(userApp),
                 () -> verify(spaceUserAppAssociationServiceMock).updateLastAccessedSpace(any(), any())
         );
@@ -210,7 +210,7 @@ class SecurityServiceTest extends BaseUnitTests {
     void createVerificationToken_shouldCreate() {
         UserApp userApp = givenUserAppFull();
 
-        securityService.createVerificationToken(userApp, TOKEN);
+        securityService.createVerificationToken(userApp, BEARER_TOKEN_TEST);
 
 
         assertAll(() -> verify(tokenRepositoryMock).findByUserApp(userApp),
@@ -226,7 +226,7 @@ class SecurityServiceTest extends BaseUnitTests {
 
         when(tokenRepositoryMock.findByUserApp(userApp)).thenReturn(Optional.of(verificationToken));
 
-        securityService.createVerificationToken(userApp, TOKEN);
+        securityService.createVerificationToken(userApp, BEARER_TOKEN_TEST);
 
         assertAll(() -> verify(tokenRepositoryMock).findByUserApp(userApp),
                 () -> verify(tokenRepositoryMock).save(any()),

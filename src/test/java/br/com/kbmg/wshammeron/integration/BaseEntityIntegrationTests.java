@@ -4,6 +4,7 @@ import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.user.ActivateUserAccountRefreshDto;
 import br.com.kbmg.wshammeron.dto.user.LoginDto;
 import br.com.kbmg.wshammeron.dto.user.RegisterPasswordDto;
+import br.com.kbmg.wshammeron.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserDto;
 import br.com.kbmg.wshammeron.dto.user.UserTokenHashDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
@@ -48,6 +49,7 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
     protected RegisterPasswordDto registerPasswordDtoTest;
     protected UserTokenHashDto userTokenHashDtoTest;
     protected ActivateUserAccountRefreshDto activateUserAccountRefreshDtoTest;
+    protected UserChangePasswordDto userChangePasswordDtoTest;
     protected MusicWithSingerAndLinksDto musicWithSingerAndLinksDtoTest;
 
     /* Entities */
@@ -103,6 +105,10 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
 
     protected void givenActivateUserAccountRefreshDto(String email) {
         activateUserAccountRefreshDtoTest = UserBuilder.generateActivateUserAccountRefreshDto(email);
+    }
+
+    protected void givenUserChangePasswordDto() {
+        userChangePasswordDtoTest = UserBuilder.generateUserChangePasswordDto(userAppLoggedTest);
     }
 
     protected void givenUserTokenHashDto(String email) {

@@ -99,7 +99,7 @@ public abstract class BaseIntegrationTests {
     protected AbstractCaptchaService recaptchaServiceMockBean;
 
     @MockBean
-    private JwtService jwtServiceMockBean;
+    protected JwtService jwtServiceMockBean;
 
 
     /* Instances */
