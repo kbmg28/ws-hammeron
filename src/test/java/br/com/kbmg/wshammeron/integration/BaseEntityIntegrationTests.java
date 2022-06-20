@@ -8,6 +8,7 @@ import br.com.kbmg.wshammeron.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserDto;
 import br.com.kbmg.wshammeron.dto.user.UserTokenHashDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
+import br.com.kbmg.wshammeron.enums.SpaceStatusEnum;
 import br.com.kbmg.wshammeron.model.AbstractEntity;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
@@ -35,6 +36,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static constants.BaseTestsConstants.ANY_VALUE;
 import static constants.BaseTestsConstants.USER_TEST_PASSWORD;
 import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.mockito.Mockito.when;
@@ -148,17 +150,20 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
         verificationTokenRepository.save(verificationTokenTest);
     }
 
-    protected void givenSpaceInDatabase() {
-        spaceTest = SpaceBuilder.generateSpace(userAppLoggedTest);
-        spaceRepository.save(spaceTest);
-    }
-
     protected void givenSpaceUserAppAssociationOwnerInDatabase() {
         givenSpaceUserAppAssociationInDatabase(PermissionEnum.SPACE_OWNER);
     }
 
     protected void givenSpaceUserAppAssociationParticipantInDatabase() {
         givenSpaceUserAppAssociationInDatabase(PermissionEnum.PARTICIPANT);
+    }
+
+    protected void givenSpaceWithStatus(SpaceStatusEnum spaceStatusEnum) {
+        if(SpaceStatusEnum.REQUESTED.equals(spaceStatusEnum)) {
+            spaceTest.setApprovedBy(null);
+            spaceTest.setApprovedByDate(null);
+        }
+        spaceTest.setSpaceStatus(spaceStatusEnum);
     }
 
     protected void givenSpaceUserAppAssociationInDatabase(PermissionEnum... permissions) {
@@ -172,6 +177,19 @@ public abstract class BaseEntityIntegrationTests extends BaseIntegrationTests{
 
         spaceUserAppAssociationTest = SpaceBuilder.generateSpaceUserAppAssociation(spaceTest, userAppLoggedTest, userPermissionList);
         spaceUserAppAssociationRepository.save(spaceUserAppAssociationTest);
+    }
+
+    protected void givenSpaceRequestDto() {
+        givenSpaceRequestDto(ANY_VALUE.concat(UUID.randomUUID().toString()));
+    }
+
+    protected void givenSpaceRequestDto(String spaceName) {
+        spaceRequestDtoTest = SpaceBuilder.generateSpaceRequestDto(spaceTest);
+        spaceRequestDtoTest.setName(spaceName);
+    }
+
+    protected void givenSpaceApproveDto() {
+        spaceApproveDtoTest = SpaceBuilder.generateSpaceApproveDto();
     }
 
     protected void givenMusicInDatabase() {

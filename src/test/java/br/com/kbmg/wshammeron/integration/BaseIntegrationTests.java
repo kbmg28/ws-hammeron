@@ -4,6 +4,8 @@ import br.com.kbmg.wshammeron.config.AppConfig;
 import br.com.kbmg.wshammeron.config.messages.MessagesService;
 import br.com.kbmg.wshammeron.config.recaptcha.v3.AbstractCaptchaService;
 import br.com.kbmg.wshammeron.config.recaptcha.v3.RecaptchaEnum;
+import br.com.kbmg.wshammeron.dto.space.SpaceApproveDto;
+import br.com.kbmg.wshammeron.dto.space.SpaceRequestDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
@@ -14,8 +16,12 @@ import br.com.kbmg.wshammeron.repository.SpaceUserAppAssociationRepository;
 import br.com.kbmg.wshammeron.repository.UserAppRepository;
 import br.com.kbmg.wshammeron.repository.UserPermissionRepository;
 import br.com.kbmg.wshammeron.service.JwtService;
+import br.com.kbmg.wshammeron.service.SmsService;
+import br.com.kbmg.wshammeron.util.response.ResponseData;
 import builder.SpaceBuilder;
 import builder.UserBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.apache.tomcat.websocket.Constants;
@@ -34,13 +40,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.transaction.Transactional;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static br.com.kbmg.wshammeron.constants.JwtConstants.CLAIM_SPACE_ID;
 import static br.com.kbmg.wshammeron.constants.JwtConstants.CLAIM_SPACE_NAME;
@@ -49,9 +58,11 @@ import static constants.BaseTestsConstants.BEARER_TOKEN_TEST;
 import static constants.BaseTestsConstants.TOKEN_TEST;
 import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.hibernate.internal.util.collections.CollectionHelper.isNotEmpty;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -78,11 +89,13 @@ public abstract class BaseIntegrationTests {
 
     protected static String testJsonRequest;
     protected static HttpHeaders headers = new HttpHeaders();
-    protected static ObjectMapper objectMapper = new ObjectMapper();
+//    protected static ObjectMapper objectMapper = new ObjectMapper();
     protected static Gson gson = new Gson();
     protected UserApp userAppLoggedTest;
     protected SpaceUserAppAssociation spaceUserAppAssociationOfUserLoggedTest;
     protected Space spaceTest;
+    protected SpaceRequestDto spaceRequestDtoTest;
+    protected SpaceApproveDto spaceApproveDtoTest;
 
     protected static ResultActions perform;
     protected static ResultActions resultActions;
@@ -101,8 +114,13 @@ public abstract class BaseIntegrationTests {
     @MockBean
     protected JwtService jwtServiceMockBean;
 
+    @MockBean
+    protected SmsService smsServiceMockBean;
 
     /* Instances */
+    @Autowired
+    protected ObjectMapper objectMapper;
+
     @Autowired
     protected MockMvc mockMvc;
 
@@ -133,7 +151,7 @@ public abstract class BaseIntegrationTests {
         this.saveUserAuthenticated(null);
     }
 
-    protected void givenSuperUser() {
+    protected void givenSysAdmin() {
         userAppLoggedTest.setIsSysAdmin(true);
         userAppRepository.save(userAppLoggedTest);
     }
@@ -145,9 +163,6 @@ public abstract class BaseIntegrationTests {
 
     protected void deleteUserAndAssociations(UserApp userInDatabase) {
         if (userInDatabase != null) {
-//            if(!isEmpty(userInDatabase.getUserPermissionList())) {
-//                userPermissionRepository.deleteAll(userInDatabase.getUserPermissionList());
-//            }
 
             if(!isEmpty(userInDatabase.getSpaceUserAppAssociationList())) {
                 spaceUserAppAssociationRepository.deleteAll(userInDatabase.getSpaceUserAppAssociationList());
@@ -321,22 +336,26 @@ public abstract class BaseIntegrationTests {
         return res;
     }
 
-    protected <T> T parseContentForObject(Type type) throws UnsupportedEncodingException {
-        String content = performSplitFromContentAsString();
-        return gson.fromJson(content, type);
-    }
-
-    protected <T> T parseContentForObject(Class<T> classDestination) throws UnsupportedEncodingException {
-        String content = performSplitFromContentAsString();
-        return gson.fromJson(content, classDestination);
-    }
-
-    private String performSplitFromContentAsString() throws UnsupportedEncodingException {
+    protected <T> T getContent(TypeReference<ResponseData<T>> typeReference) throws JsonProcessingException, UnsupportedEncodingException {
         String contentAsString = perform.andReturn().getResponse().getContentAsString();
-        int index = contentAsString.indexOf("\"content\":") + 10;
-        String substring = contentAsString.substring(index, contentAsString.length() - 1);
-        String str = contentAsString.split("\"content\":")[1];
-        return (str == null) ? "" : str.substring(0, str.length() - 1);
+        ResponseData<T> listResponseData = objectMapper.readValue(contentAsString, typeReference);
+
+        return listResponseData.getContent();
+    }
+
+    protected <T> T getOneElementOfList(Collection<T> spaceDtoList, Predicate<T> predicate) {
+        return spaceDtoList
+                .stream()
+                .filter(predicate)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    protected <T> void thenShouldVerifyIfListContainsTheElementExpected(List<T> listResult,
+                                                                        T spaceDtoExpected,
+                                                                        Predicate<T> predicate) {
+        T spaceDtoResult = getOneElementOfList(listResult, predicate);
+        assertEquals(spaceDtoExpected, spaceDtoResult);
     }
 
     protected void thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum module) {
@@ -345,12 +364,16 @@ public abstract class BaseIntegrationTests {
 
     protected void thenShouldReturnList() throws Exception {
         perform.andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content").isNotEmpty());
     }
 
     protected void thenShouldReturnEmptyBody() throws Exception {
         perform.andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
                 .andExpect(jsonPath("$.content").doesNotExist())
                 .andExpect(jsonPath("$").isEmpty());
     }

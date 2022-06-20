@@ -79,6 +79,9 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-freemarker
 	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-freemarker', version: '2.6.2'
 
+	// https://mvnrepository.com/artifact/com.google.code.gson/gson
+	implementation 'com.google.code.gson:gson:2.9.0'
+
 }
 
 tasks.register("unitTest", Test) {

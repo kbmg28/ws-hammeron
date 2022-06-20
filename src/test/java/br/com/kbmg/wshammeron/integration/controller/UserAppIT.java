@@ -39,7 +39,7 @@ class UserAppIT extends BaseEntityIntegrationTests {
 
     @Test
     void findAllBySpace_shouldReturnToSysAdminUserWithPermissionDtoList() throws Exception {
-        givenSuperUser();
+        givenSysAdmin();
         whenRequestGetFindAllBySpace();
         thenShouldReturnUserWithPermissionDtoList();
     }
@@ -86,7 +86,7 @@ class UserAppIT extends BaseEntityIntegrationTests {
 
     @Test
     void deleteUserByEmailCascade_shouldReturnContentEmpty() throws Exception {
-        givenSuperUser();
+        givenSysAdmin();
         whenRequestDeleteUserByEmailCascade("");
         thenShouldReturnContentEmpty();
     }

@@ -54,7 +54,7 @@ public class SpaceController extends GenericController {
     @SecuredSysAdmin
     public ResponseEntity<ResponseData<Void>> approveNewSpaceForUser(
             @PathVariable("id-space") String idSpace,
-            @RequestBody SpaceApproveDto spaceApproveDto,
+            @RequestBody @Valid SpaceApproveDto spaceApproveDto,
             HttpServletRequest request) {
         spaceService.approveNewSpaceForUser(idSpace, spaceApproveDto.getSpaceStatusEnum(), request);
 

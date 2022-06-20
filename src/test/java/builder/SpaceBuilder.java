@@ -1,10 +1,14 @@
 package builder;
 
+import br.com.kbmg.wshammeron.dto.space.MySpace;
+import br.com.kbmg.wshammeron.dto.space.SpaceApproveDto;
+import br.com.kbmg.wshammeron.dto.space.SpaceDto;
 import br.com.kbmg.wshammeron.dto.space.SpaceRequestDto;
 import br.com.kbmg.wshammeron.dto.space.overview.EventOverviewDto;
 import br.com.kbmg.wshammeron.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wshammeron.dto.space.overview.SpaceOverviewDto;
 import br.com.kbmg.wshammeron.dto.space.overview.UserOverviewDto;
+import br.com.kbmg.wshammeron.dto.user.UserDto;
 import br.com.kbmg.wshammeron.enums.EventTypeEnum;
 import br.com.kbmg.wshammeron.enums.MusicStatusEnum;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
@@ -53,10 +57,14 @@ public abstract class SpaceBuilder {
     public static SpaceRequestDto generateSpaceRequestDto(Space space) {
         SpaceRequestDto spaceRequestDto = new SpaceRequestDto();
 
-        space.setName(space.getName());
-        space.setJustification(space.getJustification());
+        spaceRequestDto.setName(space.getName());
+        spaceRequestDto.setJustification(space.getJustification());
 
         return spaceRequestDto;
+    }
+
+    public static SpaceApproveDto generateSpaceApproveDto() {
+        return new SpaceApproveDto(SpaceStatusEnum.APPROVED);
     }
 
     public static SpaceOverviewDto generateSpaceOverviewDto(Space space, UserApp userApp) {
@@ -77,6 +85,41 @@ public abstract class SpaceBuilder {
                 List.of(musicOverviewDto),
                 List.of(eventOverviewDto)
         );
+    }
+
+    public static SpaceDto generateSpaceDto(Space space, UserApp userLogged) {
+        UserDto userDto = UserBuilder.generateUserDto(userLogged.getEmail());
+
+        SpaceDto spaceRequestDto = new SpaceDto();
+
+        spaceRequestDto.setName(space.getName());
+        spaceRequestDto.setJustification(space.getJustification());
+        spaceRequestDto.setSpaceId(space.getId());
+        spaceRequestDto.setRequestedBy(userDto);
+        spaceRequestDto.setRequestedByDate(space.getRequestedByDate());
+
+        if (!space.getSpaceStatus().equals(SpaceStatusEnum.REQUESTED)) {
+            spaceRequestDto.setApprovedBy(userDto);
+            spaceRequestDto.setApprovedByDate(space.getApprovedByDate());
+        }
+
+        spaceRequestDto.setSpaceStatus(space.getSpaceStatus());
+
+        return spaceRequestDto;
+    }
+
+    public static MySpace generateMySpace(Space space) {
+        return generateMySpace(space, null);
+    }
+    public static MySpace generateMySpace(Space space, Boolean isLastAccessed) {
+        MySpace mySpace = new MySpace();
+
+        mySpace.setName(space.getName());
+        mySpace.setSpaceId(space.getId());
+
+        mySpace.setLastAccessed(isLastAccessed);
+
+        return mySpace;
     }
 
 }
