@@ -12,18 +12,19 @@ import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.repository.UserAppRepository;
-import br.com.kbmg.wshammeron.repository.VerificationTokenRepository;
 import br.com.kbmg.wshammeron.repository.projection.UserOnlyIdNameAndEmailProjection;
 import br.com.kbmg.wshammeron.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wshammeron.service.SpaceService;
 import br.com.kbmg.wshammeron.service.SpaceUserAppAssociationService;
 import br.com.kbmg.wshammeron.service.UserAppService;
 import br.com.kbmg.wshammeron.service.UserPermissionService;
+import br.com.kbmg.wshammeron.service.VerificationTokenService;
 import br.com.kbmg.wshammeron.util.mapper.UserAppMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -48,18 +49,18 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     private UserAppMapper userAppMapper;
 
     @Autowired
-    private VerificationTokenRepository tokenRepository;
-
-    @Autowired
     private EventSpaceUserAppAssociationService eventSpaceUserAppAssociationService;
 
+    @Autowired
+    private VerificationTokenService verificationTokenService;
+
     @Override
-    public UserApp registerNewUserAccount(RegisterDto userDto) {
+    public UserApp registerNewUserAccount(@Valid RegisterDto userDto) {
         AtomicReference<UserApp> userAppAtomicReference = new AtomicReference<>(null);
         String email = userDto.getEmail().toLowerCase();
 
         repository.findByEmailIgnoreCase(email).ifPresent(userAppInDatabase -> {
-            if (userAppInDatabase.getEnabled()) {
+            if (Boolean.TRUE.equals(userAppInDatabase.getEnabled())) {
                 throw new ServiceException(messagesService.get(USER_ALREADY_EXISTS));
             }
             userAppAtomicReference.set(userAppInDatabase);
@@ -83,7 +84,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public void registerUserPassword(RegisterPasswordDto registerPasswordDto) {
+    public void registerUserPassword(@Valid RegisterPasswordDto registerPasswordDto) {
         this.findByEmail(registerPasswordDto.getEmail().toLowerCase())
                 .ifPresent(user -> {
                     LocalDateTime expireDate = LocalDateTime.now().plusYears(1);
@@ -138,7 +139,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     }
 
     @Override
-    public UserApp updateUserLogged(UserDto body) {
+    public UserApp updateUserLogged(@Valid UserDto body) {
         UserApp userLogged = this.findUserLogged();
         userLogged.setName(body.getName());
         userLogged.setCellPhone(body.getCellPhone());
@@ -150,7 +151,7 @@ public class UserAppServiceImpl extends GenericServiceImpl<UserApp, UserAppRepos
     @SecuredSysAdmin
     public void deleteCascade(String email) {
         this.findByEmail(email).ifPresent(userApp -> {
-            tokenRepository.deleteByUserApp(userApp);
+            verificationTokenService.deleteByUserApp(userApp);
             Set<SpaceUserAppAssociation> spaceUserAppAssociationList = userApp.getSpaceUserAppAssociationList();
 
             spaceUserAppAssociationList.forEach(esu -> {

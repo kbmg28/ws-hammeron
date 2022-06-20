@@ -4,7 +4,6 @@ import br.com.kbmg.wshammeron.dto.music.MusicDto;
 import br.com.kbmg.wshammeron.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.space.overview.MusicOverviewDto;
-import br.com.kbmg.wshammeron.enums.MusicStatusEnum;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
@@ -13,8 +12,6 @@ import java.util.List;
 
 public interface MusicService extends GenericService<Music>{
     Music createMusic(String spaceId, MusicWithSingerAndLinksDto musicWithSingerAndLinksDto);
-
-    void updateStatusMusic(String spaceId, String idMusic, MusicStatusEnum newStatus);
 
     void deleteMusic(String spaceId, String idMusic);
 

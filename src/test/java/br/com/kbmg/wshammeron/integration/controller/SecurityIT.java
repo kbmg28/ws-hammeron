@@ -1,23 +1,32 @@
 package br.com.kbmg.wshammeron.integration.controller;
 
 import br.com.kbmg.wshammeron.config.recaptcha.v3.RecaptchaEnum;
+import br.com.kbmg.wshammeron.enums.PermissionEnum;
 import br.com.kbmg.wshammeron.integration.BaseEntityIntegrationTests;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.TOKEN_ACTIVATE_EXPIRED;
-import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.TOKEN_ACTIVATE_FAILED_SEND;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.USER_ACTIVATE_ACCOUNT;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.USER_OR_PASSWORD_INCORRECT;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.USER_PASSWORD_EXPIRED;
 import static br.com.kbmg.wshammeron.integration.ResponseErrorExpect.thenReturnHttpError400_BadRequest;
-import static br.com.kbmg.wshammeron.integration.ResponseErrorExpect.thenReturnHttpError401_Unauthorized;
-import static constants.BaseTestsConstants.AUTHENTICATED_USER_TEST_PASSWORD;
-import static constants.BaseTestsConstants.generateRandomEmail;
+import static constants.BaseTestsConstants.BEARER_TOKEN_TEST;
+import static constants.BaseTestsConstants.USER_TEST_PASSWORD;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class SecurityIT extends BaseEntityIntegrationTests {
+
+    @BeforeEach
+    public void beforeEach() {
+        givenUserAuthenticatedWithoutRoles();
+    }
 
     @AfterEach
     public void afterEach() {
@@ -25,44 +34,50 @@ class SecurityIT extends BaseEntityIntegrationTests {
     }
 
     @Test
-    public void loginAndGetToken_shouldReturnJwtToken() throws Exception {
-        super.beforeAllTestsBase();
+    void loginAndGetToken_shouldReturnJwtToken() throws Exception {
+        givenUserAuthenticatedWithPermission(PermissionEnum.PARTICIPANT);
         givenLoginDto();
+        whenCallJwtServiceGenerateTokenShouldReturnValidJwt();
         whenRequestPostLoginAndGetToken();
         thenShouldReturnJwtToken();
         thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum.LOGIN_ACTION);
     }
 
     @Test
-    public void loginAndGetToken_shouldReturnErrorIfIncorrectPassword() throws Exception {
-        super.beforeAllTestsBase();
-        givenLoginDto(generateRandomEmail(), "incorrect password");
+    void loginAndGetToken_shouldReturnErrorIfIncorrectPassword() throws Exception {
+        givenLoginDto(userAppLoggedTest.getEmail(), "incorrect password");
         whenRequestPostLoginAndGetToken();
-        thenReturnHttpError401_Unauthorized(perform, messagesService.get(USER_OR_PASSWORD_INCORRECT));
+        thenReturnHttpError400_BadRequest(perform, messagesService.get(USER_OR_PASSWORD_INCORRECT));
         thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum.LOGIN_ACTION);
     }
 
     @Test
-    public void loginAndGetToken_shouldReturnErrorIfIncorrectEmail() throws Exception {
-        super.beforeAllTestsBase();
-        givenLoginDto("email-not-exists@test.com", AUTHENTICATED_USER_TEST_PASSWORD);
+    void loginAndGetToken_shouldReturnErrorIfPasswordExpired() throws Exception {
+        userAppLoggedTest.setPasswordExpireDate(LocalDateTime.now().minusDays(1));
+        givenLoginDto();
         whenRequestPostLoginAndGetToken();
-        thenReturnHttpError401_Unauthorized(perform, messagesService.get(USER_OR_PASSWORD_INCORRECT));
+        thenReturnHttpError400_BadRequest(perform, messagesService.get(USER_PASSWORD_EXPIRED));
         thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum.LOGIN_ACTION);
     }
 
     @Test
-    public void loginAndGetToken_shouldReturnErrorIfAccountNotEnabled() throws Exception {
-        super.beforeAllTestsBase();
+    void loginAndGetToken_shouldReturnErrorIfIncorrectEmail() throws Exception {
+        givenLoginDto("email-not-exists@test.com", USER_TEST_PASSWORD);
+        whenRequestPostLoginAndGetToken();
+        thenReturnHttpError400_BadRequest(perform, messagesService.get(USER_OR_PASSWORD_INCORRECT));
+        thenCheckIfRecaptchaServiceInvoked(RecaptchaEnum.LOGIN_ACTION);
+    }
+
+    @Test
+    void loginAndGetToken_shouldReturnErrorIfAccountNotEnabled() throws Exception {
         givenUserLoggedNotEnabled();
-        givenLoginDto(userAppLoggedTest.getEmail(), AUTHENTICATED_USER_TEST_PASSWORD);
+        givenLoginDto(userAppLoggedTest.getEmail(), USER_TEST_PASSWORD);
         whenRequestPostLoginAndGetToken();
-        thenReturnHttpError401_Unauthorized(perform, messagesService.get(USER_ACTIVATE_ACCOUNT));
+        thenReturnHttpError400_BadRequest(perform, messagesService.get(USER_ACTIVATE_ACCOUNT));
     }
 
     @Test
-    public void passwordRecovery_shouldReturnNoBody() throws Exception {
-        super.beforeAllTestsBase();
+    void passwordRecovery_shouldReturnNoBody() throws Exception {
         givenActivateUserAccountRefreshDto(userAppLoggedTest.getEmail());
         givenMimeMessage();
         whenRequestPasswordRecovery();
@@ -70,18 +85,17 @@ class SecurityIT extends BaseEntityIntegrationTests {
     }
 
     @Test
-    @Disabled
-    public void passwordRecovery_shouldReturnErrorIfFailedSendEmail() throws Exception {
-        super.beforeAllTestsBase();
+    void passwordRecoveryChange_shouldReturnNoBody() throws Exception {
+        givenUserAuthenticatedWithPermission(PermissionEnum.PARTICIPANT);
         givenActivateUserAccountRefreshDto(userAppLoggedTest.getEmail());
-        whenRequestPasswordRecovery();
-        thenReturnHttpError400_BadRequest(perform,
-                messagesService.get("user.email.password.recovery.failed.send"));
-
+        givenMimeMessage();
+        givenUserChangePasswordDto();
+        whenRequestPasswordRecoveryChange();
+        thenShouldReturnNoBody();
     }
 
     @Test
-    public void registerUserAccount_shouldReturnNoBody() throws Exception {
+    void registerUserAccount_shouldReturnNoBody() throws Exception {
         super.checkIfEmailAlreadyExistAndDeleteIfPresent();
         givenHeadersRequired();
         givenUserDto();
@@ -91,26 +105,15 @@ class SecurityIT extends BaseEntityIntegrationTests {
     }
 
     @Test
-    @Disabled
-    public void registerUserAccount_shouldReturnErrorIfFailedSendEmail() throws Exception {
-        super.checkIfEmailAlreadyExistAndDeleteIfPresent();
-        givenHeadersRequired();
-        givenUserDto();
-        whenRequestRegisterUserAccount();
-        thenReturnHttpError400_BadRequest(perform, messagesService.get(TOKEN_ACTIVATE_FAILED_SEND));
-    }
-
-    @Test
-    public void registerUserPassword_shouldReturnNoBody() throws Exception {
-        super.beforeAllTestsBase();
+    void registerUserPassword_shouldReturnNoBody() throws Exception {
         givenRegisterPasswordDto(userAppLoggedTest.getEmail());
         whenRequestRegisterUserPassword();
         thenShouldReturnNoBody();
     }
 
     @Test
-    public void activateUserAccount_shouldReturnNoBodyIfUserEnableSuccessful() throws Exception {
-        super.beforeAllTestsBase();
+    void activateUserAccount_shouldReturnNoBodyIfUserEnableSuccessful() throws Exception {
+        givenUserAuthenticatedWithPermission(PermissionEnum.PARTICIPANT);
         givenUserLoggedNotEnabled();
         givenVerificationToken();
         givenUserTokenHashDto(userAppLoggedTest.getEmail());
@@ -119,8 +122,7 @@ class SecurityIT extends BaseEntityIntegrationTests {
     }
 
     @Test
-    public void activateUserAccount_shouldReturnErrorIfTokenExpired() throws Exception {
-        super.beforeAllTestsBase();
+    void activateUserAccount_shouldReturnErrorIfTokenExpired() throws Exception {
         givenUserLoggedNotEnabled();
         givenVerificationTokenExpired();
         givenUserTokenHashDto(userAppLoggedTest.getEmail());
@@ -129,16 +131,14 @@ class SecurityIT extends BaseEntityIntegrationTests {
     }
 
     @Test
-    public void activateUserAccount_shouldReturnNoBodyIfUserAlreadyEnable() throws Exception {
-        super.beforeAllTestsBase();
+    void activateUserAccount_shouldReturnNoBodyIfUserAlreadyEnable() throws Exception {
         givenUserTokenHashDto(userAppLoggedTest.getEmail());
         whenRequestActivateUserAccount();
         thenShouldReturnNoBody();
     }
 
     @Test
-    public void resendMailToken_shouldReturnNoBody() throws Exception {
-        super.beforeAllTestsBase();
+    void resendMailToken_shouldReturnNoBody() throws Exception {
         givenUserLoggedNotEnabled();
         givenActivateUserAccountRefreshDto(userAppLoggedTest.getEmail());
         givenMimeMessage();
@@ -147,13 +147,16 @@ class SecurityIT extends BaseEntityIntegrationTests {
     }
 
     @Test
-    public void resendMailToken_shouldReturnErrorIfFailedSendEmail() throws Exception {
-        super.beforeAllTestsBase();
+    void resendMailToken_shouldReturnErrorIfFailedSendEmail() throws Exception {
         givenUserLoggedNotEnabled();
         givenActivateUserAccountRefreshDto(userAppLoggedTest.getEmail());
         givenMimeMessage();
         whenRequestResendMailToken();
         thenShouldReturnNoBody();
+    }
+
+    private void whenCallJwtServiceGenerateTokenShouldReturnValidJwt() {
+        when(jwtServiceMockBean.generateToken(any(), any(), any())).thenReturn(BEARER_TOKEN_TEST);
     }
 
     private void whenRequestPostLoginAndGetToken() throws Exception {
@@ -163,6 +166,10 @@ class SecurityIT extends BaseEntityIntegrationTests {
 
     private void whenRequestPasswordRecovery() throws Exception {
         super.whenRequestPost("/security/password-recovery", activateUserAccountRefreshDtoTest);
+    }
+
+    private void whenRequestPasswordRecoveryChange() throws Exception {
+        super.whenRequestPost("/security/password-recovery/change", userChangePasswordDtoTest);
     }
 
     private void whenRequestResendMailToken() throws Exception {

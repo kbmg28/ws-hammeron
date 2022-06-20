@@ -11,7 +11,6 @@ import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.model.UserPermission;
 import br.com.kbmg.wshammeron.repository.UserPermissionRepository;
-import br.com.kbmg.wshammeron.service.SpaceService;
 import br.com.kbmg.wshammeron.service.UserAppService;
 import br.com.kbmg.wshammeron.service.UserPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.USER_DOES_NOT_PERMISSION_TO_ACTION;
+
 @Service
 public class UserPermissionServiceImpl
         extends GenericServiceImpl<UserPermission, UserPermissionRepository>
@@ -30,9 +31,6 @@ public class UserPermissionServiceImpl
 
     @Autowired
     private UserAppService userAppService;
-
-    @Autowired
-    private SpaceService spaceService;
 
     @Override
     public void addPermissionToUser(SpaceUserAppAssociation spaceUserAppAssociation, PermissionEnum permissionEnum) {
@@ -42,7 +40,7 @@ public class UserPermissionServiceImpl
                 .map(userPermission -> userPermission.getPermission().toString())
                 .collect(Collectors.toSet());
 
-        if(spaceUserAppAssociation.getUserApp().getIsSysAdmin()) {
+        if(Boolean.TRUE.equals(spaceUserAppAssociation.getUserApp().getIsSysAdmin())) {
             allPermissionsOfUser.add(AppConstants.SYS_ADMIN);
         }
 
@@ -69,7 +67,7 @@ public class UserPermissionServiceImpl
                     .map(PermissionEnum::name)
                     .collect(Collectors.toList());
 
-        if(userApp.getIsSysAdmin()) {
+        if(Boolean.TRUE.equals(userApp.getIsSysAdmin())) {
             userPermissionList.add(AppConstants.SYS_ADMIN);
         }
 
@@ -120,7 +118,7 @@ public class UserPermissionServiceImpl
 
             if (isNotSysAdmin && isNotSpaceOwner) {
                 throw new ForbiddenException(
-                        messagesService.get("user.without.permission.to.action"));
+                        messagesService.get(USER_DOES_NOT_PERMISSION_TO_ACTION));
             }
         }
     }

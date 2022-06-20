@@ -8,7 +8,6 @@ import br.com.kbmg.wshammeron.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
 import br.com.kbmg.wshammeron.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.music.SingerDto;
-import br.com.kbmg.wshammeron.enums.MusicStatusEnum;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
@@ -115,16 +114,6 @@ public class MusicController extends GenericController {
         Music entityData = musicService.updateMusic(spaceId, idMusic, musicWithSingerAndLinksDto);
         MusicWithSingerAndLinksDto viewData = musicMapper.toMusicWithSingerAndLinksDto(entityData);
         return super.ok(viewData);
-    }
-
-    @PutMapping("/{id-music}/status/{new-status}")
-    @Transactional
-    public ResponseEntity<ResponseData<Void>> updateStatusMusic(
-            @PathVariable("id-music") String idMusic,
-            @PathVariable("new-status") MusicStatusEnum newStatus) {
-        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
-        musicService.updateStatusMusic(spaceId, idMusic, newStatus);
-        return super.ok();
     }
 
     @DeleteMapping("/{id-music}")

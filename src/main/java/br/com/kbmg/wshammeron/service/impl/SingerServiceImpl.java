@@ -7,10 +7,10 @@ import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.repository.SingerRepository;
 import br.com.kbmg.wshammeron.service.SingerService;
 import br.com.kbmg.wshammeron.service.SpaceService;
-import br.com.kbmg.wshammeron.service.UserAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -19,9 +19,6 @@ public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerReposito
 
     @Autowired
     private SpaceService spaceService;
-
-    @Autowired
-    private UserAppService userAppService;
 
     @Override
     public Singer findByNameOrCreateIfNotExist(String name) {
@@ -34,11 +31,11 @@ public class SingerServiceImpl extends GenericServiceImpl<Singer, SingerReposito
 
     @Override
     public Singer findByNameOrCreateIfNotExistToUpdate(Music musicInDatabase,
-                                                       MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
+                                                       @Valid MusicWithSingerAndLinksDto musicWithSingerAndLinksDto) {
         Singer singerToUpdate = this.findByNameOrCreateIfNotExist(musicWithSingerAndLinksDto.getSinger().getName());
         Singer singerInDatabase = musicInDatabase.getSinger();
 
-        if (singerInDatabase != singerToUpdate) {
+        if (!singerInDatabase.equals(singerToUpdate)) {
             singerInDatabase.getMusicList().remove(musicInDatabase);
             musicInDatabase.setSinger(singerToUpdate);
 

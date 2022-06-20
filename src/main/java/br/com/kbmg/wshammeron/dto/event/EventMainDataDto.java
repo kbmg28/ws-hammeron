@@ -3,6 +3,7 @@ package br.com.kbmg.wshammeron.dto.event;
 import br.com.kbmg.wshammeron.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wshammeron.model.Event;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.time.LocalTime;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
 public class EventMainDataDto {
 
     private String id;

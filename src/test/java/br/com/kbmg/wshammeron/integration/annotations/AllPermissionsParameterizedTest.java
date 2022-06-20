@@ -14,6 +14,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @ParameterizedTest
-@EnumSource(value= PermissionEnum.class, mode = EnumSource.Mode.EXCLUDE, names = "SYS_ADMIN")
-public @interface PermissionWithoutSysAdminParameterizedTest {
+@EnumSource(value= PermissionEnum.class)
+public @interface AllPermissionsParameterizedTest {
 }

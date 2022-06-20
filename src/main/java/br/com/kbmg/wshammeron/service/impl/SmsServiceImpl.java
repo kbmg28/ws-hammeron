@@ -33,22 +33,26 @@ public class SmsServiceImpl implements SmsService {
     private static final String RECIPIENT_KEY = "recipient";
     private static final String TEXT_KEY = "text";
     private static final String BR_NUMBER_TEMPLATE = "+55%s";
+    private static final String HAMMERON_SMS_TEMPLATE = "[hammerOn]: %s";
 
     @Value("${apiKeySms}")
     private String apiKeySms;
 
     @Autowired
-    public MessagesService messagesService;
+    private MessagesService messagesService;
 
     @Autowired
-    public LogService logService;
+    private LogService logService;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public void sendNewOrUpdateSmsEvent(EventMainDataDto event, Set<UserApp> userList) {
         Set<String> cellPhoneList = getCellPhoneList(userList);
         String nameDateTimeEvent = getNameAndDateAndTimeFormatted(event);
         String description = String.format(messagesService.get("event.sms.new.association"), nameDateTimeEvent);
-        String messageText = String.format("[hammerOn]: %s", description);
+        String messageText = String.format(HAMMERON_SMS_TEMPLATE, description);
 
         sendSms(cellPhoneList, messageText);
     }
@@ -59,7 +63,7 @@ public class SmsServiceImpl implements SmsService {
 
         String nameDateTimeEvent = getNameAndDateAndTimeFormatted(event);
         String description = String.format(messagesService.get("event.sms.remove.association"), nameDateTimeEvent);
-        String messageText = String.format("[hammerOn]: %s", description);
+        String messageText = String.format(HAMMERON_SMS_TEMPLATE, description);
 
         sendSms(cellPhoneList, messageText);
     }
@@ -68,7 +72,7 @@ public class SmsServiceImpl implements SmsService {
     public void sendNotificationRememberEvent(EventMainDataDto eventInfo, Set<UserApp> userList, String description) {
         Set<String> cellPhoneList = getCellPhoneList(userList);
 
-        String messageText = String.format("[hammerOn]: %s", description);
+        String messageText = String.format(HAMMERON_SMS_TEMPLATE, description);
 
         sendSms(cellPhoneList, messageText);
     }
@@ -92,7 +96,6 @@ public class SmsServiceImpl implements SmsService {
 
     private void sendSms(Set<String> cellPhoneList, String messageText) {
         String url = URL_SMS + apiKeySms;
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
 
         headers.setContentType(new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8));
