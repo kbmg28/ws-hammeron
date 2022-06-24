@@ -1,33 +1,37 @@
 package br.com.kbmg.wshammeron.enums;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 public enum RangeDateFilterEnum {
     LAST_THIRTY_DAYS {
         @Override
-        public LocalDate getStartOfRangeDateEvent() {
-            return LocalDate.now().minusMonths(1);
+        public OffsetDateTime getStartOfRangeDateEvent() {
+            return getOffsetDateTime(1);
         }
     },
     LAST_THREE_MONTHS {
         @Override
-        public LocalDate getStartOfRangeDateEvent() {
-            return LocalDate.now().minusMonths(3);
+        public OffsetDateTime getStartOfRangeDateEvent() {
+            return getOffsetDateTime(3);
         }
     },
     LAST_SIX_MONTHS {
         @Override
-        public LocalDate getStartOfRangeDateEvent() {
-            return LocalDate.now().minusMonths(6);
+        public OffsetDateTime getStartOfRangeDateEvent() {
+            return getOffsetDateTime(6);
         }
     },
     LAST_ONE_YEAR {
         @Override
-        public LocalDate getStartOfRangeDateEvent() {
-            return LocalDate.now().minusMonths(12);
+        public OffsetDateTime getStartOfRangeDateEvent() {
+            return getOffsetDateTime(12);
         }
     };
 
-    public abstract LocalDate getStartOfRangeDateEvent();
+    private static OffsetDateTime getOffsetDateTime(int months) {
+        return OffsetDateTime.now().minusMonths(months).minusHours(2);
+    }
+
+    public abstract OffsetDateTime getStartOfRangeDateEvent();
 
 }

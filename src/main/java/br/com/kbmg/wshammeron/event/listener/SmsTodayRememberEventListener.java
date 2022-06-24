@@ -20,9 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,8 +62,8 @@ public class SmsTodayRememberEventListener
         this.smsTodayRememberEventLogic(smsTodayRememberEvent);
     }
 
-    @Transactional
-    private void smsTodayRememberEventLogic(OnSmsTodayRememberEvent springEvent) {
+    @Transactional(readOnly = true)
+    void smsTodayRememberEventLogic(OnSmsTodayRememberEvent springEvent) {
         SmsRememberData data = springEvent.getData();
         Event eventHammerOn = data.getEventHammerOn();
 
@@ -74,7 +74,7 @@ public class SmsTodayRememberEventListener
         if(CollectionUtils.isEmpty(userList)) {
             String message = String.format("[SCHEDULER][%s]: Not send sms because user's list is empty of eventHammerOn %s (%s)",
                     data.getUuidScheduler(),
-                    eventInfo.getNameEvent(),
+                    eventInfo.getName(),
                     eventInfo.getId());
 
             logService.logMessage(Level.INFO, message);

@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,9 +20,11 @@ public class SpaceDto extends SpaceRequestDto{
 
     private String spaceId;
 
+    @Valid
     private UserDto requestedBy;
     private LocalDateTime requestedByDate;
 
+    @Valid
     private UserDto approvedBy;
     private LocalDateTime approvedByDate;
 

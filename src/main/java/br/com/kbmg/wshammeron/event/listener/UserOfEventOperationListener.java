@@ -51,7 +51,7 @@ public class UserOfEventOperationListener
 
         if(CollectionUtils.isEmpty(userList)) {
             String message = String.format("Not send email because user's email list is empty of eventHammerOn %s (%s)",
-                    eventInfo.getNameEvent(),
+                    eventInfo.getName(),
                     eventInfo.getId());
 
             logService.logMessage(Level.INFO, message);

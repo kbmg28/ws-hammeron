@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +121,7 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
 
     @Override
     public List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId) {
-        return repository.findAllBySpaceOrderByEventsCountDescLimit10(spaceId, LocalDate.now()).stream()
+        return repository.findAllBySpaceOrderByEventsCountDescLimit10(spaceId, OffsetDateTime.now()).stream()
                 .map(proj -> new MusicTopUsedDto(proj.getMusicId(), proj.getMusicName(), proj.getSingerName(), proj.getAmountUsedInEvents()))
                 .collect(Collectors.toList());
     }
