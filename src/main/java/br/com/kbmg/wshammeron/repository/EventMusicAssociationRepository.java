@@ -17,15 +17,15 @@ public interface EventMusicAssociationRepository extends JpaRepository<EventMusi
             "FROM EVENT_MUSIC_ASSOCIATION ema " +
             "JOIN EVENT e ON e.id = ema.event_id " +
             "WHERE ema.music_id = :musicId ";
-    String ORDER_BY_DATE_EVENT_DESC = "ORDER BY e.date_event DESC";
+    String ORDER_BY_DATE_TIME_EVENT_DESC = "ORDER BY e.date_time_event DESC";
 
     List<EventMusicAssociation> findAllByEvent(Event event);
 
-    @Query(value = SELECT_ASSOCIATION_BY_MUSIC + "AND (e.date_event >= :startDate AND e.date_event < :endDate) " +
-            ORDER_BY_DATE_EVENT_DESC
+    @Query(value = SELECT_ASSOCIATION_BY_MUSIC + "AND (e.date_time_event >= :startDate AND e.date_time_event < :endDate) " +
+            ORDER_BY_DATE_TIME_EVENT_DESC
             , nativeQuery = true)
     List<EventSimpleProjection> findAllEventsOfMusicByDateRange(String musicId, OffsetDateTime startDate, OffsetDateTime endDate);
 
-    @Query(value = SELECT_ASSOCIATION_BY_MUSIC + ORDER_BY_DATE_EVENT_DESC, nativeQuery = true)
+    @Query(value = SELECT_ASSOCIATION_BY_MUSIC + ORDER_BY_DATE_TIME_EVENT_DESC, nativeQuery = true)
     List<EventSimpleProjection> findAllEventsOfMusic(String musicId);
 }
