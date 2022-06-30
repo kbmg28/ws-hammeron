@@ -30,10 +30,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 import javax.mail.util.ByteArrayDataSource;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -93,7 +90,7 @@ public class EventMailServiceImpl implements EventMailService {
 
             mimeMessage.setRecipients(Message.RecipientType.TO, addressList.toArray(Address[]::new));
             mimeMessage.setSender(fromAddress);
-            mimeMessage.setSubject(event.getNameEvent());
+            mimeMessage.setSubject(event.getName());
 
             mailSender.send(mimeMessage);
         } catch (Exception exception) {
@@ -105,10 +102,10 @@ public class EventMailServiceImpl implements EventMailService {
     private String getDescription(EventMainDataDto event, Set<UserApp> userList) {
         Set<MusicSimpleToEventDto> musicList = event.getMusicList();
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM");
-        String formattedDate = event.getDateEvent().format(formatterDate);
+        String formattedDate = event.getUtcDateTime().format(formatterDate);
 
         DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("hh:mm");
-        String formattedTime = event.getTimeEvent().format(formatterTime);
+        String formattedTime = event.getUtcDateTime().format(formatterTime);
         String delimiter = "\n";
 
         String formattedUsers = userList
@@ -130,7 +127,7 @@ public class EventMailServiceImpl implements EventMailService {
         String template = "%s (%s - %s)\n\n%s\n%s\n\n%s\n%s";
 
         return String.format(template,
-                event.getNameEvent(),
+                event.getName(),
                 formattedDate,
                 formattedTime,
                 messagesService.get("event.section.peoples"),
@@ -198,14 +195,11 @@ public class EventMailServiceImpl implements EventMailService {
         calendarEvent.setMethod(type);
 
         VEvent event = new VEvent();
-        event.setSummary(eventHammerOn.getNameEvent());
+        event.setSummary(eventHammerOn.getName());
         event.setDescription(description);
         event.setUid(eventHammerOn.getId());
 
-        LocalDateTime localDateTime = LocalDateTime.of(eventHammerOn.getDateEvent(), eventHammerOn.getTimeEvent());
-
-        OffsetDateTime off = OffsetDateTime.of(eventHammerOn.getDateEvent(), eventHammerOn.getTimeEvent(), ZoneOffset.UTC);
-        ZonedDateTime zoned = off.atZoneSameInstant(ZoneId.of(eventHammerOn.getTimeZoneName()));
+        ZonedDateTime zoned = eventHammerOn.getUtcDateTime().atZoneSameInstant(ZoneId.of(eventHammerOn.getTimeZoneName()));
         Date date = java.util.Date.from(zoned.toInstant());
 
         event.setDateStart(date);

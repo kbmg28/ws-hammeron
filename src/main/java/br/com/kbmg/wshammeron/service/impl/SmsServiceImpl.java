@@ -18,9 +18,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -85,13 +83,12 @@ public class SmsServiceImpl implements SmsService {
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM");
         DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("HH:mm");
 
-        OffsetDateTime off = OffsetDateTime.of(event.getDateEvent(), event.getTimeEvent(), ZoneOffset.UTC);
-        ZonedDateTime zoned = off.atZoneSameInstant(ZoneId.of(event.getTimeZoneName()));
+        ZonedDateTime zoned = event.getUtcDateTime().atZoneSameInstant(ZoneId.of(event.getTimeZoneName()));
 
         String formattedDate = zoned.format(formatterDate);
         String formattedTime = zoned.format(formatterTime);
 
-        return String.format("%s (%s - %s)", event.getNameEvent(), formattedDate, formattedTime);
+        return String.format("%s (%s - %s)", event.getName(), formattedDate, formattedTime);
     }
 
     private void sendSms(Set<String> cellPhoneList, String messageText) {

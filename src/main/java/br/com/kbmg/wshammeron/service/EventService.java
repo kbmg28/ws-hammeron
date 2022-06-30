@@ -8,7 +8,7 @@ import br.com.kbmg.wshammeron.enums.RangeDateFilterEnum;
 import br.com.kbmg.wshammeron.model.Event;
 import br.com.kbmg.wshammeron.model.Space;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface EventService extends GenericService<Event>{
@@ -24,5 +24,5 @@ public interface EventService extends GenericService<Event>{
 
     void deleteEvent(String spaceId, String idEvent);
 
-    List<Event> findAllEventsByDateEvent(LocalDate today);
+    List<Event> findAllEventsByDateEvent(OffsetDateTime dateTimeEvent);
 }

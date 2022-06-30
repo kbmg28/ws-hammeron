@@ -40,6 +40,7 @@ public abstract class KeyMessageConstants {
 
     /* Event */
 
+    public static final String EVENT_CREATE_DATETIME_INVALID = "event.create.datetime.invalid";
     public static final String EVENT_IS_NOT_EDITABLE = "event.not.editable";
     public static final String EVENT_USER_LIST_INVALID = "event.user.list.invalid";
 }

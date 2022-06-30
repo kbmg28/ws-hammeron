@@ -8,15 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, String> {
 
-    String SELECT_FROM_EVENT_WHERE_SPACE = "SELECT e.id AS \"eventId\", e.name as \"nameEvent\", e.date_event as \"dateEvent\", e.time_event AS \"timeEvent\", " +
+    String SELECT_FROM_EVENT_WHERE_SPACE = "SELECT e.id AS \"eventId\", e.name as \"nameEvent\", e.date_time_event as \"dateTimeEvent\", " +
             "               (SELECT COUNT(ema.id) FROM EVENT_MUSIC_ASSOCIATION ema \n" +
             "                   WHERE ema.EVENT_ID = e.id) AS \"musicQuantity\", " +
             "               (SELECT COUNT(eu.id) FROM EVENT_SPACE_USER_APP_ASSOCIATION eu \n" +
@@ -28,19 +27,21 @@ public interface EventRepository extends JpaRepository<Event, String> {
             "FROM EVENT e " +
             "where e.space_id = :spaceId";
 
-    Optional<Event> findBySpaceAndDateEventAndTimeEvent(Space space, LocalDate date, LocalTime time);
+    Optional<Event> findBySpaceAndDateTimeEvent(Space space, OffsetDateTime dateTimeEvent);
 
-    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and (e.date_event >= :startDate and e.date_event <= :endDate) ", nativeQuery = true)
-    List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateEventRange(String spaceId, LocalDate startDate, LocalDate endDate, String userId);
+    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and (e.date_time_event >= :startDate and e.date_time_event <= :endDate) " +
+            "order by e.date_time_event DESC", nativeQuery = true)
+    List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateTimeEventRange(String spaceId, OffsetDateTime startDate, OffsetDateTime endDate, String userId);
 
-    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and e.date_event >= :startDate", nativeQuery = true)
-    List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateEventGreaterThanEqual(String spaceId, LocalDate startDate, String userId);
+    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and e.date_time_event >= :startDate order by e.date_time_event"
+            , nativeQuery = true)
+    List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateTimeEventGreaterThanEqual(String spaceId, OffsetDateTime startDate, String userId);
 
     Optional<Event> findBySpaceAndId(Space space, String idEvent);
 
     @Query(value = "SELECT " +
             "   (CASE " +
-            "       WHEN e.DATE_EVENT < current_date " +
+            "       WHEN e.date_time_event < current_date " +
             "           THEN 'OLD' " +
             "       ELSE 'NEXT' " +
             "    END)  AS \"groupName\", " +
@@ -50,5 +51,5 @@ public interface EventRepository extends JpaRepository<Event, String> {
             "GROUP BY \"groupName\"", nativeQuery = true)
     List<OverviewProjection> findEventOverviewBySpace(String spaceId);
 
-    List<Event> findAllEventsByDateEvent(LocalDate localDate);
+    List<Event> findAllEventsByDateTimeEvent(OffsetDateTime dateTimeEvent);
 }

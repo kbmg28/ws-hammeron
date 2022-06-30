@@ -1,6 +1,10 @@
 package br.com.kbmg.wshammeron.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,8 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,10 +25,7 @@ import java.util.Set;
 public class Event extends AbstractEntity {
 
 	@Column(nullable = false)
-	private LocalDate dateEvent;
-
-	@Column(nullable = false)
-	private LocalTime timeEvent;
+	private OffsetDateTime dateTimeEvent;
 
 	@Column(nullable = false)
 	private String timeZoneName;

@@ -1,11 +1,11 @@
 package br.com.kbmg.wshammeron.repository.projection;
 
-import java.time.LocalDate;
+import java.sql.Timestamp;
 
 public interface EventSimpleProjection {
 
     String getEventId();
-    LocalDate getDate();
+    Timestamp getDateTimeEvent();
     String getName();
 
 }
