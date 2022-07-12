@@ -10,10 +10,11 @@ import br.com.kbmg.wshammeron.repository.EventMusicAssociationRepository;
 import br.com.kbmg.wshammeron.repository.projection.EventSimpleProjection;
 import br.com.kbmg.wshammeron.service.EventMusicAssociationService;
 import br.com.kbmg.wshammeron.service.MusicService;
+import br.com.kbmg.wshammeron.util.DateUtilUTC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -51,15 +52,18 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
     public List<EventSimpleDto> findEventsByMusic(Music music, Boolean eventsFromTheLast3Months) {
         List<EventSimpleProjection> projectionList;
         if (Boolean.TRUE.equals(eventsFromTheLast3Months)) {
-            LocalDate now = LocalDate.now();
-            LocalDate threeMothsAgo = now.minusMonths(3);
+            OffsetDateTime now = OffsetDateTime.now();
+            OffsetDateTime threeMothsAgo = now.minusMonths(3);
+
             projectionList = repository.findAllEventsOfMusicByDateRange(music.getId(), threeMothsAgo, now);
         } else {
             projectionList = repository.findAllEventsOfMusic(music.getId());
         }
         return projectionList
                 .stream()
-                .map(element -> new EventSimpleDto(element.getEventId(), element.getDate(), element.getName()))
+                .map(element -> new EventSimpleDto(element.getEventId(),
+                        element.getName(),
+                        DateUtilUTC.toOffsetDateTime(element.getDateTimeEvent())))
                 .collect(Collectors.toList());
     }
 

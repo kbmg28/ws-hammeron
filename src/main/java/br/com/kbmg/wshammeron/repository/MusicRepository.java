@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,12 +30,12 @@ public interface MusicRepository extends JpaRepository<Music, String> {
             "       SELECT 1 from EVENT e " +
             "           WHERE e.space_id = :spaceId " +
             "               and e.id = ema.event_id " +
-            "               and e.date_event < :startDate" +
+            "               and e.date_time_event < :dateTimeEvent" +
             "       )" +
             "    GROUP BY m.id, m.name, s.name " +
             "    ORDER BY COUNT(ema.id) DESC " +
             "    LIMIT 10", nativeQuery = true)
-    List<MusicTopUsedProjection> findAllBySpaceOrderByEventsCountDescLimit10(String spaceId, LocalDate startDate);
+    List<MusicTopUsedProjection> findAllBySpaceOrderByEventsCountDescLimit10(String spaceId, OffsetDateTime dateTimeEvent);
 
     @Query(value = "SELECT m.id AS \"musicId\", m.name AS \"musicName\", s.name AS \"singerName\" " +
             "FROM MUSIC m " +

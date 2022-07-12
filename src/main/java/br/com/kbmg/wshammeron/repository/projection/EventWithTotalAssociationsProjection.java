@@ -1,14 +1,12 @@
 package br.com.kbmg.wshammeron.repository.projection;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.sql.Timestamp;
 
 public interface EventWithTotalAssociationsProjection {
 
      String getEventId();
      String getNameEvent();
-     LocalDate getDateEvent();
-     LocalTime getTimeEvent();
+     Timestamp getDateTimeEvent();
      Integer getMusicQuantity();
      Integer getUserQuantity();
      Boolean getIsUserLoggedIncluded();

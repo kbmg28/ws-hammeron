@@ -26,6 +26,7 @@ import br.com.kbmg.wshammeron.service.EventService;
 import br.com.kbmg.wshammeron.service.EventSpaceUserAppAssociationService;
 import br.com.kbmg.wshammeron.service.SpaceService;
 import br.com.kbmg.wshammeron.service.UserAppService;
+import br.com.kbmg.wshammeron.util.DateUtilUTC;
 import br.com.kbmg.wshammeron.util.mapper.MusicMapper;
 import br.com.kbmg.wshammeron.util.mapper.OverviewMapper;
 import br.com.kbmg.wshammeron.util.mapper.UserAppMapper;
@@ -33,9 +34,8 @@ import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import javax.validation.Valid;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_CREATE_DATETIME_INVALID;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_IS_NOT_EDITABLE;
 
 @Service
@@ -75,12 +76,13 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         UserApp userLogged = userAppService.findUserLogged();
         Space space = spaceService.findByIdValidated(spaceId);
 
-        List<EventWithTotalAssociationsProjection> eventList = nextEvents ? findNextEvents(space, userLogged) : findOldEvents(space, rangeDateFilterEnum, userLogged);
+        List<EventWithTotalAssociationsProjection> eventList = Boolean.TRUE.equals(nextEvents) ?
+                findNextEvents(space, userLogged) :
+                findOldEvents(space, rangeDateFilterEnum, userLogged);
 
         return eventList
                 .stream()
                 .map(this::parseToEventDto)
-                .sorted(getSort(nextEvents))
                 .collect(Collectors.toList());
     }
 
@@ -90,12 +92,12 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                             .orElseThrow(() -> new ServiceException(
                                     messagesService.get("event.not.exist")
                             ));
+
         EventDetailsDto eventDetails = new EventDetailsDto();
 
         eventDetails.setId(eventId);
         eventDetails.setName(event.getName());
-        eventDetails.setDate(event.getDateEvent());
-        eventDetails.setTime(event.getTimeEvent());
+        eventDetails.setUtcDateTime(event.getDateTimeEvent());
 
         findUserAssociation(event, eventDetails);
         findMusicAssociation(event, eventDetails);
@@ -104,12 +106,14 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     }
 
     @Override
-    public EventDto createEvent(String spaceId, EventWithMusicListDto body) {
+    public EventDto createEvent(String spaceId, @Valid EventWithMusicListDto body) {
+        validateIfDateTimeEventGreaterNow(body);
         Space space = validateIfEventAlreadyExistAndGetSpace(spaceId, body);
 
         Event event = new Event();
         event.setSpace(space);
         event.setTimeZoneName(body.getTimeZoneName());
+
         updateEventFields(event, body);
 
         repository.save(event);
@@ -119,14 +123,19 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
         boolean isUserLoggedIncluded = isUserLoggedIncluded(body);
 
-        return new EventDto(event.getId(), event.getDateEvent(), event.getName(), event.getTimeEvent(), musicList.size(), userList.size(), isUserLoggedIncluded);
+        return new EventDto(event.getId(),
+                event.getName(),
+                event.getDateTimeEvent(),
+                musicList.size(),
+                userList.size(),
+                isUserLoggedIncluded);
     }
 
     @Override
-    public EventDto editEvent(String spaceId, String idEvent, EventWithMusicListDto body) {
+    public EventDto editEvent(String spaceId, String idEvent, @Valid EventWithMusicListDto body) {
         Space space = spaceService.findByIdValidated(spaceId);
         Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
-        validateIfEventCanBeEdited(eventInDatabase);
+        validateDateTimeToEditOrDelete(body.getUtcDateTime());
         updateEventFields(eventInDatabase, body);
 
         Set<EventMusicAssociation> musicList =  eventMusicAssociationService.updateAssociations(eventInDatabase, body.getMusicList());
@@ -135,9 +144,8 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         boolean isUserLoggedIncluded = isUserLoggedIncluded(body);
 
         return new EventDto(eventInDatabase.getId(),
-                eventInDatabase.getDateEvent(),
                 eventInDatabase.getName(),
-                eventInDatabase.getTimeEvent(),
+                eventInDatabase.getDateTimeEvent(),
                 musicList.size(),
                 userList.size(),
                 isUserLoggedIncluded);
@@ -162,7 +170,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     public void deleteEvent(String spaceId, String idEvent) {
         Space space = spaceService.findByIdValidated(spaceId);
         Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
-        validateIfEventCanBeEdited(eventInDatabase);
+        validateDateTimeToEditOrDelete(eventInDatabase.getDateTimeEvent());
 
         EventMainDataDto eventMainDataDto = new EventMainDataDto(eventInDatabase, null);
 
@@ -191,13 +199,21 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     }
 
     @Override
-    public List<Event> findAllEventsByDateEvent(LocalDate today) {
-        return repository.findAllEventsByDateEvent(today);
+    public List<Event> findAllEventsByDateEvent(OffsetDateTime dateTimeEvent) {
+        return repository.findAllEventsByDateTimeEvent(dateTimeEvent);
     }
 
-    private void validateIfEventCanBeEdited(Event eventInDatabase) {
-        LocalDate today = LocalDate.now();
-        LocalDate currentDateOfEvent = eventInDatabase.getDateEvent();
+    private void validateIfDateTimeEventGreaterNow(EventWithMusicListDto body) {
+        OffsetDateTime now = OffsetDateTime.now();
+
+        if (body.getUtcDateTime().isBefore(now)) {
+            throw new ServiceException(messagesService.get(EVENT_CREATE_DATETIME_INVALID));
+        }
+    }
+
+    private void validateDateTimeToEditOrDelete(OffsetDateTime currentDateOfEvent) {
+        OffsetDateTime today = OffsetDateTime.now().minusHours(2);
+
         if(today.isAfter(currentDateOfEvent)){
             throw new ServiceException(messagesService.get(EVENT_IS_NOT_EDITABLE));
         }
@@ -226,14 +242,6 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         );
     }
 
-    private Comparator<EventDto> getSort(Boolean nextEvents) {
-
-        Comparator<EventDto> eventListASC = Comparator.comparing(EventDto::getDate);
-        Comparator<EventDto> eventListTimeASC = Comparator.comparing(EventDto::getTime);
-
-        return nextEvents ? eventListASC.thenComparing(eventListTimeASC) : eventListASC.reversed().thenComparing(eventListTimeASC.reversed());
-    }
-
     private void findMusicAssociation(Event event, EventDetailsDto eventDetails) {
         List<EventMusicAssociation> associationList = eventMusicAssociationService.findAllMusicByEvent(event);
         Set<MusicFullWithOrderDto> dtoList = musicMapper
@@ -257,13 +265,12 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
                 .getUserList()
                 .stream()
                 .map(UserOnlyIdNameAndEmailDto::getEmail)
-                .anyMatch(emailOfUserLogged::equals);
+                .anyMatch(email -> emailOfUserLogged != null && emailOfUserLogged.equals(email));
     }
 
     private void updateEventFields(Event eventInDatabase, EventWithMusicListDto body) {
         eventInDatabase.setName(body.getName());
-        eventInDatabase.setDateEvent(body.getUtcDateTime().toLocalDate());
-        eventInDatabase.setTimeEvent(body.getUtcDateTime().toLocalTime());
+        eventInDatabase.setDateTimeEvent(body.getUtcDateTime());
     }
 
     private Event findByIdEventAndSpaceValidated(String idEvent, Space space) {
@@ -276,7 +283,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     private Space validateIfEventAlreadyExistAndGetSpace(String spaceId, EventWithMusicListDto body) {
         Space space = spaceService.findByIdValidated(spaceId);
-        repository.findBySpaceAndDateEventAndTimeEvent(space, body.getUtcDateTime().toLocalDate(), body.getUtcDateTime().toLocalTime())
+        repository.findBySpaceAndDateTimeEvent(space, body.getUtcDateTime())
                 .ifPresent(event -> {
                     throw new ServiceException(messagesService.get("event.already.exist"));
                 });
@@ -307,8 +314,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
 
     private EventDto parseToEventDto(EventWithTotalAssociationsProjection event) {
         EventDto dto = new EventDto();
-        dto.setDate(event.getDateEvent());
-        dto.setTime(event.getTimeEvent());
+        dto.setUtcDateTime(DateUtilUTC.toOffsetDateTime(event.getDateTimeEvent()));
         dto.setName(event.getNameEvent());
         dto.setId(event.getEventId());
         dto.setMusicQuantity(event.getMusicQuantity());
@@ -321,45 +327,17 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
         if(rangeDateFilterEnum == null) {
             throw new ServiceException(messagesService.get("event.dateRange.required"));
         }
-        LocalDateTime ldt = LocalDateTime.now();
-        LocalDate today = ldt.toLocalDate();
-        LocalTime rangeTwoHoursFromNow = ldt.toLocalTime().minusHours(2);
+        OffsetDateTime now = OffsetDateTime.now().minusHours(2);
 
-        LocalDate startDate = rangeDateFilterEnum.getStartOfRangeDateEvent();
+        OffsetDateTime startDate = rangeDateFilterEnum.getStartOfRangeDateEvent();
 
-        List<EventWithTotalAssociationsProjection> list = repository.findAllBySpaceAndDateEventRange(space.getId(), startDate, today, userLogged.getId());
-
-        return list.stream()
-                .filter(event -> {
-                    LocalDate dateEvent = event.getDateEvent();
-                    boolean belongToRange = true;
-
-                    if(dateEvent.isEqual(startDate)) {
-                        belongToRange = event.getTimeEvent().isAfter(rangeTwoHoursFromNow);
-                    } else if(dateEvent.isEqual(today)) {
-                        belongToRange = event.getTimeEvent().isBefore(rangeTwoHoursFromNow);
-                    }
-
-                    return belongToRange;
-                })
-                .collect(Collectors.toList());
+        return repository.findAllBySpaceAndDateTimeEventRange(space.getId(), startDate, now, userLogged.getId());
     }
 
     private List<EventWithTotalAssociationsProjection> findNextEvents(Space space, UserApp userLogged) {
-        LocalDateTime ldt = LocalDateTime.now();
-        LocalDate today = ldt.toLocalDate();
-        LocalTime rangeTwoHoursFromNow = ldt.toLocalTime().minusHours(2);
+        OffsetDateTime now = OffsetDateTime.now().minusHours(2);
 
-        List<EventWithTotalAssociationsProjection> list = repository.findAllBySpaceAndDateEventGreaterThanEqual(space.getId(), today, userLogged.getId());
-
-        return list.stream()
-                .filter(event -> {
-                    if(event.getDateEvent().isEqual(today)) {
-                        return event.getTimeEvent().isAfter(rangeTwoHoursFromNow);
-                    }
-                    return true;
-                })
-                .collect(Collectors.toList());
+        return repository.findAllBySpaceAndDateTimeEventGreaterThanEqual(space.getId(), now, userLogged.getId());
     }
 
 }

@@ -10,8 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -30,8 +31,9 @@ public class SpringScheduler {
     private LogService logService;
 
     @Scheduled(cron = "${cron.expression.notification.event}")
+    @Transactional(readOnly = true)
     public void scheduleTaskUsingCronExpression() {
-        LocalDate today = LocalDate.now();
+        OffsetDateTime today = OffsetDateTime.now();
         DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         List<Event> events = eventService.findAllEventsByDateEvent(today);
