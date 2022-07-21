@@ -39,7 +39,7 @@ class SingerServiceTest extends BaseUnitTests {
 
     @Test
     void findByNameOrCreateIfNotExist_shouldReturnNewSingerCreated() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
 
         when(singerRepository.findByNameIgnoreCase(singer.getName())).thenReturn(Optional.empty());
@@ -56,7 +56,7 @@ class SingerServiceTest extends BaseUnitTests {
 
     @Test
     void findByNameOrCreateIfNotExist_shouldReturnSingerPreviousExists() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
 
         when(singerRepository.findByNameIgnoreCase(singer.getName())).thenReturn(Optional.of(singer));
@@ -72,8 +72,8 @@ class SingerServiceTest extends BaseUnitTests {
 
     @Test
     void findByNameOrCreateIfNotExistToUpdate_shouldReturnSingerPreviousExists() {
-        Music music = givenMusicFull();
-        Music musicInDatabase = givenMusicFull();
+        Music music = givenMusic();
+        Music musicInDatabase = givenMusic();
         Singer singerToUpdate = music.getSinger();
         Singer singerInDatabase = musicInDatabase.getSinger();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(musicInDatabase);
@@ -91,7 +91,7 @@ class SingerServiceTest extends BaseUnitTests {
 
     @Test
     void deleteOrRemoveAssociation_shouldDeleteSingerIfMusicListEmpty() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = MusicBuilder.generateSinger();
 
         singerService.deleteOrRemoveAssociation(music, singer);
@@ -103,7 +103,7 @@ class SingerServiceTest extends BaseUnitTests {
 
     @Test
     void findAllBySpace_shouldReturnSingerList() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = MusicBuilder.generateSinger();
         Space space = music.getSpace();
         List<Singer> listOfSingers = List.of(singer);

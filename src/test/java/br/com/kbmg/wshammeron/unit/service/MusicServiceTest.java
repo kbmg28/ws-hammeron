@@ -42,7 +42,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void createMusic_shouldReturnMusicCreated() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
@@ -65,7 +65,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void createMusic_shouldReturnExceptionIfAlreadyExists() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
@@ -86,7 +86,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void deleteMusic_shouldDelete() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
 
@@ -104,7 +104,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void deleteMusic_shouldReturnErrorIfMusicNotExistOnSpace() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
 
         when(spaceServiceMock.findByIdValidated(space.getId())).thenReturn(space);
@@ -118,7 +118,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusic_shouldReturnMusicUpdated() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
@@ -145,7 +145,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusic_shouldReturnErrorIfMusicNotExistOnSpace() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
 
@@ -161,8 +161,8 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusic_shouldReturnErrorIfMusicNameAlreadyExist() {
-        Music music = givenMusicFull();
-        Music otherMusic = givenMusicFull();
+        Music music = givenMusic();
+        Music otherMusic = givenMusic();
         otherMusic.setId(UUID.randomUUID().toString());
         Singer singer = music.getSinger();
         Space space = music.getSpace();
@@ -186,7 +186,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void findAllBySpace_shouldReturnMusicList() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
         List<Music> musicList = List.of(music);
 
@@ -202,7 +202,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void findBySpaceAndId_shouldReturnMusicDto() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
         MusicDto musicDto = givenMusicDto(music);
 
@@ -220,7 +220,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void findBySpaceAndId_shouldReturnErrorIfMusicNotExistOnSpace() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
 
         when(spaceServiceMock.findByIdValidated(space.getId())).thenReturn(space);

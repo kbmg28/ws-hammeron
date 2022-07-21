@@ -40,7 +40,11 @@ public abstract class KeyMessageConstants {
 
     /* Event */
 
+    public static final String EVENT_ALREADY_EXIST = "event.already.exist";
     public static final String EVENT_CREATE_DATETIME_INVALID = "event.create.datetime.invalid";
+    public static final String EVENT_DATE_RANGE_REQUIRED = "event.dateRange.required";
     public static final String EVENT_IS_NOT_EDITABLE = "event.not.editable";
+    public static final String EVENT_DO_NOT_EXIST = "event.not.exist";
+    public static final String EVENT_DO_NOT_EXIST_ON_SPACE = "event.not.exist.space";
     public static final String EVENT_USER_LIST_INVALID = "event.user.list.invalid";
 }
