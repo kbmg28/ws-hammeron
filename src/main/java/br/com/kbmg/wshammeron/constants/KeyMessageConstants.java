@@ -47,4 +47,6 @@ public abstract class KeyMessageConstants {
     public static final String EVENT_DO_NOT_EXIST = "event.not.exist";
     public static final String EVENT_DO_NOT_EXIST_ON_SPACE = "event.not.exist.space";
     public static final String EVENT_USER_LIST_INVALID = "event.user.list.invalid";
+    public static final String EVENT_SMS_NEW_OR_UPDATE = "event.sms.new.association";
+    public static final String EVENT_SMS_DELETE = "event.sms.remove.association";
 }

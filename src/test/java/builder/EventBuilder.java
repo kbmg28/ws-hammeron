@@ -2,6 +2,7 @@ package builder;
 
 import br.com.kbmg.wshammeron.dto.event.EventDetailsDto;
 import br.com.kbmg.wshammeron.dto.event.EventDto;
+import br.com.kbmg.wshammeron.dto.event.EventMainDataDto;
 import br.com.kbmg.wshammeron.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wshammeron.dto.music.MusicFullWithOrderDto;
 import br.com.kbmg.wshammeron.dto.music.MusicSimpleToEventDto;
@@ -20,6 +21,7 @@ import br.com.kbmg.wshammeron.util.DateUtilUTC;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,6 +72,16 @@ public abstract class EventBuilder {
             setMusicQuantity(event.getEventMusicList().size());
             setUserQuantity(event.getSpaceUserAppAssociationList().size());
             setIsUserLoggedIncluded(true);
+        }};
+    }
+
+    public static EventMainDataDto generateEventMainDataDto(Event event) {
+        return new EventMainDataDto(){{
+            setId(event.getId());
+            setName(event.getName());
+            setUtcDateTime(event.getDateTimeEvent());
+            setTimeZoneName(event.getTimeZoneName());
+            setMusicList(new HashSet<>());
         }};
     }
 
