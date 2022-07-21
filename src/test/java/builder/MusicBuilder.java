@@ -16,7 +16,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static constants.BaseTestsConstants.*;
+import static constants.BaseTestsConstants.ANY_VALUE;
+import static constants.BaseTestsConstants.LINK_CHORD_MUSIC_TEST;
+import static constants.BaseTestsConstants.LINK_SPOTIFY_MUSIC_TEST;
+import static constants.BaseTestsConstants.LINK_YOUTUBE_MUSIC_TEST;
 
 public abstract class MusicBuilder {
 

@@ -62,6 +62,7 @@ import static builder.SpaceBuilder.generateSpace;
 import static builder.UserBuilder.generateSpaceUserAppAssociation;
 import static builder.UserBuilder.generateUserAppLogged;
 import static constants.BaseTestsConstants.SECRET_UNIT_TEST;
+import static java.util.Objects.nonNull;
 
 @ExtendWith({MockitoExtension.class, SpringExtension.class})
 @Tag("unitTest")
@@ -238,16 +239,20 @@ public abstract class BaseUnitTests {
     }
 
     protected Event givenNextEvent(UserApp userApp, Space space) {
-        return givenEvent(userApp, space, true);
+        return givenEvent(userApp, space, true, null);
     }
 
     protected Event givenOldEvent(UserApp userApp, Space space) {
-        return givenEvent(userApp, space, false);
+        return givenEvent(userApp, space, false, null);
     }
 
-    private Event givenEvent(UserApp userApp, Space space, Boolean isNextEvent) {
+    protected Event givenOldEvent(UserApp userApp, Space space, Music music) {
+        return givenEvent(userApp, space, false, music);
+    }
+
+    private Event givenEvent(UserApp userApp, Space space, Boolean isNextEvent, Music musicParam) {
         SpaceUserAppAssociation spaceUserAppAssociation = this.givenSpaceUserAppAssociation(userApp);
-        Music music = this.givenMusic(space);
+        Music music = nonNull(musicParam) ? musicParam : this.givenMusic(space);
         Event event = withId(generateEvent(space, isNextEvent));
 
         EventMusicAssociation eventMusicAssociation = generateEventMusicAssociation(event, music);
