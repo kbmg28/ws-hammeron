@@ -74,7 +74,7 @@ class EventServiceTest extends BaseUnitTests {
 
         when(userAppServiceMock.findUserLogged()).thenReturn(userApp);
         when(spaceServiceMock.findByIdValidated(spaceId)).thenReturn(space);
-        when(eventRepository.findAllBySpaceAndDateTimeEventGreaterThanEqual(any(), any(), any(), any()))
+        when(eventRepository.findAllBySpaceAndDateTimeEventGreaterThanEqual(any(), any(), any()))
                 .thenReturn(List.of(projection));
 
         List<EventDto> result = eventService.findAllEventsBySpace(spaceId, null, true, null);
@@ -82,7 +82,7 @@ class EventServiceTest extends BaseUnitTests {
         assertAll(
                 () -> verify(userAppServiceMock).findUserLogged(),
                 () -> verify(spaceServiceMock).findByIdValidated(spaceId),
-                () -> verify(eventRepository).findAllBySpaceAndDateTimeEventGreaterThanEqual(any(), any(), any(), any()),
+                () -> verify(eventRepository).findAllBySpaceAndDateTimeEventGreaterThanEqual(any(), any(), any()),
                 () -> verify(eventRepository, times(0))
                         .findAllBySpaceAndDateTimeEventRange(any(), any(), any(), any()),
                 () -> assertEquals(List.of(eventDto), result)
@@ -109,7 +109,7 @@ class EventServiceTest extends BaseUnitTests {
                 () -> verify(userAppServiceMock).findUserLogged(),
                 () -> verify(spaceServiceMock).findByIdValidated(spaceId),
                 () -> verify(eventRepository, times(0))
-                        .findAllBySpaceAndDateTimeEventGreaterThanEqual(any(), any(), any(), any()),
+                        .findAllBySpaceAndDateTimeEventGreaterThanEqual(any(), any(), any()),
                 () -> verify(eventRepository)
                         .findAllBySpaceAndDateTimeEventRange(any(), any(), any(), any()),
                 () -> assertEquals(List.of(eventDto), result)

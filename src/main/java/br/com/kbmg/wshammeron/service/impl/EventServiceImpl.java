@@ -50,6 +50,7 @@ import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_DATE_RA
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_DO_NOT_EXIST;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_DO_NOT_EXIST_ON_SPACE;
 import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_IS_NOT_EDITABLE;
+import static java.util.Objects.isNull;
 
 @Service
 public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository> implements EventService {
@@ -352,7 +353,9 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     private List<EventWithTotalAssociationsProjection> findNextEvents(Space space, String hasMusicId, UserApp userLogged) {
         OffsetDateTime now = OffsetDateTime.now().minusHours(2);
 
-        return repository.findAllBySpaceAndDateTimeEventGreaterThanEqual(space.getId(), now, userLogged.getId(), hasMusicId);
+        return isNull(hasMusicId) ?
+            repository.findAllBySpaceAndDateTimeEventGreaterThanEqual(space.getId(), now, userLogged.getId()) :
+            repository.findAllBySpaceAndDateTimeEventGreaterThanEqualCheckingOneMusic(space.getId(), now, userLogged.getId(), hasMusicId);
     }
 
 }
