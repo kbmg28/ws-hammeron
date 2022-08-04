@@ -20,6 +20,7 @@ import java.util.Set;
 public interface MusicMapper {
     String TO_MUSIC_ONLY_ID_AND_MUSIC_NAME_AND_SINGER_NAME_DTO = "toMusicOnlyIdAndMusicNameAndSingerNameDto";
     String TO_MUSIC_WITH_SINGER_AND_LINKS_DTO = "toMusicWithSingerAndLinksDto";
+    String TO_MUSIC_WITH_SINGER_AND_LINKS_DTO_IGNORE_LINKS = "toMusicWithSingerAndLinksDtoIgnoreLinks";
     String TO_MUSIC_FULL_WITH_ORDER_DTO = "toMusicFullWithOrderDto";
     String TO_MUSIC_DTO = "toMusicDto";
     String TO_SINGER = "toSinger";
@@ -33,6 +34,13 @@ public interface MusicMapper {
     @Named(TO_MUSIC_WITH_SINGER_AND_LINKS_DTO)
     @Mapping(target = "links", source = "musicLinkList")
     MusicWithSingerAndLinksDto toMusicWithSingerAndLinksDto(Music music);
+
+    @IterableMapping(elementTargetType = MusicWithSingerAndLinksDto.class, qualifiedByName = TO_MUSIC_WITH_SINGER_AND_LINKS_DTO_IGNORE_LINKS)
+    Set<MusicWithSingerAndLinksDto> toMusicWithSingerAndLinksDtoListIgnoreLinks(Collection<Music> musicList);
+
+    @Named(TO_MUSIC_WITH_SINGER_AND_LINKS_DTO_IGNORE_LINKS)
+    @Mapping(target = "links",ignore = true)
+    MusicWithSingerAndLinksDto toMusicWithSingerAndLinksDtoIgnoreLinks(Music music);
 
     @IterableMapping(elementTargetType = MusicFullWithOrderDto.class, qualifiedByName = TO_MUSIC_FULL_WITH_ORDER_DTO)
     Set<MusicFullWithOrderDto> toMusicFullWithOrderDtoList(Collection<EventMusicAssociation> associationList);

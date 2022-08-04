@@ -5,6 +5,7 @@ import br.com.kbmg.wshammeron.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wshammeron.model.Event;
 import br.com.kbmg.wshammeron.model.EventMusicAssociation;
 import br.com.kbmg.wshammeron.model.Music;
+import br.com.kbmg.wshammeron.model.Space;
 
 import java.util.List;
 import java.util.Set;
@@ -17,4 +18,6 @@ public interface EventMusicAssociationService extends GenericService<EventMusicA
     List<EventSimpleDto> findEventsByMusic(Music music, Boolean eventsFromTheLast3Months);
 
     Set<EventMusicAssociation> updateAssociations(Event eventInDatabase, Set<MusicSimpleToEventDto> musicList);
+
+    void addOrRemoveMusicOnEvent(String musicId, Space space, Event eventInDatabase);
 }

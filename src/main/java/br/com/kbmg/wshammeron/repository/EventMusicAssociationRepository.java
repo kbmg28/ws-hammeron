@@ -2,6 +2,7 @@ package br.com.kbmg.wshammeron.repository;
 
 import br.com.kbmg.wshammeron.model.Event;
 import br.com.kbmg.wshammeron.model.EventMusicAssociation;
+import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.repository.projection.EventSimpleProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EventMusicAssociationRepository extends JpaRepository<EventMusicAssociation, String> {
@@ -28,4 +30,8 @@ public interface EventMusicAssociationRepository extends JpaRepository<EventMusi
 
     @Query(value = SELECT_ASSOCIATION_BY_MUSIC + ORDER_BY_DATE_TIME_EVENT_DESC, nativeQuery = true)
     List<EventSimpleProjection> findAllEventsOfMusic(String musicId);
+
+    Optional<EventMusicAssociation> findByEventAndMusic(Event event, Music music);
+
+    long countByEvent(Event event);
 }

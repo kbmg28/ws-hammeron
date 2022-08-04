@@ -38,10 +38,11 @@ public class EventController extends GenericController {
     @GetMapping
     @Transactional
     public ResponseEntity<ResponseData<List<EventDto>>> findAllEvents(
+            @RequestParam(name = "hasMusicId", required = false) String hasMusicId,
             @RequestParam(name = "nextEvents", required = true) Boolean nextEvents,
             @RequestParam(name = "rangeDate", required = false) RangeDateFilterEnum rangeDate) {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
-        List<EventDto> list = eventService.findAllEventsBySpace(spaceId, nextEvents, rangeDate);
+        List<EventDto> list = eventService.findAllEventsBySpace(spaceId, hasMusicId, nextEvents, rangeDate);
         return super.ok(list);
     }
 
@@ -71,6 +72,16 @@ public class EventController extends GenericController {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         EventDto data = eventService.editEvent(spaceId,idEvent, body);
         return super.ok(data);
+    }
+
+    @PutMapping("/{id-event}/music/{music-id}")
+    @Transactional
+    public ResponseEntity<ResponseData<Void>> addOrRemoveMusicOnEvent(
+            @PathVariable("id-event") String idEvent,
+            @PathVariable("music-id") String musicId) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
+        eventService.addOrRemoveMusicOnEvent(spaceId, idEvent, musicId);
+        return super.ok();
     }
 
     @DeleteMapping("/{id-event}")

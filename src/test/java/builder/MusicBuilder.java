@@ -1,5 +1,8 @@
 package builder;
 
+import br.com.kbmg.wshammeron.dto.music.MusicFullWithOrderDto;
+import br.com.kbmg.wshammeron.dto.music.MusicLinkDto;
+import br.com.kbmg.wshammeron.dto.music.MusicSimpleToEventDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.music.SingerDto;
 import br.com.kbmg.wshammeron.enums.MusicStatusEnum;
@@ -13,7 +16,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static constants.BaseTestsConstants.*;
+import static constants.BaseTestsConstants.ANY_VALUE;
+import static constants.BaseTestsConstants.LINK_CHORD_MUSIC_TEST;
+import static constants.BaseTestsConstants.LINK_SPOTIFY_MUSIC_TEST;
+import static constants.BaseTestsConstants.LINK_YOUTUBE_MUSIC_TEST;
 
 public abstract class MusicBuilder {
 
@@ -65,6 +71,33 @@ public abstract class MusicBuilder {
         singerDto.setName(ANY_VALUE);
 
         return singerDto;
+    }
+
+    private static Set<MusicLinkDto> generateMusicLinkDto(Set<MusicLink> musicLinkList) {
+        return musicLinkList
+                .stream()
+                .map(musicLink -> new MusicLinkDto(musicLink.getId(), musicLink.getLink(), musicLink.getTypeLink()))
+                .collect(Collectors.toSet());
+    }
+
+    public static MusicFullWithOrderDto generateMusicFullWithOrderDto(Music music, Integer sequentialOrder) {
+        return new MusicFullWithOrderDto() {{
+            setId(music.getId());
+            setName(music.getName());
+            setMusicStatus(music.getMusicStatus());
+            setSinger(generateSingerDto());
+            setLinks(generateMusicLinkDto(music.getMusicLinkList()));
+            setSequentialOrder(sequentialOrder);
+        }};
+    }
+
+    public static MusicSimpleToEventDto generateMusicSimpleToEventDto(Music music, Integer sequentialOrder) {
+        return new MusicSimpleToEventDto() {{
+            setMusicId(music.getId());
+            setMusicName(music.getName());
+            setSingerName(music.getSinger().getName());
+            setSequentialOrder(sequentialOrder);
+        }};
     }
 
 }

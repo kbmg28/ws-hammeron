@@ -9,6 +9,10 @@ import br.com.kbmg.wshammeron.dto.music.MusicLinkDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.music.SingerDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
+import br.com.kbmg.wshammeron.model.AbstractEntity;
+import br.com.kbmg.wshammeron.model.Event;
+import br.com.kbmg.wshammeron.model.EventMusicAssociation;
+import br.com.kbmg.wshammeron.model.EventSpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.MusicLink;
 import br.com.kbmg.wshammeron.model.Singer;
@@ -48,6 +52,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static builder.EventBuilder.generateEvent;
+import static builder.EventBuilder.generateEventMusicAssociation;
+import static builder.EventBuilder.generateEventSpaceUserAppAssociation;
 import static builder.MusicBuilder.generateMusic;
 import static builder.MusicBuilder.generateMusicLinks;
 import static builder.MusicBuilder.generateSinger;
@@ -55,6 +62,7 @@ import static builder.SpaceBuilder.generateSpace;
 import static builder.UserBuilder.generateSpaceUserAppAssociation;
 import static builder.UserBuilder.generateUserAppLogged;
 import static constants.BaseTestsConstants.SECRET_UNIT_TEST;
+import static java.util.Objects.nonNull;
 
 @ExtendWith({MockitoExtension.class, SpringExtension.class})
 @Tag("unitTest")
@@ -172,21 +180,21 @@ public abstract class BaseUnitTests {
         return new SingerDto(singer.getId(), singer.getName());
     }
 
-    protected Music givenMusicFull() {
-        UserApp userApp = generateUserAppLogged();
+    protected Music givenMusic() {
+        UserApp userApp = withId(generateUserAppLogged());
+        Space space = withId(generateSpace(userApp));
 
-        Space space = generateSpace(userApp);
-        space.setId(UUID.randomUUID().toString());
+        return givenMusic(space);
+    }
 
-        Singer singer = generateSinger();
-        singer.setId(UUID.randomUUID().toString());
-
-        Music music = generateMusic(space, singer);
-        music.setId(UUID.randomUUID().toString());
+    protected Music givenMusic(Space space) {
+        Singer singer = withId(generateSinger());
+        Music music = withId(generateMusic(space, singer));
 
         Set<MusicLink> musicLinks = generateMusicLinks(music);
-        musicLinks.forEach(musicLink -> musicLink.setId(UUID.randomUUID().toString()));
+        musicLinks.forEach(this::withId);
         music.getMusicLinkList().addAll(musicLinks);
+
         return music;
     }
 
@@ -228,6 +236,38 @@ public abstract class BaseUnitTests {
                 .stream()
                 .findFirst()
                 .orElseThrow();
+    }
+
+    protected Event givenNextEvent(UserApp userApp, Space space) {
+        return givenEvent(userApp, space, true, null);
+    }
+
+    protected Event givenOldEvent(UserApp userApp, Space space) {
+        return givenEvent(userApp, space, false, null);
+    }
+
+    protected Event givenOldEvent(UserApp userApp, Space space, Music music) {
+        return givenEvent(userApp, space, false, music);
+    }
+
+    private Event givenEvent(UserApp userApp, Space space, Boolean isNextEvent, Music musicParam) {
+        SpaceUserAppAssociation spaceUserAppAssociation = this.givenSpaceUserAppAssociation(userApp);
+        Music music = nonNull(musicParam) ? musicParam : this.givenMusic(space);
+        Event event = withId(generateEvent(space, isNextEvent));
+
+        EventMusicAssociation eventMusicAssociation = generateEventMusicAssociation(event, music);
+        EventSpaceUserAppAssociation eventSpaceUserAppAssociation = generateEventSpaceUserAppAssociation(event, spaceUserAppAssociation);
+
+        withId(eventMusicAssociation);
+        withId(eventSpaceUserAppAssociation);
+
+        return event;
+    }
+
+    private <T extends AbstractEntity> T withId(T entity) {
+        entity.setId(UUID.randomUUID().toString());
+
+        return entity;
     }
 
 }

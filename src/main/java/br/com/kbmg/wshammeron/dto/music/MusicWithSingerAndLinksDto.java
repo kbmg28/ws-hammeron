@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,6 +26,7 @@ public class MusicWithSingerAndLinksDto {
     @NotNull
     private SingerDto singer;
 
+    @Valid
     private Set<MusicLinkDto> links = new HashSet<>();
 
 }

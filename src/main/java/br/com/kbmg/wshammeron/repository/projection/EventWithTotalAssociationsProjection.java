@@ -10,5 +10,6 @@ public interface EventWithTotalAssociationsProjection {
      Integer getMusicQuantity();
      Integer getUserQuantity();
      Boolean getIsUserLoggedIncluded();
+     Boolean getHasMusicId();
 
 }

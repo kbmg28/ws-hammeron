@@ -25,6 +25,9 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_SMS_DELETE;
+import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.EVENT_SMS_NEW_OR_UPDATE;
+
 @Service
 public class SmsServiceImpl implements SmsService {
     private static final String URL_SMS = "https://api.mobizon.com.br/service/message/sendSmsMessage?apiKey=";
@@ -49,7 +52,7 @@ public class SmsServiceImpl implements SmsService {
     public void sendNewOrUpdateSmsEvent(EventMainDataDto event, Set<UserApp> userList) {
         Set<String> cellPhoneList = getCellPhoneList(userList);
         String nameDateTimeEvent = getNameAndDateAndTimeFormatted(event);
-        String description = String.format(messagesService.get("event.sms.new.association"), nameDateTimeEvent);
+        String description = String.format(messagesService.get(EVENT_SMS_NEW_OR_UPDATE), nameDateTimeEvent);
         String messageText = String.format(HAMMERON_SMS_TEMPLATE, description);
 
         sendSms(cellPhoneList, messageText);
@@ -60,7 +63,7 @@ public class SmsServiceImpl implements SmsService {
         Set<String> cellPhoneList = getCellPhoneList(userList);
 
         String nameDateTimeEvent = getNameAndDateAndTimeFormatted(event);
-        String description = String.format(messagesService.get("event.sms.remove.association"), nameDateTimeEvent);
+        String description = String.format(messagesService.get(EVENT_SMS_DELETE), nameDateTimeEvent);
         String messageText = String.format(HAMMERON_SMS_TEMPLATE, description);
 
         sendSms(cellPhoneList, messageText);
