@@ -2,9 +2,12 @@ package br.com.kbmg.wshammeron.unit.service;
 
 import br.com.kbmg.wshammeron.dto.music.MusicDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wshammeron.dto.space.overview.MusicOverviewDto;
+import br.com.kbmg.wshammeron.model.Event;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.model.Space;
+import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.repository.MusicRepository;
 import br.com.kbmg.wshammeron.service.impl.MusicServiceImpl;
 import br.com.kbmg.wshammeron.unit.BaseUnitTests;
@@ -14,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,6 +27,7 @@ import static br.com.kbmg.wshammeron.constants.KeyMessageConstants.MUSIC_NOT_EXI
 import static br.com.kbmg.wshammeron.unit.ExceptionAssertions.thenShouldThrowServiceException;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,7 +47,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void createMusic_shouldReturnMusicCreated() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
@@ -65,7 +70,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void createMusic_shouldReturnExceptionIfAlreadyExists() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
@@ -86,7 +91,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void deleteMusic_shouldDelete() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
 
@@ -104,7 +109,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void deleteMusic_shouldReturnErrorIfMusicNotExistOnSpace() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
 
         when(spaceServiceMock.findByIdValidated(space.getId())).thenReturn(space);
@@ -118,7 +123,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusic_shouldReturnMusicUpdated() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Singer singer = music.getSinger();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
@@ -145,7 +150,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusic_shouldReturnErrorIfMusicNotExistOnSpace() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
 
@@ -161,8 +166,8 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusic_shouldReturnErrorIfMusicNameAlreadyExist() {
-        Music music = givenMusicFull();
-        Music otherMusic = givenMusicFull();
+        Music music = givenMusic();
+        Music otherMusic = givenMusic();
         otherMusic.setId(UUID.randomUUID().toString());
         Singer singer = music.getSinger();
         Space space = music.getSpace();
@@ -186,7 +191,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void findAllBySpace_shouldReturnMusicList() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
         List<Music> musicList = List.of(music);
 
@@ -201,8 +206,14 @@ class MusicServiceTest extends BaseUnitTests {
     }
 
     @Test
+    void findTop10MusicMoreUsedInEvents_shouldReturnMusicTopUsedDto() {
+        musicService.findTop10MusicMoreUsedInEvents(UUID.randomUUID().toString());
+        verify(repositoryMock).findAllBySpaceOrderByEventsCountDescLimit10(any(), any());
+    }
+
+    @Test
     void findBySpaceAndId_shouldReturnMusicDto() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
         MusicDto musicDto = givenMusicDto(music);
 
@@ -220,7 +231,7 @@ class MusicServiceTest extends BaseUnitTests {
 
     @Test
     void findBySpaceAndId_shouldReturnErrorIfMusicNotExistOnSpace() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Space space = music.getSpace();
 
         when(spaceServiceMock.findByIdValidated(space.getId())).thenReturn(space);
@@ -234,4 +245,27 @@ class MusicServiceTest extends BaseUnitTests {
                 () -> verify(messagesServiceMock).get(MUSIC_NOT_EXIST_SPACE));
     }
 
+    @Test
+    void findMusicsAssociationForEventsBySpace_shouldReturnMusicProjection() {
+        musicService.findMusicsAssociationForEventsBySpace(UUID.randomUUID().toString());
+        verify(repositoryMock).findMusicsAssociationForEventsBySpace(any());
+    }
+
+    @Test
+    void findMusicOverview_shouldReturnMusicOverviewDtoList() {
+        UserApp userApp = super.givenUserAppFull();
+        Space space = super.givenSpace(userApp);
+        Music music = givenMusic(space);
+        Event event = givenOldEvent(userApp, space, music);
+        MusicOverviewDto musicOverviewDto = new MusicOverviewDto(music.getMusicStatus().toString(), (long) event.getEventMusicList().size());
+
+        when(overviewMapperMock.toMusicOverviewDtoList(any()))
+                .thenReturn(new ArrayList<>(List.of(musicOverviewDto)));
+
+        List<MusicOverviewDto> result = musicService.findMusicOverview(space);
+
+        assertAll(() -> verify(repositoryMock).findMusicOverviewBySpace(space.getId()),
+                () -> verify(overviewMapperMock).toMusicOverviewDtoList(any()),
+                () -> assertTrue(result.contains(musicOverviewDto)));
+    }
 }

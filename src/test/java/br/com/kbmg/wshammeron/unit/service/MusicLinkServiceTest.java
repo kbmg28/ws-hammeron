@@ -40,7 +40,7 @@ class MusicLinkServiceTest extends BaseUnitTests {
 
     @Test
     void createLinksValidated_shouldReturnMusicListCreated() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         Set<MusicLink> musicLinkList = music.getMusicLinkList();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
         Set<MusicLinkDto> musicLinkListDto = musicWithSingerAndLinksDto.getLinks();
@@ -65,7 +65,7 @@ class MusicLinkServiceTest extends BaseUnitTests {
 
     @Test
     void updateMusicLink_shouldUpdate() {
-        Music music = givenMusicFull();
+        Music music = givenMusic();
         MusicWithSingerAndLinksDto musicWithSingerAndLinksDto = givenMusicWithSingerAndLinksDto(music);
         Set<MusicLinkDto> musicLinkListDto = musicWithSingerAndLinksDto.getLinks();
 

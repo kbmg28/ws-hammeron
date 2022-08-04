@@ -6,6 +6,7 @@ import br.com.kbmg.wshammeron.exception.ServiceException;
 import br.com.kbmg.wshammeron.model.Event;
 import br.com.kbmg.wshammeron.model.EventMusicAssociation;
 import br.com.kbmg.wshammeron.model.Music;
+import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.repository.EventMusicAssociationRepository;
 import br.com.kbmg.wshammeron.repository.projection.EventSimpleProjection;
 import br.com.kbmg.wshammeron.service.EventMusicAssociationService;
@@ -107,6 +108,23 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
         return musicListInDatabase;
     }
 
+    @Override
+    public void addOrRemoveMusicOnEvent(String musicId, Space space, Event eventInDatabase) {
+        Music music = musicService.findBySpaceAndId(space, musicId);
+
+        repository.findByEventAndMusic(eventInDatabase, music)
+                .ifPresentOrElse(
+                        repository::delete,
+                        () -> associateMusicWithLastOrderOfEvent(eventInDatabase, music)
+                );
+    }
+
+    private void associateMusicWithLastOrderOfEvent(Event eventInDatabase, Music music) {
+        long quantityMusicsOfEvent = repository.countByEvent(eventInDatabase);
+        long lastOrder = quantityMusicsOfEvent + 1;
+        createAssociationInDatabase(eventInDatabase, music, (int) lastOrder);
+    }
+
     private Map<String, Integer> getMusicIdOrderMap(Set<MusicSimpleToEventDto> musicList) {
         return musicList.stream().collect(Collectors
                 .toMap(MusicSimpleToEventDto::getMusicId,
@@ -116,9 +134,13 @@ public class EventMusicAssociationServiceImpl extends GenericServiceImpl<EventMu
     private Set<EventMusicAssociation> createAssociationInDatabase(Event event, List<Music> entityMusicList, Map<String, Integer> musicIdOrderMap) {
         return entityMusicList.stream().map(music -> {
             Integer sequentialOrder = musicIdOrderMap.get(music.getId());
-            EventMusicAssociation eventMusicAssociation = new EventMusicAssociation(sequentialOrder, event, music);
-            return repository.save(eventMusicAssociation);
+            return createAssociationInDatabase(event, music, sequentialOrder);
         }).collect(Collectors.toSet());
+    }
+
+    private EventMusicAssociation createAssociationInDatabase(Event event, Music music, Integer sequentialOrder) {
+        EventMusicAssociation eventMusicAssociation = new EventMusicAssociation(sequentialOrder, event, music);
+        return repository.save(eventMusicAssociation);
     }
 
 }

@@ -158,6 +158,11 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
         return musicOverviewDtoList;
     }
 
+    @Override
+    public Music findBySpaceAndId(Space space, String musicId) {
+        return findBySpaceAndIdValidated(musicId, space);
+    }
+
     private void checkIfUserCanChangeMusicStatus(Music musicInDatabase, Music musicUpdated) {
         boolean statusInDatabaseIsRejected = MusicStatusEnum.REJECTED.equals(musicInDatabase.getMusicStatus());
         boolean newStatusIsRejected = MusicStatusEnum.REJECTED.equals(musicUpdated.getMusicStatus());

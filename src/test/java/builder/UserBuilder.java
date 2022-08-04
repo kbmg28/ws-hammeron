@@ -6,6 +6,7 @@ import br.com.kbmg.wshammeron.dto.user.RegisterDto;
 import br.com.kbmg.wshammeron.dto.user.RegisterPasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserChangePasswordDto;
 import br.com.kbmg.wshammeron.dto.user.UserDto;
+import br.com.kbmg.wshammeron.dto.user.UserOnlyIdNameAndEmailDto;
 import br.com.kbmg.wshammeron.dto.user.UserTokenHashDto;
 import br.com.kbmg.wshammeron.dto.user.UserWithPermissionDto;
 import br.com.kbmg.wshammeron.dto.user.UserWithSinglePermissionDto;
@@ -102,6 +103,10 @@ public abstract class UserBuilder {
 
     public static UserDto generateUserDto(String email) {
         return new UserDto(USER_TEST_NAME, email, USER_TEST_CELLPHONE);
+    }
+
+    public static UserOnlyIdNameAndEmailDto generateUserOnlyIdNameAndEmailDto(UserApp userApp) {
+        return new UserOnlyIdNameAndEmailDto(userApp.getId(), USER_TEST_NAME, userApp.getEmail());
     }
 
     public static UserWithPermissionDto generateUserWithPermissionDto(UserApp userApp, PermissionEnum... permissions) {

@@ -1,6 +1,9 @@
 package br.com.kbmg.wshammeron.unit.service;
 
+import br.com.kbmg.wshammeron.dto.space.overview.UserOverviewDto;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
+import br.com.kbmg.wshammeron.model.Event;
+import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.SpaceUserAppAssociation;
 import br.com.kbmg.wshammeron.model.UserApp;
@@ -13,7 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,6 +28,7 @@ import static br.com.kbmg.wshammeron.unit.ExceptionAssertions.thenShouldThrowSer
 import static constants.BaseTestsConstants.generateRandomEmail;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -151,4 +157,21 @@ class SpaceUserAppAssociationServiceTest extends BaseUnitTests {
         );
     }
 
+    @Test
+    void findUserOverviewBySpace_shouldReturnUserOverviewDtoList() {
+        UserApp userApp = super.givenUserAppFull();
+        Space space = super.givenSpace(userApp);
+        Music music = givenMusic(space);
+        Event event = givenOldEvent(userApp, space, music);
+        UserOverviewDto userOverviewDto = new UserOverviewDto(PermissionEnum.PARTICIPANT.name(), (long) event.getSpaceUserAppAssociationList().size());
+
+        when(overviewMapperMock.toUserOverviewDtoList(any()))
+                .thenReturn(new ArrayList<>(List.of(userOverviewDto)));
+
+        List<UserOverviewDto> result = spaceUserAppAssociationService.findUserOverviewBySpace(space);
+
+        assertAll(() -> verify(spaceUserAppAssociationRepositoryMock).findUserOverviewBySpace(space.getId()),
+                () -> verify(overviewMapperMock).toUserOverviewDtoList(any()),
+                () -> assertTrue(result.contains(userOverviewDto)));
+    }
 }

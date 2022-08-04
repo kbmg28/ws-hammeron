@@ -26,4 +26,6 @@ public interface MusicService extends GenericService<Music>{
     List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId);
 
     List<MusicOverviewDto> findMusicOverview(Space space);
+
+    Music findBySpaceAndId(Space space, String musicId);
 }
