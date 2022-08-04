@@ -53,7 +53,7 @@ public class MusicController extends GenericController {
     public ResponseEntity<ResponseData<Set<MusicWithSingerAndLinksDto>>> findAllMusic() {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
         List<Music> entityData = musicService.findAllBySpace(spaceId);
-        Set<MusicWithSingerAndLinksDto> viewData = musicMapper.toMusicWithSingerAndLinksDtoList(entityData);
+        Set<MusicWithSingerAndLinksDto> viewData = musicMapper.toMusicWithSingerAndLinksDtoListIgnoreLinks(entityData);
         return super.ok(viewData);
     }
 
