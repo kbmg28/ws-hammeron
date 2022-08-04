@@ -1,1 +1,1 @@
-web: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/ws-hammeron-1.0.3.jar
+web: java -Dserver.port=$PORT $JAVA_OPTS -jar build/libs/ws-hammeron-1.0.4.jar
