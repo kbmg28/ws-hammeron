@@ -139,6 +139,7 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     public EventDto editEvent(String spaceId, String idEvent, @Valid EventWithMusicListDto body) {
         Space space = spaceService.findByIdValidated(spaceId);
         Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
+        validateDateTimeToEditOrDelete(eventInDatabase.getDateTimeEvent());
         validateDateTimeToEditOrDelete(body.getUtcDateTime());
         updateEventFields(eventInDatabase, body);
 
@@ -205,6 +206,15 @@ public class EventServiceImpl extends GenericServiceImpl<Event, EventRepository>
     @Override
     public List<Event> findAllEventsByDateEvent(OffsetDateTime dateTimeEvent) {
         return repository.findAllEventsByDateTimeEvent(dateTimeEvent);
+    }
+
+    @Override
+    public void addOrRemoveMusicOnEvent(String spaceId, String idEvent, String musicId) {
+        Space space = spaceService.findByIdValidated(spaceId);
+        Event eventInDatabase = this.findByIdEventAndSpaceValidated(idEvent, space);
+        validateDateTimeToEditOrDelete(eventInDatabase.getDateTimeEvent());
+
+        eventMusicAssociationService.addOrRemoveMusicOnEvent(musicId, space, eventInDatabase);
     }
 
     private void validateIfDateTimeEventGreaterNow(EventWithMusicListDto body) {

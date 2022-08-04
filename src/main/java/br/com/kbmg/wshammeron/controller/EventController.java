@@ -74,6 +74,16 @@ public class EventController extends GenericController {
         return super.ok(data);
     }
 
+    @PutMapping("/{id-event}/music/{music-id}")
+    @Transactional
+    public ResponseEntity<ResponseData<Void>> addOrRemoveMusicOnEvent(
+            @PathVariable("id-event") String idEvent,
+            @PathVariable("music-id") String musicId) {
+        String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
+        eventService.addOrRemoveMusicOnEvent(spaceId, idEvent, musicId);
+        return super.ok();
+    }
+
     @DeleteMapping("/{id-event}")
     @Transactional
     @SecuredSpaceOwner

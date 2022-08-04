@@ -5,6 +5,8 @@ import br.com.kbmg.wshammeron.dto.event.EventDto;
 import br.com.kbmg.wshammeron.dto.event.EventWithMusicListDto;
 import br.com.kbmg.wshammeron.enums.RangeDateFilterEnum;
 import br.com.kbmg.wshammeron.model.Event;
+import br.com.kbmg.wshammeron.model.EventMusicAssociation;
+import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.model.UserApp;
 import br.com.kbmg.wshammeron.repository.EventRepository;
@@ -374,4 +376,68 @@ class EventServiceTest extends BaseUnitTests {
         );
     }
 
+    @Test
+    void addOrRemoveMusicOnEvent_shouldReturn() {
+        UserApp userApp = super.givenUserAppFull();
+        Space space = super.givenSpace(userApp);
+        Event event = givenNextEvent(userApp, space);
+        Music music = event.getEventMusicList().stream().map(EventMusicAssociation::getMusic).findFirst().orElseThrow();
+        String spaceId = space.getId();
+        String musicId = music.getId();
+        String eventId = event.getId();
+
+        when(spaceServiceMock.findByIdValidated(spaceId)).thenReturn(space);
+        when(eventRepository.findBySpaceAndId(space, eventId)).thenReturn(Optional.of(event));
+
+        eventService.addOrRemoveMusicOnEvent(spaceId, eventId, musicId);
+
+        assertAll(
+                () -> verify(spaceServiceMock).findByIdValidated(spaceId),
+                () -> verify(eventRepository).findBySpaceAndId(space, eventId),
+                () -> verify(eventMusicAssociationServiceMock).addOrRemoveMusicOnEvent(musicId, space, event)
+        );
+    }
+
+    @Test
+    void addOrRemoveMusicOnEvent_shouldReturnErrorIfEventDontBelongToSpace() {
+        UserApp userApp = super.givenUserAppFull();
+        Space space = super.givenSpace(userApp);
+        Event event = givenNextEvent(userApp, space);
+        Music music = event.getEventMusicList().stream().map(EventMusicAssociation::getMusic).findFirst().orElseThrow();
+        String spaceId = space.getId();
+        String musicId = music.getId();
+        String eventId = event.getId();
+
+        when(spaceServiceMock.findByIdValidated(spaceId)).thenReturn(space);
+        when(eventRepository.findBySpaceAndId(space, eventId)).thenReturn(Optional.empty());
+
+        assertAll(
+                () -> thenShouldThrowServiceException(
+                        () -> eventService.addOrRemoveMusicOnEvent(spaceId, eventId, musicId)),
+                () -> verify(messagesServiceMock).get(EVENT_DO_NOT_EXIST_ON_SPACE),
+                () -> verify(spaceServiceMock).findByIdValidated(any())
+        );
+    }
+
+    @Test
+    void addOrRemoveMusicOnEvent_shouldReturnErrorIfDateEventIsBeforeNow() {
+        UserApp userApp = super.givenUserAppFull();
+        Space space = super.givenSpace(userApp);
+        Event event = givenOldEvent(userApp, space);
+        Music music = event.getEventMusicList().stream().map(EventMusicAssociation::getMusic).findFirst().orElseThrow();
+        String spaceId = space.getId();
+        String musicId = music.getId();
+        String eventId = event.getId();
+
+        when(spaceServiceMock.findByIdValidated(spaceId)).thenReturn(space);
+        when(eventRepository.findBySpaceAndId(space, eventId)).thenReturn(Optional.of(event));
+
+        assertAll(
+                () -> thenShouldThrowServiceException(
+                        () -> eventService.addOrRemoveMusicOnEvent(spaceId, eventId, musicId)),
+                () -> verify(messagesServiceMock).get(EVENT_IS_NOT_EDITABLE),
+                () -> verify(spaceServiceMock).findByIdValidated(spaceId),
+                () -> verify(eventRepository).findBySpaceAndId(space, eventId)
+        );
+    }
 }

@@ -25,4 +25,6 @@ public interface EventService extends GenericService<Event>{
     void deleteEvent(String spaceId, String idEvent);
 
     List<Event> findAllEventsByDateEvent(OffsetDateTime dateTimeEvent);
+
+    void addOrRemoveMusicOnEvent(String spaceId, String idEvent, String musicId);
 }
