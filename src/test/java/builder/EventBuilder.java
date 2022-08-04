@@ -154,6 +154,12 @@ public abstract class EventBuilder {
             public Boolean getIsUserLoggedIncluded() {
                 return true;
             }
+
+            @Override
+            public Boolean getHasMusicId() {
+                return null;
+            }
+
             {}
         };
     }

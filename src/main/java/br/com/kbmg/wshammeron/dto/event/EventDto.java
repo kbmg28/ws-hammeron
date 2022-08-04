@@ -20,6 +20,7 @@ public class EventDto extends EventGenericDto {
     private Integer musicQuantity;
     private Integer userQuantity;
     private Boolean isUserLoggedIncluded;
+    private Boolean hasMusicId;
 
     public EventDto(String id, @NotBlank String name, @NotNull OffsetDateTime utcDateTime, Integer musicQuantity, Integer userQuantity, Boolean isUserLoggedIncluded) {
         super(id, name, utcDateTime);

@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface EventRepository extends JpaRepository<Event, String> {
 
-    String SELECT_FROM_EVENT_WHERE_SPACE = "SELECT e.id AS \"eventId\", e.name as \"nameEvent\", e.date_time_event as \"dateTimeEvent\", " +
+    String SELECT_ALL_EVENTS = "SELECT e.id AS \"eventId\", e.name as \"nameEvent\", e.date_time_event as \"dateTimeEvent\", " +
             "               (SELECT COUNT(ema.id) FROM EVENT_MUSIC_ASSOCIATION ema \n" +
             "                   WHERE ema.EVENT_ID = e.id) AS \"musicQuantity\", " +
             "               (SELECT COUNT(eu.id) FROM EVENT_SPACE_USER_APP_ASSOCIATION eu \n" +
@@ -23,19 +23,19 @@ public interface EventRepository extends JpaRepository<Event, String> {
             "               COALESCE((SELECT e.id is not null FROM SPACE_USER_APP_ASSOCIATION su \n" +
             "                   WHERE su.user_app_id = :userId and EXISTS( \n" +
             "                       SELECT 1 FROM EVENT_SPACE_USER_APP_ASSOCIATION esu \n" +
-            "                           where esu.event_id = e.id and esu.space_user_app_association_id = su.id)), FALSE) AS \"isUserLoggedIncluded\" " +
-            "FROM EVENT e " +
-            "where e.space_id = :spaceId";
+            "                           where esu.event_id = e.id and esu.space_user_app_association_id = su.id)), FALSE) AS \"isUserLoggedIncluded\" ,\n";
+    String EXISTS_MUSIC_ON_EVENT = " EXISTS(select 1 FROM EVENT_MUSIC_ASSOCIATION ema WHERE ema.EVENT_ID = e.id and ema.music_id = :hasMusicId) as \"hasMusicId\"";
+    String FROM_EVENT_WHERE_SPACE = " FROM EVENT e where e.space_id = :spaceId";
 
     Optional<Event> findBySpaceAndDateTimeEvent(Space space, OffsetDateTime dateTimeEvent);
 
-    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and (e.date_time_event >= :startDate and e.date_time_event <= :endDate) " +
+    @Query(value = SELECT_ALL_EVENTS + FROM_EVENT_WHERE_SPACE + " and (e.date_time_event >= :startDate and e.date_time_event <= :endDate) " +
             "order by e.date_time_event DESC", nativeQuery = true)
     List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateTimeEventRange(String spaceId, OffsetDateTime startDate, OffsetDateTime endDate, String userId);
 
-    @Query(value = SELECT_FROM_EVENT_WHERE_SPACE + " and e.date_time_event >= :startDate order by e.date_time_event"
+    @Query(value = SELECT_ALL_EVENTS + EXISTS_MUSIC_ON_EVENT + FROM_EVENT_WHERE_SPACE + " and e.date_time_event >= :startDate order by e.date_time_event"
             , nativeQuery = true)
-    List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateTimeEventGreaterThanEqual(String spaceId, OffsetDateTime startDate, String userId);
+    List<EventWithTotalAssociationsProjection> findAllBySpaceAndDateTimeEventGreaterThanEqual(String spaceId, OffsetDateTime startDate, String userId, String hasMusicId);
 
     Optional<Event> findBySpaceAndId(Space space, String idEvent);
 
