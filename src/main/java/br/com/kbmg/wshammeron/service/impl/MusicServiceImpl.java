@@ -3,11 +3,11 @@ package br.com.kbmg.wshammeron.service.impl;
 import br.com.kbmg.wshammeron.config.security.SpringSecurityUtil;
 import br.com.kbmg.wshammeron.dto.event.EventSimpleDto;
 import br.com.kbmg.wshammeron.dto.music.MusicDto;
-import br.com.kbmg.wshammeron.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.space.overview.MusicOverviewDto;
 import br.com.kbmg.wshammeron.enums.MusicStatusEnum;
 import br.com.kbmg.wshammeron.enums.PermissionEnum;
+import br.com.kbmg.wshammeron.enums.RangeDateFilterEnum;
 import br.com.kbmg.wshammeron.exception.ForbiddenException;
 import br.com.kbmg.wshammeron.exception.ServiceException;
 import br.com.kbmg.wshammeron.model.Music;
@@ -15,7 +15,7 @@ import br.com.kbmg.wshammeron.model.MusicLink;
 import br.com.kbmg.wshammeron.model.Singer;
 import br.com.kbmg.wshammeron.model.Space;
 import br.com.kbmg.wshammeron.repository.MusicRepository;
-import br.com.kbmg.wshammeron.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
+import br.com.kbmg.wshammeron.repository.projection.MusicTopUsedProjection;
 import br.com.kbmg.wshammeron.repository.projection.OverviewProjection;
 import br.com.kbmg.wshammeron.service.EventMusicAssociationService;
 import br.com.kbmg.wshammeron.service.MusicLinkService;
@@ -120,10 +120,15 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public List<MusicTopUsedDto> findTop10MusicMoreUsedInEvents(String spaceId) {
-        return repository.findAllBySpaceOrderByEventsCountDescLimit10(spaceId, OffsetDateTime.now()).stream()
-                .map(proj -> new MusicTopUsedDto(proj.getMusicId(), proj.getMusicName(), proj.getSingerName(), proj.getAmountUsedInEvents()))
-                .collect(Collectors.toList());
+    public List<MusicTopUsedProjection> findTop10MusicMoreUsedInEvents(String spaceId) {
+        OffsetDateTime startFilter = RangeDateFilterEnum.LAST_THREE_MONTHS.getStartOfRangeDateEvent();
+        OffsetDateTime endFilter = RangeDateFilterEnum.LAST_2_HOURS.getStartOfRangeDateEvent();
+
+        return repository.findAllBySpaceOrderByEventsCountDescLimit10(
+                spaceId,
+                MusicStatusEnum.ENABLED.name(),
+                startFilter,
+                endFilter);
     }
 
     @Override
@@ -138,8 +143,15 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     @Override
-    public List<MusicOnlyIdAndMusicNameAndSingerNameProjection> findMusicsAssociationForEventsBySpace(String spaceId) {
-        return repository.findMusicsAssociationForEventsBySpace(spaceId);
+    public List<MusicTopUsedProjection> findMusicsAssociationForEventsBySpace(String spaceId) {
+        OffsetDateTime startFilter = RangeDateFilterEnum.LAST_THREE_MONTHS.getStartOfRangeDateEvent();
+        OffsetDateTime endFilter = RangeDateFilterEnum.LAST_2_HOURS.getStartOfRangeDateEvent();
+
+        return repository.findMusicsAssociationForEventsBySpace(
+                spaceId,
+                MusicStatusEnum.ENABLED.name(),
+                startFilter,
+                endFilter);
     }
 
     @Override

@@ -208,7 +208,7 @@ class MusicServiceTest extends BaseUnitTests {
     @Test
     void findTop10MusicMoreUsedInEvents_shouldReturnMusicTopUsedDto() {
         musicService.findTop10MusicMoreUsedInEvents(UUID.randomUUID().toString());
-        verify(repositoryMock).findAllBySpaceOrderByEventsCountDescLimit10(any(), any());
+        verify(repositoryMock).findAllBySpaceOrderByEventsCountDescLimit10(any(), any(), any(), any());
     }
 
     @Test
@@ -248,7 +248,7 @@ class MusicServiceTest extends BaseUnitTests {
     @Test
     void findMusicsAssociationForEventsBySpace_shouldReturnMusicProjection() {
         musicService.findMusicsAssociationForEventsBySpace(UUID.randomUUID().toString());
-        verify(repositoryMock).findMusicsAssociationForEventsBySpace(any());
+        verify(repositoryMock).findMusicsAssociationForEventsBySpace(any(), any(), any(), any());
     }
 
     @Test

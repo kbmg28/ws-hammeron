@@ -4,13 +4,12 @@ import br.com.kbmg.wshammeron.config.security.SpringSecurityUtil;
 import br.com.kbmg.wshammeron.config.security.annotations.SecuredAnyUserAuth;
 import br.com.kbmg.wshammeron.config.security.annotations.SecuredSpaceOwner;
 import br.com.kbmg.wshammeron.dto.music.MusicDto;
-import br.com.kbmg.wshammeron.dto.music.MusicOnlyIdAndMusicNameAndSingerNameDto;
 import br.com.kbmg.wshammeron.dto.music.MusicTopUsedDto;
 import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
 import br.com.kbmg.wshammeron.dto.music.SingerDto;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.Singer;
-import br.com.kbmg.wshammeron.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
+import br.com.kbmg.wshammeron.repository.projection.MusicTopUsedProjection;
 import br.com.kbmg.wshammeron.service.MusicService;
 import br.com.kbmg.wshammeron.service.SingerService;
 import br.com.kbmg.wshammeron.util.mapper.MusicMapper;
@@ -61,16 +60,17 @@ public class MusicController extends GenericController {
     @Transactional
     public ResponseEntity<ResponseData<List<MusicTopUsedDto>>> findTop10MusicMoreUsedInEvents() {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
-        List<MusicTopUsedDto> viewData = musicService.findTop10MusicMoreUsedInEvents(spaceId);
+        List<MusicTopUsedProjection> projectionList = musicService.findTop10MusicMoreUsedInEvents(spaceId);
+        List<MusicTopUsedDto> viewData = musicMapper.toMusicTopUsedDto(projectionList);
         return super.ok(viewData);
     }
 
     @GetMapping("/association-for-events")
-    public ResponseEntity<ResponseData<List<MusicOnlyIdAndMusicNameAndSingerNameDto>>>
+    public ResponseEntity<ResponseData<List<MusicTopUsedDto>>>
             findMusicsAssociationForEventsBySpace() {
         String spaceId = SpringSecurityUtil.getCredentials().getSpaceId();
-        List<MusicOnlyIdAndMusicNameAndSingerNameProjection> projectionList = musicService.findMusicsAssociationForEventsBySpace(spaceId);
-        List<MusicOnlyIdAndMusicNameAndSingerNameDto> viewData = musicMapper.toMusicOnlyIdAndMusicNameAndSingerNameDto(projectionList);
+        List<MusicTopUsedProjection> projectionList = musicService.findMusicsAssociationForEventsBySpace(spaceId);
+        List<MusicTopUsedDto> viewData = musicMapper.toMusicTopUsedDto(projectionList);
         return super.ok(viewData);
     }
 

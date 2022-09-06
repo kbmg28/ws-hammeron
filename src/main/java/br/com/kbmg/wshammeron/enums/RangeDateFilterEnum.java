@@ -3,6 +3,12 @@ package br.com.kbmg.wshammeron.enums;
 import java.time.OffsetDateTime;
 
 public enum RangeDateFilterEnum {
+    LAST_2_HOURS {
+        @Override
+        public OffsetDateTime getStartOfRangeDateEvent() {
+            return OffsetDateTime.now().minusHours(2);
+        }
+    },
     LAST_THIRTY_DAYS {
         @Override
         public OffsetDateTime getStartOfRangeDateEvent() {
