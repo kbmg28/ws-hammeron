@@ -1,11 +1,16 @@
 package br.com.kbmg.wshammeron.util.mapper;
 
-import br.com.kbmg.wshammeron.dto.music.*;
+import br.com.kbmg.wshammeron.dto.music.MusicDto;
+import br.com.kbmg.wshammeron.dto.music.MusicFullWithOrderDto;
+import br.com.kbmg.wshammeron.dto.music.MusicLinkDto;
+import br.com.kbmg.wshammeron.dto.music.MusicTopUsedDto;
+import br.com.kbmg.wshammeron.dto.music.MusicWithSingerAndLinksDto;
+import br.com.kbmg.wshammeron.dto.music.SingerDto;
 import br.com.kbmg.wshammeron.model.EventMusicAssociation;
 import br.com.kbmg.wshammeron.model.Music;
 import br.com.kbmg.wshammeron.model.MusicLink;
 import br.com.kbmg.wshammeron.model.Singer;
-import br.com.kbmg.wshammeron.repository.projection.MusicOnlyIdAndMusicNameAndSingerNameProjection;
+import br.com.kbmg.wshammeron.repository.projection.MusicTopUsedProjection;
 import org.mapstruct.IterableMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -97,6 +102,6 @@ public interface MusicMapper {
     @Mapping(target = "events", ignore = true)
     MusicDto toMusicDto(Music music);
 
-    @IterableMapping(elementTargetType = MusicOnlyIdAndMusicNameAndSingerNameDto.class)
-    List<MusicOnlyIdAndMusicNameAndSingerNameDto> toMusicOnlyIdAndMusicNameAndSingerNameDto(List<MusicOnlyIdAndMusicNameAndSingerNameProjection> projectionList);
+    @IterableMapping(elementTargetType = MusicTopUsedDto.class)
+    List<MusicTopUsedDto> toMusicTopUsedDto(List<MusicTopUsedProjection> projectionList);
 }

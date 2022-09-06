@@ -11,6 +11,7 @@ public class MusicTopUsedDto {
 
     private String musicId;
     private String musicName;
+    private String musicStatus;
     private String singerName;
     private Integer amountUsedInEvents;
 
