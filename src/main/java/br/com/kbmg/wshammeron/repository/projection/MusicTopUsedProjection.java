@@ -4,6 +4,7 @@ public interface MusicTopUsedProjection {
 
     String getMusicId();
     String getMusicName();
+    String getMusicStatus();
     String getSingerName();
     Integer getAmountUsedInEvents();
 
