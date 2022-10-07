@@ -176,10 +176,9 @@ public class MusicServiceImpl extends GenericServiceImpl<Music, MusicRepository>
     }
 
     private void checkIfUserCanChangeMusicStatus(Music musicInDatabase, Music musicUpdated) {
-        boolean statusInDatabaseIsRejected = MusicStatusEnum.REJECTED.equals(musicInDatabase.getMusicStatus());
-        boolean newStatusIsRejected = MusicStatusEnum.REJECTED.equals(musicUpdated.getMusicStatus());
+        boolean isChangedStatus = !musicInDatabase.getMusicStatus().equals(musicUpdated.getMusicStatus());
         boolean isNotSpaceOwner = SpringSecurityUtil.getAllPermissions().stream().noneMatch(p -> PermissionEnum.SPACE_OWNER.name().equals(p));
-        if ((statusInDatabaseIsRejected || newStatusIsRejected) && isNotSpaceOwner) {
+        if ( isChangedStatus && isNotSpaceOwner) {
             throw new ForbiddenException(messagesService.get(MUSIC_CANNOT_CHANGE_STATUS));
         }
     }
